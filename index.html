@@ -376,6 +376,23 @@ body.port #toast{bottom:2.7em}
 #dlg .dura{display:flex;align-items:center;gap:.5em;margin-top:.4em;font-size:.85em}
 #dlg .dura .obar{flex:1;margin:0;height:.6em;position:relative}
 #dlg .dura .obar i{display:block;height:100%}
+/* ===== HUD im gleichen Pixel-Stil wie die Fenster ===== */
+.panel{border-radius:0;box-shadow:none;background:none;border:.5em solid transparent;border-image:var(--t-dwin) 4 fill / .5em stretch;filter:drop-shadow(0 .2em 0 rgba(60,15,40,.4));image-rendering:pixelated;color:#5a2a35}
+#clock{padding:.05em .35em}
+#gold{border-top:0;background:linear-gradient(90deg,#f2b6cb 50%,transparent 0) left top/.5em .12em repeat-x}
+body.touch #gold{background:none}
+#hotbar{border-radius:0;padding:.1em}
+.slot{background:none;border:.38em solid transparent;border-image:var(--t-slot) 4 fill / .38em stretch;border-radius:0}
+.slot.sel{border-image-source:var(--t-slotsel);box-shadow:none;background:none}
+.slot .n{border-radius:0;border:.12em solid #f0b2c8;background:#fff}
+.slot .wl{left:.15em;right:.15em;bottom:.1em;border-radius:0}
+.slot .wl.du{bottom:.1em}
+#invBtn{border-radius:0;width:3.4em;height:3.4em}
+#helpBtn{padding:0;width:2.6em;height:2.6em;font-weight:600;color:#c4527e}
+#ebar{border-radius:0;background:#6a3a4a;box-shadow:inset 0 .12em 0 rgba(0,0,0,.25)}
+#efill{box-shadow:inset 0 .14em 0 rgba(255,255,255,.35)}
+#hint,#toast{padding:0 .45em}
+#hint kbd{border-radius:0}
 </style>
 </head>
 <body>
@@ -1270,7 +1287,7 @@ function updateHUD() {
       n.style.display = showN ? '' : 'none';
       d.title = itemName(id);
       if (id === 'can') d.querySelector('.wl i').style.width = (S.water / S.canCap * 100) + '%';
-      else if (ITEM[id].dura) { const f = duraOf(id) / ITEM[id].dura, i = d.querySelector('.wl i'); i.style.width = Math.max(4, f * 100) + '%'; i.style.background = duraCol(f); }
+      else if (ITEM[id].dura) { const f = duraOf(id) / ITEM[id].dura, i = d.querySelector('.wl i'); i.parentNode.style.display = f >= 1 ? 'none' : ''; i.style.width = Math.max(4, f * 100) + '%'; i.style.background = duraCol(f); }
     });
   }
   // interaction hint
