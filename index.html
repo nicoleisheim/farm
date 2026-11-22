@@ -871,7 +871,7 @@ function drawPondAnim(t) {
     P(-3, 0, 6, 1, '#c8ecfc'); P(-2, -2, 4, 2, '#ffe066'); P(1, -4, 2, 2, '#ffe066'); P(3, -3, 1, 1, '#ff9a3a'); P(2, -4, 1, 1, '#3a2030');
   }
 }
-const WINDOWS = [[43, 55, 10, 10], [91, 55, 10, 10], [67, 31, 10, 10], [208, 55, 3, 4]];
+const WINDOWS = [[43, 55, 10, 10], [91, 55, 10, 10], [68, 31, 9, 9], [208, 55, 3, 4]];
 function drawFarmHouse(g) {
   const x0 = 32, y0 = 16;
   const TH = '#ecc878', TL = '#f6dc9a', TD = '#d4a654', TS = '#e0b864', TO = '#b8863a';
@@ -908,21 +908,14 @@ function drawFarmHouse(g) {
     const half = Math.min(16, y - y0 - 2), xl = cx - half + (y < y0 + 18 ? 2 : y < y0 + 32 ? 1 : 0), xr = cx + half - (y < y0 + 18 ? 2 : y < y0 + 32 ? 1 : 0);
     for (let x = xl; x <= xr; x++) R(g, x, y, 1, 1, brick(x, y));
   }
-  for (let r = 0; r <= 16; r++) { const y = y0 + 2 + r; R(g, cx - r, y, 1, 1, TO); R(g, cx + r, y, 1, 1, TO); if (r > 0) { R(g, cx - r + 1, y, 1, 1, TD); R(g, cx + r - 1, y, 1, 1, TD); } }
+  // dicke Strohkante am Giebel
+  for (let r = 0; r <= 16; r++) { const y = y0 + 2 + r; for (const d of [-1, 1]) { R(g, cx + d * r, y, 1, 1, TO); if (r > 0) R(g, cx + d * (r - 1), y, 1, 1, TD); if (r > 1) R(g, cx + d * (r - 2), y, 1, 1, TH); if (r > 2) R(g, cx + d * (r - 3), y, 1, 1, TL); } }
   R(g, cx - 1, y0 + 1, 3, 1, TO);
   R(g, cx - 16, y0 + 18, 1, 14, TO); R(g, cx + 16, y0 + 18, 1, 14, TO);
-  // kleines Rundfenster oben
-  R(g, cx - 2, y0 + 6, 5, 5, '#ffffff'); R(g, cx - 1, y0 + 7, 3, 3, '#c4ecff'); R(g, cx, y0 + 7, 1, 3, '#ffffff'); R(g, cx - 1, y0 + 8, 3, 1, '#ffffff');
-  // Giebelfenster wie die Fassadenfenster
-  { const wx = cx - 6, y = y0 + 14;
-    R(g, wx, y, 12, 12, '#ffffff'); R(g, wx + 1, y + 1, 10, 10, '#c4ecff'); R(g, wx + 1, y + 1, 10, 3, '#e0f6ff');
-    R(g, wx + 6, y + 1, 1, 10, '#ffffff'); R(g, wx + 1, y + 6, 10, 1, '#ffffff'); R(g, wx + 2, y + 2, 2, 1, '#ffffff'); R(g, wx + 2, y + 3, 1, 1, '#ffffff');
-    for (const [sx, L] of [[wx - 4, true], [wx + 12, false]]) {
-      R(g, sx, y, 4, 12, '#ff8fb8'); R(g, sx, y, 4, 1, '#ffb3cf'); R(g, sx, y + 1, 4, 1, '#e86f9c'); R(g, sx, y + 10, 4, 1, '#e86f9c');
-      for (let i = 0; i < 8; i++) R(g, L ? sx + 3 - Math.floor(i / 2.4) : sx + Math.floor(i / 2.4), y + 2 + i, 1, 1, '#e86f9c');
-    }
-    R(g, wx - 1, y + 12, 14, 2, '#eadde2'); R(g, wx - 1, y + 13, 14, 1, '#c9b2bc');
-  }
+  // großes Rundfenster
+  disc(g, cx, y0 + 19, 7, '#ffffff'); disc(g, cx, y0 + 19, 6, '#c4ecff'); R(g, cx - 4, y0 + 15, 3, 2, '#e0f6ff');
+  R(g, cx, y0 + 13, 1, 13, '#ffffff'); R(g, cx - 6, y0 + 19, 13, 1, '#ffffff');
+  R(g, cx - 5, y0 + 27, 11, 1, '#eadde2');
   // Übergang Giebel – Haus: Holzbalken mit kleinen Konsolen
   R(g, cx - 16, y0 + 29, 33, 3, '#c08a64'); R(g, cx - 16, y0 + 29, 33, 1, '#e0a874'); R(g, cx - 16, y0 + 31, 33, 1, '#8a5a40');
   for (const x of [cx - 15, cx + 13]) { R(g, x, y0 + 32, 3, 2, '#a86d48'); R(g, x + 1, y0 + 34, 1, 1, '#a86d48'); }
