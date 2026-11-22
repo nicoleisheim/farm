@@ -356,6 +356,8 @@ body.port #toast{bottom:2.7em}
 #dlg .lrow:last-child{background-image:none}
 #dlg .lrow.on{background-color:#fff0f6}
 #dlg .lrow.o{grid-template-columns:2.1em minmax(0,1fr) auto}
+#dlg .vtabs{display:flex;gap:.4em;margin:0 0 .35em}#dlg .vtabs .btn{padding-top:.15em;padding-bottom:.15em}#dlg .vtabs .btn{flex:1}
+#dlg .lrow.vb{grid-template-columns:2.1em minmax(0,1fr) auto auto}
 #dlg .lrow.ware{grid-template-columns:2.1em minmax(0,1fr) auto auto auto;column-gap:.7em}
 #dlg .lrow.whead{padding:0 0 .25em;margin-bottom:.2em;background:linear-gradient(90deg,#f6c08e 50%,transparent 0) left bottom/.5em .1em repeat-x}#dlg .lrow.whead small{text-align:center;opacity:.75}#dlg .lrow.whead .wt{grid-column:1/3;color:#e07a3c;font-size:.9em}
 #dlg .lrow.ware .ln small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1775,24 +1777,23 @@ function bagView(q) {
     return `<div class="slot${n > 0 ? '' : ' zero'}" title="${ITEM[t].name}"><img src="${ICONURL[iconOf(t)]}" alt=""><span class="n">${n}</span></div>`;
   }).join('')}</div></div>`;
 }
+let standTab = 'put';
 function standHTML() {
   const rows = SELLABLE.filter(t => cnt(t) > 0 || S.stand[t] > 0), onN = SELLABLE.reduce((a, t) => a + (S.stand[t] || 0), 0);
-  const onVal = SELLABLE.reduce((a, t) => a + (S.stand[t] || 0) * priceOf(t), 0), open = standOpen();
+  const onVal = SELLABLE.reduce((a, t) => a + (S.stand[t] || 0) * priceOf(t), 0), open = standOpen(), put = standTab === 'put';
   let h = T('stand', 'Verkaufsstand');
-  h += `<div class="sinfo"><span>Heute verkauft: <b>${S.soldGold.toLocaleString('de-DE')} Taler</b> (Auszahlung morgen)</span><span>${open ? 'Offen' : 'Zu'} 8–18 Uhr · günstiger = schneller verkauft</span></div>`;
-  h += `<div class="ssec"><div class="lrow ware whead"><span class="wt">Waren</span><small>Am Stand</small><span></span><small>Preis</small></div>`;
-  if (rows.length) {
-    for (const t of rows) {
-      const n = S.stand[t] || 0, b = cnt(t), p = priceOf(t), lo = Math.ceil(sellOf(t) * .5), hi = Math.floor(sellOf(t) * 1.5);
-      h += `<div class="lrow ware${n ? ' on' : ''}"><img src="${ICONURL[iconOf(t)]}" alt=""><div class="ln"><b>${ITEM[t].name}</b><small>Rucksack: ${b}</small></div>
-        <div class="qty"><button class="btn sq" data-act="back1:${t}" ${n ? '' : 'disabled'} title="1 zurücknehmen">−</button><span class="qv">${n}</span><button class="btn sq" data-act="put1:${t}" ${b ? '' : 'disabled'} title="1 auslegen">+</button></div>
-        <button class="btn" data-act="putall:${t}" ${b ? '' : 'disabled'}>Alle</button>
-        <div class="qty"><button class="btn sq" data-act="pr:${t}:-1" ${p > lo ? '' : 'disabled'}>−</button><span class="qv">${p}</span><button class="btn sq" data-act="pr:${t}:1" ${p < hi ? '' : 'disabled'}>+</button></div></div>`;
-    }
-  } else h += '<div class="sempty">Du hast nichts zum Verkaufen dabei.</div>';
+  h += `<div class="sinfo"><span>Heute: <b>${S.soldGold.toLocaleString('de-DE')} Taler</b>, Auszahlung morgen</span><span>${open ? 'Offen' : 'Zu'} 8–18 Uhr</span></div>`;
+  h += `<div class="vtabs"><button class="btn${put ? ' primary' : ''}" data-act="stab:put">Auslegen</button><button class="btn${put ? '' : ' primary'}" data-act="stab:price">Preise</button></div><div class="ssec">`;
+  if (!rows.length) h += '<div class="sempty">Du hast nichts zum Verkaufen dabei.</div>';
+  for (const t of rows) {
+    const n = S.stand[t] || 0, b = cnt(t), p = priceOf(t), lo = Math.ceil(sellOf(t) * .5), hi = Math.floor(sellOf(t) * 1.5);
+    h += `<div class="lrow vb${put && n ? ' on' : ''}"><img src="${ICONURL[iconOf(t)]}" alt=""><div class="ln"><b>${ITEM[t].name}</b><small>${put ? `Rucksack: ${b}` : `Verkauft sich ${priceTag(t)}`}</small></div>`;
+    h += put ? `<div class="qty"><button class="btn sq" data-act="back1:${t}" ${n ? '' : 'disabled'} title="1 zurücknehmen">−</button><span class="qv">${n}</span><button class="btn sq" data-act="put1:${t}" ${b ? '' : 'disabled'} title="1 auslegen">+</button></div><button class="btn" data-act="putall:${t}" ${b ? '' : 'disabled'}>Alle</button></div>`
+      : `<div class="qty"><button class="btn sq" data-act="pr:${t}:-1" ${p > lo ? '' : 'disabled'}>−</button><span class="qv">${p}</span><button class="btn sq" data-act="pr:${t}:1" ${p < hi ? '' : 'disabled'}>+</button></div><small>Taler</small></div>`;
+  }
   h += '</div>';
-  h += `<div class="ssec"><div class="lrow"><img src="${lotteIcon}" alt=""><div class="ln"><b>Lohn für ${STAFF}</b><small>${open ? 'Ab 18 Uhr änderbar' : `Tempo: ${paceOf(wageOf())}`}</small></div><div class="qty"><button class="btn sq" data-act="wage:-1" ${wageOf() > 4 && !open ? '' : 'disabled'}>−</button><span class="qv">${wageOf()}</span><button class="btn sq" data-act="wage:1" ${wageOf() < 16 && !open ? '' : 'disabled'}>+</button></div><small>Taler/Std.</small></div></div>`;
-  h += `<div class="sfoot"><div class="ssum">Am Stand: <b>${onN} Stück</b> · ${onVal.toLocaleString('de-DE')} Taler</div><div class="sbtns"><button class="btn" data-act="close">Schließen</button></div></div>`;
+  if (!put) h += `<div class="ssec"><div class="lrow vb"><img src="${lotteIcon}" alt=""><div class="ln"><b>Lohn für ${STAFF}</b><small>${open ? 'Ab 18 Uhr änderbar' : `Tempo: ${paceOf(wageOf())}`}</small></div><div class="qty"><button class="btn sq" data-act="wage:-1" ${wageOf() > 4 && !open ? '' : 'disabled'}>−</button><span class="qv">${wageOf()}</span><button class="btn sq" data-act="wage:1" ${wageOf() < 16 && !open ? '' : 'disabled'}>+</button></div><small>Taler/Std.</small></div></div>`;
+  h += `<div class="sfoot"><div class="ssum">${put ? `Am Stand: <b>${onN} Stück</b> · ${onVal.toLocaleString('de-DE')} Taler` : 'Günstiger = schneller verkauft'}</div><div class="sbtns"><button class="btn" data-act="close">Schließen</button></div></div>`;
   return h;
 }
 function rerenderShip() { const sc = $('dlg').scrollTop; $('dlg').innerHTML = $('dlg').dataset.orders ? ordersHTML() : standHTML(); $('dlg').scrollTop = sc; }
@@ -1997,6 +1998,7 @@ $('dlg').addEventListener('click', e => {
     for (const t of SELLABLE) { const q = qOf(t); if (q) { S.stand[t] = (S.stand[t] || 0) + q; useItem(t, q); n += q; } }
     shipQ = {}; snd('ship'); toast(`${n} Stück am Stand ausgelegt`); rerenderShip();
   }
+  else if (a.startsWith('stab:')) { standTab = a.slice(5); snd('sel'); rerenderShip(); }
   else if (a.startsWith('put1:')) { const t = a.slice(5); if (cnt(t) > 0) { useItem(t, 1); S.stand[t] = (S.stand[t] || 0) + 1; snd('plant'); } rerenderShip(); }
   else if (a.startsWith('putall:')) { const t = a.slice(7), m = cnt(t); if (m) { useItem(t, m); S.stand[t] = (S.stand[t] || 0) + m; snd('ship'); toast(`${m}× ${ITEM[t].name} ausgelegt`); } rerenderShip(); }
   else if (a.startsWith('back1:')) { const t = a.slice(6); if (S.stand[t] > 0 && addItem(t, 1)) { S.stand[t]--; snd('plant'); } rerenderShip(); }
@@ -2061,7 +2063,7 @@ function act(tx, ty) {
   }
   if (t === 'H') { toast('Die Haustür ist in der Mitte.'); return; }
   if (t === 'S') { openDlg(shopHTML()); return; }
-  if (t === 'B') { shipQ = {}; openDlg(standHTML()); return; }
+  if (t === 'B') { shipQ = {}; standTab = 'put'; openDlg(standHTML()); return; }
   if (t === 'L') { openDlg(ordersHTML()); $('dlg').dataset.orders = 1; return; }
   if (bush && bush.s === 'bush' && !bush.ripe && kind !== 'shovel') { toast(bush.d < 3 ? 'Der Strauch wächst noch.' : 'Noch keine reifen Beeren.'); return; }
   if (!id) { toast('Du hast nichts in der Hand.'); return; }
