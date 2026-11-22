@@ -361,7 +361,7 @@ body.port #toast{bottom:2.7em}
 #dlg .ln small{display:flex;align-items:center;gap:.4em;font-size:.78em;opacity:.85;margin-top:.1em}
 #dlg .cntb{font-weight:600;font-size:1.05em;color:#c4527e}
 #dlg .lbtns{display:flex;gap:.3em}
-#dlg .phint{font-size:.8em;color:#b0788e;font-weight:400}#dlg .bagv{grid-template-columns:repeat(5,minmax(0,1fr));max-width:17em;margin:.2em 0 .1em}#dlg .bagv .slot{cursor:default;pointer-events:none}#dlg .bagv .slot.zero img{opacity:.3;filter:grayscale(1)}#dlg .bagv .slot .n{font-size:.78em}#dlg .bagv .slot.zero .n{color:#c9a0b0}#dlg .ssech img.hi{width:1.2em;height:1.2em;image-rendering:pixelated;vertical-align:-.2em;margin-right:.25em}#dlg small.short{color:#d0453a}#dlg small.okc{color:#4a9a5a}
+#dlg .phint{font-size:.8em;color:#b0788e;font-weight:400}#dlg .padfocus{outline:.22em solid #ff4f8b;outline-offset:.1em;position:relative;z-index:2}#dlg .bagv{grid-template-columns:repeat(5,minmax(0,1fr));max-width:17em;margin:.2em 0 .1em}#dlg .bagv .slot{cursor:default;pointer-events:none}#dlg .bagv .slot.zero img{opacity:.3;filter:grayscale(1)}#dlg .bagv .slot .n{font-size:.78em}#dlg .bagv .slot.zero .n{color:#c9a0b0}#dlg .ssech img.hi{width:1.2em;height:1.2em;image-rendering:pixelated;vertical-align:-.2em;margin-right:.25em}#dlg small.short{color:#d0453a}#dlg small.okc{color:#4a9a5a}
 #dlg .bagc{display:inline-flex;align-items:center;gap:.2em;font-weight:600;color:#fff;background:#e0578c;padding:0 .35em 0 .15em;box-shadow:0 0 0 .12em #7a2a4a;font-size:1.05em;line-height:1.35}
 #dlg .bagc img{width:1.15em;height:1.15em}
 #dlg .bagc.short{background:#e05a4a;box-shadow:0 0 0 .12em #8a2a2a}
@@ -458,6 +458,8 @@ X.imageSmoothingEnabled = false;
 const $ = id => document.getElementById(id);
 let VW = W, VH = H, camX = 0, camY = 0;
 let touchMode = matchMedia('(pointer:coarse)').matches || ('ontouchstart' in window);
+let padMode = navigator.userAgent.includes('SonnenhofApp');
+const tmode = () => touchMode && !padMode;
 
 /* ---------- helpers ---------- */
 function R(g, x, y, w, h, c) { g.fillStyle = c; g.fillRect(x, y, w, h); }
@@ -1625,7 +1627,7 @@ function updateHUD() {
     else if (isWater(tx, ty) && tool.kind === 'can') h = 'Gießkanne füllen';
   }
   const he = $('hint');
-  if (h) { he.innerHTML = `<kbd>${touchMode ? 'A' : 'Leertaste'}</kbd>${h}`; he.style.display = 'block'; }
+  if (h) { he.innerHTML = `<kbd>${touchMode || padMode ? 'A' : 'Leertaste'}</kbd>${h}`; he.style.display = 'block'; }
   else he.style.display = 'none';
 }
 function fmtTime(t) {
@@ -1635,7 +1637,9 @@ function fmtTime(t) {
 
 /* ---------- dialogs ---------- */
 function helpHTML(intro) {
-  const ctl = touchMode ? [
+  const ctl = padMode ? [
+    ['Steuerkreuz', 'laufen'], ['A', 'Werkzeug benutzen, mit Dingen reden'], ['L / R', 'Gegenstand wechseln'], ['X / Y', 'Rucksack öffnen'], ['B', 'Fenster schließen'], ['Steuerkreuz + A', 'in Fenstern Knöpfe wählen und drücken']
+  ] : touchMode ? [
     ['Joystick', 'laufen'], ['A-Knopf', 'Werkzeug benutzen, mit Dingen reden'], ['Leiste antippen', 'Gegenstand wählen'], ['Rucksack-Knopf', 'Inventar öffnen'], ['Feld antippen', 'direkt daneben handeln']
   ] : [
     ['WASD / Pfeile', 'laufen'], ['Leertaste / E', 'Werkzeug benutzen, mit Dingen reden'], ['1–8 / Mausrad', 'Gegenstand wählen'], ['I', 'Rucksack öffnen'], ['Klick', 'auf ein Feld direkt daneben']
@@ -2161,7 +2165,35 @@ function endDay(passedOut) {
 /* ---------- input ---------- */
 const keys = new Set();
 const KMAP = { ArrowLeft: 'l', a: 'l', A: 'l', ArrowRight: 'r', d: 'r', D: 'r', ArrowUp: 'u', w: 'u', W: 'u', ArrowDown: 'd', s: 'd', S: 'd' };
+function dlgEls() { return [...$('dlg').querySelectorAll('button:not([disabled]),[data-act]:not(button)')].filter(e => e.offsetParent); }
+function dlgFocus(el) { if (!el) return; $('dlg').querySelectorAll('.padfocus').forEach(e => e.classList.remove('padfocus')); el.classList.add('padfocus'); el.tabIndex = -1; el.focus({ preventScroll: true }); el.scrollIntoView({ block: 'nearest' }); }
+function dlgNav(dir) {
+  const els = dlgEls(); if (!els.length) return;
+  const cur = $('dlg').querySelector('.padfocus');
+  if (!cur || !els.includes(cur)) { dlgFocus($('dlg').querySelector('.btn.primary:not([disabled])') || els[0]); return; }
+  const r = cur.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+  let best = null, bd = 1e9;
+  for (const e of els) {
+    if (e === cur) continue;
+    const q = e.getBoundingClientRect(), x = q.left + q.width / 2 - cx, y = q.top + q.height / 2 - cy;
+    const main = dir === 'l' ? -x : dir === 'r' ? x : dir === 'u' ? -y : y, side = dir === 'l' || dir === 'r' ? Math.abs(y) : Math.abs(x);
+    if (main <= 3) continue;
+    const d = main + side * 2.5; if (d < bd) { bd = d; best = e; }
+  }
+  if (best) { dlgFocus(best); snd('sel'); }
+}
+function dlgPress() {
+  const cur = $('dlg').querySelector('.padfocus');
+  if (!cur || !cur.isConnected) { dlgNav('d'); return; }
+  const act = cur.dataset.act; cur.click();
+  setTimeout(() => { if (!paused || !act) return; const n = $('dlg').querySelector(`[data-act="${act}"]:not([disabled])`); dlgFocus(n || $('dlg').querySelector('.btn.primary:not([disabled])') || dlgEls()[0]); }, 0);
+}
 addEventListener('keydown', e => {
+  if (paused && !fading && $('shade').style.display === 'flex') {
+    const nav = { ArrowLeft: 'l', ArrowRight: 'r', ArrowUp: 'u', ArrowDown: 'd' }[e.key];
+    if (nav) { e.preventDefault(); dlgNav(nav); return; }
+    if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); if (!e.repeat) dlgPress(); return; }
+  }
   if (e.key === 'Escape') { if (paused && !fading) closeDlg(); return; }
   if (KMAP[e.key]) { keys.add(KMAP[e.key]); e.preventDefault(); return; }
   if (e.key === 'i' || e.key === 'I' || e.key === 'Tab') { e.preventDefault(); openInv(); return; }
@@ -2481,8 +2513,8 @@ function render(t) {
 /* ---------- layout & loop ---------- */
 function fit() {
   const vv = window.visualViewport;
-  const iw = Math.round(vv ? vv.width : innerWidth), ih = Math.round(vv ? vv.height : innerHeight), port = touchMode && ih > iw;
-  document.body.classList.toggle('touch', touchMode);
+  const iw = Math.round(vv ? vv.width : innerWidth), ih = Math.round(vv ? vv.height : innerHeight), port = tmode() && ih > iw;
+  document.body.classList.toggle('touch', tmode());
   document.body.classList.toggle('port', port);
   const app = $('app'), stage = $('stage'), top = $('topbar'), bot = $('bottom'), ctrl = $('ctrl');
   app.style.height = ih + 'px';
@@ -2501,8 +2533,8 @@ function fit() {
     stage.insertBefore(top, $('hint')); stage.appendChild(bot); app.insertBefore(ctrl, $('fade'));
     VW = W; VH = H;
     s = Math.min(iw / W, ih / H) * .97;
-    if (s >= 2 && !touchMode) s = Math.floor(s);
-    app.style.fontSize = (touchMode ? Math.max(10, Math.min(15, s * 4.3)) : Math.max(9, Math.min(18, s * 4.6))) + 'px';
+    if (s >= 2 && !tmode()) s = Math.floor(s);
+    app.style.fontSize = (tmode() ? Math.max(10, Math.min(15, s * 4.3)) : Math.max(9, Math.min(18, s * 4.6))) + 'px';
     stage.style.width = W * s + 'px'; stage.style.height = H * s + 'px';
   }
   if (C.width !== VW || C.height !== VH) { C.width = VW; C.height = VH; X.imageSmoothingEnabled = false; }
@@ -2526,7 +2558,12 @@ function pollPad() {
   for (const k of padKeys) if (!want.has(k)) { keys.delete(k); padKeys.delete(k); }
   for (const k of want) if (!keys.has(k)) { keys.add(k); padKeys.add(k); }
   const hit = i => b(i) && !padPrev[i];
+  if (!padMode && (gp.buttons.some(x => x.pressed) || Math.abs(ax) > .5 || Math.abs(ay) > .5)) { padMode = true; fit(); }
   if (paused) {
+    if (!fading && $('shade').style.display === 'flex') {
+      if (hit(12)) dlgNav('u'); if (hit(13)) dlgNav('d'); if (hit(14)) dlgNav('l'); if (hit(15)) dlgNav('r');
+      if (hit(0)) dlgPress();
+    }
     if (hit(1) && !fading) closeDlg();
     if ((hit(2) || hit(3)) && $('dlg').dataset.inv && !fading) closeDlg();
     const ry = gp.axes[3] || 0; if (Math.abs(ry) > .3) $('dlg').scrollTop += ry * 14;
