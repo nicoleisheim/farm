@@ -513,7 +513,8 @@ const SELLABLE = [...Object.keys(CROPS), 'berry', 'wood'];
 const sellOf = id => ITEM[id].sell || 0;
 const SEASONS = ['Frühling', 'Sommer', 'Herbst', 'Winter'];
 const WDAYS = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
-const SOLID = new Set(['T', 'H', 'S', 'B', 'U', 'W', 'L', 'X', 'Y']);
+const SOLID = new Set(['T', 'H', 'S', 'B', 'U', 'W', 'L', 'X', 'Y', 'F', 'O', 'N']);
+let LOC = 'farm', fadeT = 0;
 const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
 const DOOR = [4, 4];
 
@@ -535,9 +536,30 @@ for (let x = 18; x <= 20; x++) for (let y = 2; y <= 3; y++) set(x, y, 'G');
 set(19, 4, 'G'); set(19, 5, 'G');
 for (let x = 4; x <= 23; x++) set(x, 6, 'P');
 const GATE = [23, 6];
+// Innenstadt: eigene Karte
+const MAP_T = [];
+for (let y = 0; y < ROWS; y++) MAP_T.push(new Array(COLS).fill('G'));
+const setT = (x, y, c) => { if (x >= 0 && y >= 0 && x < COLS && y < ROWS) MAP_T[y][x] = c; };
+for (let x = 0; x < COLS; x++) { setT(x, 0, 'T'); setT(x, ROWS - 1, 'T'); }
+for (let y = 0; y < ROWS; y++) { setT(0, y, 'T'); setT(COLS - 1, y, 'T'); }
+for (let x = 0; x < COLS - 1; x++) for (let y = 7; y <= 9; y++) setT(x, y, 'P');
+for (let x = 2; x <= 6; x++) for (let y = 2; y <= 5; y++) setT(x, y, 'H');
+for (let x = 17; x <= 21; x++) for (let y = 2; y <= 5; y++) setT(x, y, 'H');
+for (let x = 10; x <= 12; x++) { setT(x, 4, 'S'); setT(x, 5, 'S'); setT(x, 6, 'P'); }
+setT(11, 11, 'F'); setT(12, 11, 'F'); setT(11, 12, 'F'); setT(12, 12, 'F');
+for (let x = 10; x <= 13; x++) setT(x, 10, 'P');
+const TOWN_LAMPS = [[8, 6], [15, 6], [8, 10], [15, 10]];
+TOWN_LAMPS.forEach(([x, y]) => setT(x, y, 'O'));
+const TOWN_TREES = [[1, 1], [8, 2], [14, 2], [22, 1], [2, 12], [4, 13], [19, 12], [21, 13], [7, 14], [16, 14], [22, 10]];
+TOWN_TREES.forEach(([x, y]) => setT(x, y, 'T'));
+const TOWN_NPC = [{ x: 5, y: 10, p: 1, d: 'right', say: ['Schöner Tag heute!', 'Die Kirschbäume blühen so schön.', 'Warst du schon im Dorfladen?'] },
+  { x: 18, y: 8, p: 3, d: 'left', say: ['Deine Rüben sind die besten im Dorf!', 'Früher war hier alles nur Wiese.', 'Am Brunnen ist es abends so gemütlich.'] }];
+TOWN_NPC.forEach(n => setT(n.x, n.y, 'N'));
+const TWIN = [[42, 71, 12, 10], [90, 71, 12, 10], [266, 71, 12, 10], [314, 71, 12, 10]];
 let TREES = {};
 const tileAt = (x, y) => {
   if (x < 0 || y < 0 || x >= COLS || y >= ROWS) return 'T';
+  if (LOC === 'town') return MAP_T[y][x];
   const t = MAP[y][x];
   const st = TREES[x + ',' + y];
   if (st) return st.s === 'tree' ? 'T' : st.s === 'stump' ? 'X' : st.s === 'sap' ? 'Y' : st.s === 'bush' ? 'U' : 'G';
@@ -676,7 +698,7 @@ const WET = new Uint8Array(W * H), PD = new Uint8Array(W * H);
     for (const j of [i - 1, i + 1, i - W, i + W]) if (WET[j] && !PD[j]) { PD[j] = PD[i] + 1; q.push(j); }
   }
 })();
-const wetAt = (x, y) => x >= 0 && y >= 0 && x < W && y < H && WET[(y | 0) * W + (x | 0)] === 1;
+const wetAt = (x, y) => LOC === 'farm' && x >= 0 && y >= 0 && x < W && y < H && WET[(y | 0) * W + (x | 0)] === 1;
 const depthAt = (x, y) => wetAt(x, y) ? PD[(y | 0) * W + (x | 0)] : 0;
 function shorePoint(a, out) {
   let r = 0; while (wetAt(PCX + Math.cos(a) * r, PCY + Math.sin(a) * r) && r < 80) r++;
@@ -901,21 +923,52 @@ function drawSign(g) {
   R(g, x0 + 1, y0 + 1, 13, 6, '#6a3a2a'); R(g, x0 + 2, y0 + 2, 11, 4, '#e0a874');
   R(g, x0 + 4, y0 + 3, 6, 2, '#f08a3a'); R(g, x0 + 10, y0 + 2, 1, 4, '#f08a3a'); R(g, x0 + 11, y0 + 3, 1, 2, '#f08a3a');
 }
-let TOWNURL = '';
-function makeTown() {
-  const [c, g] = mk(384, 200);
-  R(g, 0, 0, 384, 200, '#8ccf63');
-  for (let i = 0; i < 260; i++) R(g, Math.floor(hash(i, 1, 90) * 384), Math.floor(hash(i, 2, 90) * 200), 1, 2, i % 2 ? '#7bbf55' : '#a6de80');
-  R(g, 0, 120, 384, 48, '#e2c9a6'); R(g, 0, 120, 384, 2, '#c9a87e'); R(g, 0, 166, 384, 2, '#c9a87e');
-  for (let y = 124; y < 164; y += 6) for (let x = (y / 6 % 2) * 6; x < 384; x += 12) R(g, x, y, 10, 4, '#ecd8ba');
-  g.save(); g.translate(-32 + 16, -16 + 40); drawHouse(g); g.restore();
-  g.save(); g.translate(-288 + 168, -32 + 76); drawShop(g); g.restore();
-  g.save(); g.translate(-32 + 270, -16 + 40); drawHouse(g); g.restore();
-  for (const [x, y] of [[0, 2], [6, 1], [14, 2], [22, 1]]) drawTree(g, x, y);
-  disc(g, 192, 186, 9, '#c9a87e'); disc(g, 192, 186, 7, '#7cc6ee'); R(g, 191, 178, 2, 6, '#d2f2ff');
-  R(g, 150, 108, 2, 12, '#8a5a40'); R(g, 228, 108, 2, 12, '#8a5a40'); R(g, 146, 104, 10, 5, '#f08a3a'); R(g, 224, 104, 10, 5, '#f08a3a');
-  TOWNURL = c.toDataURL();
+let BG_T = null;
+function cherryTree(g, tx, ty) {
+  const x0 = tx * 16, y0 = ty * 16, P = ['#e47fa8', '#f7a6c8', '#ffcfe2', '#ffffff'];
+  R(g, x0 + 3, y0 + 14, 10, 2, 'rgba(60,20,40,.18)'); R(g, x0 + 6, y0 + 10, 4, 5, '#8a5a40'); R(g, x0 + 6, y0 + 10, 1, 5, '#a8735a');
+  disc(g, x0 + 8, y0 + 7, 7, P[0]); disc(g, x0 + 7, y0 + 6, 6, P[1]); disc(g, x0 + 6, y0 + 5, 3, P[2]);
+  R(g, x0 + 5, y0 + 3, 2, 1, P[3]); R(g, x0 + 10, y0 + 6, 1, 1, P[2]); R(g, x0 + 4, y0 + 8, 1, 1, P[2]);
 }
+function makeTown() {
+  const [c, g] = mk(W, H); BG_T = c;
+  R(g, 0, 0, W, H, '#8ccf63');
+  for (let i = 0; i < 420; i++) R(g, Math.floor(hash(i, 1, 90) * W), Math.floor(hash(i, 2, 90) * H), 1, 2, i % 2 ? '#7bbf55' : '#a6de80');
+  for (let i = 0; i < 60; i++) { const x = Math.floor(hash(i, 3, 91) * W), y = Math.floor(hash(i, 4, 91) * H); R(g, x, y, 2, 2, ['#ffffff', '#ffb3cf', '#ffe066'][i % 3]); R(g, x, y + 2, 1, 1, '#5aa040'); }
+  // Pflaster: Hauptstraße, Weg zum Laden, Platz am Brunnen
+  const cob = (x, y, w, h) => {
+    R(g, x, y, w, h, '#d9c2a0');
+    for (let yy = y; yy < y + h; yy += 5) for (let xx = x + ((yy - y) / 5 % 2) * 4; xx < x + w; xx += 8) { R(g, xx, yy, 7, 4, '#ead8bc'); R(g, xx, yy + 3, 7, 1, '#c9ad88'); }
+  };
+  cob(0, 112, W - 16, 48); cob(160, 96, 48, 16); cob(152, 160, 64, 64);
+  R(g, 0, 111, W - 16, 1, '#b8976e'); R(g, 0, 160, 152, 1, '#b8976e'); R(g, 216, 160, W - 232, 1, '#b8976e');
+  // Ortsschild am Eingang
+  R(g, 20, 98, 2, 12, '#8a5a40'); R(g, 13, 92, 16, 8, '#a86d48'); R(g, 14, 93, 14, 6, '#d8a878'); R(g, 15, 95, 3, 2, '#f08a3a'); R(g, 16, 94, 1, 4, '#f08a3a');
+  g.save(); g.translate(0, 16); drawHouse(g); g.restore();
+  g.save(); g.translate(240, 16); drawHouse(g); g.restore();
+  g.save(); g.translate(160 - 288, 64 - 32); drawShop(g); g.restore();
+  // Brunnen
+  const fx = 192, fy = 192;
+  disc(g, fx, fy + 2, 15, 'rgba(60,20,40,.18)'); disc(g, fx, fy, 15, '#b8a0a8'); disc(g, fx, fy, 13, '#e8d8dc'); disc(g, fx, fy, 11, '#7cc6ee'); disc(g, fx - 3, fy - 3, 4, '#a8dcf6');
+  R(g, fx - 2, fy - 12, 4, 12, '#e8d8dc'); R(g, fx - 1, fy - 12, 1, 12, '#ffffff'); disc(g, fx, fy - 13, 3, '#b8a0a8'); R(g, fx - 1, fy - 18, 2, 4, '#d2f2ff');
+  // Blumenkübel
+  for (const [x, y] of [[144, 104], [216, 104], [144, 216], [232, 216]]) { R(g, x, y + 4, 10, 6, '#c08a64'); R(g, x, y + 4, 10, 1, '#d8a878'); disc(g, x + 5, y + 2, 4, '#58ae55'); R(g, x + 2, y, 2, 2, '#ff6f9f'); R(g, x + 6, y + 1, 2, 2, '#fff'); R(g, x + 4, y + 3, 2, 2, '#ffe066'); }
+  TOWN_TREES.forEach(([x, y], i) => (i % 2 ? drawTree : cherryTree)(g, x, y));
+  for (let x = 0; x < COLS; x++) { if (!TOWN_TREES.some(t => t[0] === x && t[1] === 0)) drawTree(g, x, 0); if (!TOWN_TREES.some(t => t[0] === x && t[1] === ROWS - 1)) drawTree(g, x, ROWS - 1); }
+  for (let y = 1; y < ROWS - 1; y++) { if (y < 7 || y > 9) drawTree(g, 0, y); drawTree(g, COLS - 1, y); }
+  // Laternen
+  TOWN_LAMPS.forEach(([tx, ty]) => { const x = tx * 16 + 7, y = ty * 16; R(g, x - 2, y + 13, 6, 2, 'rgba(60,20,40,.18)'); R(g, x, y + 2, 2, 13, '#5a4050'); R(g, x - 2, y - 3, 6, 6, '#5a4050'); R(g, x - 1, y - 2, 4, 4, '#ffe6a0'); R(g, x - 3, y - 4, 8, 1, '#3a2a34'); });
+  // Leute aus dem Dorf
+  const [pc, pgx] = mk(16, 20);
+  TOWN_NPC.forEach(n => {
+    drawPlayerSprite(pgx, n.d === 'left' ? 'right' : n.d, 0, PAL_VILLAGE[n.p]);
+    const ox = n.x * 16, oy = n.y * 16 - 6;
+    R(g, ox + 3, oy + 18, 10, 2, 'rgba(0,0,0,.25)');
+    if (n.d === 'left') { g.save(); g.translate(ox + 16, oy); g.scale(-1, 1); g.drawImage(pc, 0, 0); g.restore(); } else g.drawImage(pc, ox, oy);
+  });
+}
+function goTown() { LOC = 'town'; if (!BG_T) makeTown(); S.px = 22; S.py = 8 * 16 + 13; S.dir = 'right'; S.time += 10; fadeT = .35; snd('sel'); toast('Innenstadt'); }
+function goFarm() { LOC = 'farm'; S.px = GATE[0] * 16 - 2; S.py = GATE[1] * 16 + 13; S.dir = 'left'; S.time += 10; fadeT = .35; snd('sel'); toast('Sonnenhof'); }
 function drawBerryBush(g, tx, ty, st) {
   const x0 = tx * 16, y0 = ty * 16;
   R(g, x0 + 2, y0 + 13, 12, 2, 'rgba(60,20,40,.18)');
@@ -1375,7 +1428,8 @@ function updateHUD() {
   let h = '';
   if (!paused) {
     const [tx, ty] = targetTile(), t = tileAt(tx, ty), s = S.soil[tx + ',' + ty], tool = { kind: held() ? ITEM[held()].kind : '' };
-    if (s && s.c && s.c.d >= CROPS[s.c.t].days) h = tool.kind === 'sickle' ? CROPS[s.c.t].name + ' ernten' : 'Sichel wählen zum Ernten';
+    if (LOC === 'town') h = t === 'S' ? 'Einkaufen' : t === 'N' ? 'Plaudern' : tx <= 0 ? 'Zur Farm' : '';
+    else if (s && s.c && s.c.d >= CROPS[s.c.t].days) h = tool.kind === 'sickle' ? CROPS[s.c.t].name + ' ernten' : 'Sichel wählen zum Ernten';
     else if (tx === DOOR[0] && ty === DOOR[1]) h = 'Schlafen gehen';
     else if (t === 'S') h = 'Einkaufen';
     else if (tx === GATE[0] && ty === GATE[1]) h = 'Zur Innenstadt';
@@ -1619,10 +1673,6 @@ function shopRow(img, name, info, price, id, single) {
   return `<div class="shrow"><img src="${img}" alt=""><div class="sname"><b>${name}</b><small>${info}</small></div><span class="price"><span class="p-coin"></span>${price}</span>
     <div class="shbtns"><button class="btn" data-act="buy:${id}:1" ${d1}>Kaufen</button>${single ? '' : `<button class="btn" data-act="buy:${id}:5" ${d5}>×5</button>`}</div></div>`;
 }
-function townHTML() {
-  return T('shopi', 'Innenstadt') + `<div class="townimg"><img src="${TOWNURL}" alt="Die Innenstadt mit dem Dorfladen"></div><div class="sinfo"><span>Gleich neben der Farm: der Dorfladen hat geöffnet.</span></div><div class="foot"><button class="btn" data-act="close">Zurück zur Farm</button><button class="btn primary" data-act="shop">Dorfladen betreten</button></div>`;
-}
-function openTown() { if (!TOWNURL) makeTown(); S.time += 20; snd('sel'); openDlg(townHTML()); }
 function shopHTML() {
   let h = T('shopi', 'Dorfladen') + `<div class="sinfo"><span>Willkommen! Schau dich ruhig um.</span><span><span class="money"><span class="p-coin"></span>${S.gold.toLocaleString('de-DE')}</span></span></div>`;
   h += '<div class="ssec"><div class="ssech"><span>Samen</span></div>';
@@ -1716,6 +1766,12 @@ function act(tx, ty) {
   if (paused || actT > .08) return;
   const k = tx + ',' + ty, s = S.soil[k], t = tileAt(tx, ty), id = held(), kind = id ? ITEM[id].kind : '';
   actT = .25; actTool = null; actTile = [tx, ty];
+  if (LOC === 'town') {
+    if (t === 'S') openDlg(shopHTML());
+    else if (t === 'N') { const n = TOWN_NPC.find(n => n.x === tx && n.y === ty); hearts(tx, ty, 1); snd('sel'); toast(n.say[Math.floor(Math.random() * n.say.length)]); }
+    else if (id && ITEM[id].kind && ITEM[id].kind !== 'snack') toast('Das geht nur auf deiner Farm.');
+    return;
+  }
   const bush = TREES[k];
   if (bush && bush.s === 'bush' && bush.ripe && kind !== 'shovel') {
     const n = 2 + Math.floor(Math.random() * 3);
@@ -1875,7 +1931,7 @@ function endDay(passedOut) {
     S.day++; S.rain = Math.random() < .22;
     if (S.rain) for (const k in S.soil) S.soil[k].w = true;
     S.energy = passedOut ? Math.round(S.maxEnergy * .6) : S.maxEnergy;
-    S.time = 360; S.warned = false; S.px = 72; S.py = 93; S.dir = 'down';
+    LOC = 'farm'; S.time = 360; S.warned = false; S.px = 72; S.py = 93; S.dir = 'down';
     save();
     const ready = Object.values(S.soil).filter(s => s.c && s.c.d >= CROPS[s.c.t].days).length;
     const sd = (S.day - 1) % 28 + 1, season = SEASONS[Math.floor((S.day - 1) / 28) % 4];
@@ -2081,18 +2137,18 @@ const vel = { x: 0, y: 0 };
 const rain = Array.from({ length: 80 }, () => ({ x: Math.random() * W, y: Math.random() * H, s: 180 + Math.random() * 80 }));
 function update(dt) {
   if (actT > 0) actT -= dt;
+  if (fadeT > 0) fadeT = Math.max(0, fadeT - dt);
   for (let i = parts.length - 1; i >= 0; i--) {
     const p = parts[i]; p.life -= dt;
     if (p.h) p.vy *= .985; else if (p.pt) { p.x += Math.sin(p.life * 3 + p.s) * 10 * dt; } else p.vy += 160 * dt;
     p.x += p.vx * dt; p.y += p.vy * dt;
     if (p.life <= 0) parts.splice(i, 1);
   }
-  for (const [tx, ty] of CHERRY) if (Math.random() < dt * .18 && parts.length < 160)
+  for (const [tx, ty] of (LOC === 'farm' ? CHERRY : TOWN_TREES.filter((_, i) => i % 2 === 0))) if (Math.random() < dt * .18 && parts.length < 160)
     parts.push({ x: tx * 16 + 3 + Math.random() * 10, y: ty * 16 + 6 + Math.random() * 6, vx: -5 - Math.random() * 6, vy: 7 + Math.random() * 5,
       life: 2.5 + Math.random() * 2, col: Math.random() < .5 ? '#ffc2dc' : '#ffe3ee', pt: 1, s: Math.random() * 6 });
-  updateCritters(dt);
+  if (LOC === 'farm') { updateCritters(dt); updatePond(dt); }
   if (!paused) updateCustomers(dt);
-  updatePond(dt);
   if (S.rain) for (const d of rain) { d.y += d.s * dt; d.x -= d.s * .25 * dt; if (d.y > VH) { d.y = -4; d.x = Math.random() * (VW + 60); } }
   if (paused) { moving = false; return; }
   let tx = 0, ty = 0;
@@ -2119,7 +2175,8 @@ function update(dt) {
     animT += dt * (.5 + .5 * Math.min(1, spd));
   } else animT = 0;
   S.time += dt * 2;
-  if (!paused && S.px > GATE[0] * 16 + 4) { S.px = GATE[0] * 16 - 6; S.dir = 'left'; openTown(); }
+  if (!paused && LOC === 'farm' && S.px > GATE[0] * 16 + 8) goTown();
+  else if (!paused && LOC === 'town' && S.px < 8) goFarm();
   if (S.time >= 1440 && !S.warned) { S.warned = true; toast('Mitternacht! Du solltest ins Bett gehen.'); }
   if (S.time >= 1560) { toast('Dir fallen die Augen zu …'); endDay(true); }
 }
@@ -2140,13 +2197,19 @@ function render(t) {
   camY = Math.max(0, Math.min(H - VH, Math.round(S.py) - 8 - (VH >> 1)));
   X.fillStyle = '#26121f'; X.fillRect(0, 0, VW, VH);
   X.save(); X.translate(-camX, -camY);
+  const farm = LOC === 'farm';
+  if (!farm) {
+    X.drawImage(BG_T, 0, 0);
+    for (let i = 0; i < 5; i++) { const a = t * 3 + i * 1.3, r = (a * 2) % 9; R(X, 192 + Math.round(Math.cos(i * 1.26) * r), 190 + Math.round(Math.sin(i * 1.26) * r * .6), 1, 1, '#ffffff'); }
+  } else {
   X.drawImage(BG, 0, 0); X.drawImage(TL, 0, 0);
   drawPondAnim(t); drawStandGoods(t);
   updateSoilLayer(); X.drawImage(SL, 0, 0);
-  for (const k in S.soil) if (S.soil[k].w && Math.floor(t * 1.5 + hash(...k.split(',').map(Number), 12) * 4) % 4 === 0) {
+  }
+  if (farm) for (const k in S.soil) if (S.soil[k].w && Math.floor(t * 1.5 + hash(...k.split(',').map(Number), 12) * 4) % 4 === 0) {
     const [tx, ty] = k.split(',').map(Number); R(X, tx * 16 + 3 + Math.floor(hash(tx, ty, 13) * 9), ty * 16 + 5 + Math.floor(hash(tx, ty, 14) * 7), 1, 1, '#b8dcf0');
   }
-  for (const k in S.soil) {
+  if (farm) for (const k in S.soil) {
     const s = S.soil[k]; if (!s.c) continue;
     const [tx, ty] = k.split(',').map(Number), v = cropStage(s.c);
     drawCrop(X, s.c.t, v, tx * 16, ty * 16);
@@ -2158,9 +2221,9 @@ function render(t) {
     corners(ct[0] * 16, ct[1] * 16);
   }
   const night = S.time > 1200;
-  const buns = critters.filter(c => c.k === 'bun');
+  const buns = farm ? critters.filter(c => c.k === 'bun') : [], cs = farm ? custs : [];
   for (const c of buns) if (c.y <= S.py) drawBunny(c);
-  for (const c of custs) if (c.y <= S.py) drawCustomer(c);
+  for (const c of cs) if (c.y <= S.py) drawCustomer(c);
   // player
   const f = moving ? Math.floor(animT * 8) % 4 : 0;
   const flip = S.dir === 'left';
@@ -2177,12 +2240,12 @@ function render(t) {
     else X.drawImage(ICON[actTool], ix, iy);
   }
   for (const c of buns) if (c.y > S.py) drawBunny(c);
-  for (const c of custs) if (c.y > S.py) drawCustomer(c);
+  for (const c of cs) if (c.y > S.py) drawCustomer(c);
   for (const p of parts) {
     if (p.h) heart(X, Math.round(p.x) - 2, Math.round(p.y) - 2, p.col);
     else R(X, Math.round(p.x), Math.round(p.y), p.pt ? (p.s > 3 ? 2 : 1) : 2, p.pt ? 1 : 2, p.col);
   }
-  if (!night && !S.rain) for (const c of critters) if (c.k === 'fly') drawFly(c, false);
+  if (farm && !night && !S.rain) for (const c of critters) if (c.k === 'fly') drawFly(c, false);
   X.restore();
   // light
   const tm = S.time;
@@ -2196,13 +2259,15 @@ function render(t) {
   }
   if (dark > 0) {
     X.fillStyle = `rgba(48,22,86,${dark})`; X.fillRect(0, 0, VW, VH);
-    for (const [wx, wy, w, h] of WINDOWS) {
+    if (!farm) for (const [lx, ly] of TOWN_LAMPS) { X.fillStyle = `rgba(255,210,120,${dark * .5})`; X.fillRect(lx * 16 + 2 - camX, ly * 16 - 8 - camY, 12, 12); X.fillStyle = `rgba(255,230,160,${Math.min(1, dark * 2)})`; X.fillRect(lx * 16 + 6 - camX, ly * 16 - 2 - camY, 4, 4); }
+    for (const [wx, wy, w, h] of (farm ? WINDOWS : TWIN)) {
       const x = wx - camX, y = wy - camY;
       X.fillStyle = `rgba(255,200,90,${Math.min(1, dark * 2)})`; X.fillRect(x, y, w, h);
       X.fillStyle = `rgba(255,190,80,${dark * .35})`; X.fillRect(x - 3, y + h, w + 6, 6);
     }
-    if (S.time > 1200 && !S.rain) drawFireflies();
+    if (farm && S.time > 1200 && !S.rain) drawFireflies();
   }
+  if (fadeT > 0) { X.fillStyle = `rgba(38,18,31,${fadeT / .35})`; X.fillRect(0, 0, VW, VH); }
 }
 
 /* ---------- layout & loop ---------- */

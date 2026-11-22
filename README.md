@@ -40,7 +40,7 @@ Im Hochformat liegen Steuerung und Werkzeugleiste unter dem Spielfeld, und die K
 8. **Beerensträucher** pflanzen: ab dem 3. Tag und danach alle 2 Tage reife Beeren pflücken (einfach mit A).
 9. Mit der **Schaufel** Pflanzen und Setzlinge ausgraben und Felder wieder zu Wiese machen
 9. Im **Rucksack** (16 Plätze) liegen Ernte und Holz; Gegenstände lassen sich zwischen Rucksack und Werkzeugleiste (8 Plätze) verschieben
-10. Der **Dorfladen** liegt in der **Innenstadt**: einfach dem Weg nach rechts aus der Farm folgen. Dort gibt es Samen, Setzlinge, Beerensträucher, Salat, Ersatzwerkzeug und eine größere Gießkanne. Werkzeuge nutzen sich ab und gehen irgendwann kaputt
+10. Der **Dorfladen** liegt in der **Innenstadt**, einem eigenen Ort: Folge dem Weg nach rechts aus der Farm. In der Stadt gibt es Häuser, einen Brunnen, Laternen und Leute aus dem Dorf, mit denen du plaudern kannst. Am linken Rand geht es zurück zur Farm. Dort gibt es Samen, Setzlinge, Beerensträucher, Salat, Ersatzwerkzeug und eine größere Gießkanne. Werkzeuge nutzen sich ab und gehen irgendwann kaputt
 11. Vor 2 Uhr nachts durch die Haustür **schlafen gehen** – dabei wird gespeichert
 
 | Ware | Samenpreis | Wachstum | Verkaufspreis (Taler) |
