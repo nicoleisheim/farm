@@ -359,7 +359,7 @@ body.port #toast{bottom:2.7em}
 #dlg .ln small{display:flex;align-items:center;gap:.4em;font-size:.78em;opacity:.85;margin-top:.1em}
 #dlg .cntb{font-weight:600;font-size:1.05em;color:#c4527e}
 #dlg .lbtns{display:flex;gap:.3em}
-#dlg .bagv{grid-template-columns:repeat(5,minmax(0,1fr));max-width:17em;margin:.2em 0 .1em}#dlg .bagv .slot{cursor:default;pointer-events:none}#dlg .bagv .slot.zero img{opacity:.3;filter:grayscale(1)}#dlg .bagv .slot .n{font-size:.78em}#dlg .bagv .slot.zero .n{color:#c9a0b0}#dlg .ssech img.hi{width:1.2em;height:1.2em;image-rendering:pixelated;vertical-align:-.2em;margin-right:.25em}#dlg small.short{color:#d0453a}#dlg small.okc{color:#4a9a5a}
+#dlg .phint{font-size:.8em;color:#b0788e;font-weight:400}#dlg .bagv{grid-template-columns:repeat(5,minmax(0,1fr));max-width:17em;margin:.2em 0 .1em}#dlg .bagv .slot{cursor:default;pointer-events:none}#dlg .bagv .slot.zero img{opacity:.3;filter:grayscale(1)}#dlg .bagv .slot .n{font-size:.78em}#dlg .bagv .slot.zero .n{color:#c9a0b0}#dlg .ssech img.hi{width:1.2em;height:1.2em;image-rendering:pixelated;vertical-align:-.2em;margin-right:.25em}#dlg small.short{color:#d0453a}#dlg small.okc{color:#4a9a5a}
 #dlg .bagc{display:inline-flex;align-items:center;gap:.2em;font-weight:600;color:#fff;background:#e0578c;padding:0 .35em 0 .15em;box-shadow:0 0 0 .12em #7a2a4a;font-size:1.05em;line-height:1.35}
 #dlg .bagc img{width:1.15em;height:1.15em}
 #dlg .bagc.short{background:#e05a4a;box-shadow:0 0 0 .12em #8a2a2a}
@@ -394,7 +394,7 @@ body.touch #gold{background:none}
 #helpBtn{padding:0;width:2.6em;height:2.6em;font-weight:600;color:#c4527e}
 #ebar{border-radius:0;background:#6a3a4a;box-shadow:inset 0 .12em 0 rgba(0,0,0,.25)}
 #efill{box-shadow:inset 0 .14em 0 rgba(255,255,255,.35)}
-#hint,#toast{padding:0 .45em}
+#hint{padding:0 .45em}#toast{padding:.3em .7em}
 #hint kbd{border-radius:0}
 #dlg .foot{position:sticky;bottom:-.7em;z-index:2;background:#fff4f8;margin:.6em -.75em -.7em;padding:.6em .75em .7em;box-shadow:0 -.14em 0 #e8b8c8}
 body.touch .slot .k{display:none}
@@ -411,7 +411,7 @@ body.port #date{width:auto;font-size:.9em;opacity:.8}
 body.port #time{font-size:1.15em}
 body.port #topbar{padding:.35em .5em}
 body,button,kbd,small{font-size-adjust:.56;font-synthesis:none;letter-spacing:.02em}
-#toast{top:.4em;bottom:auto !important;font-size:.72em;max-width:86%;white-space:normal;line-height:1.15;border-width:.35em;transform:translateX(-50%) translateY(-.3em)}
+#toast{top:.4em;bottom:auto !important;font-size:.72em;max-width:90%;white-space:normal;line-height:1.25;border-width:.35em;transform:translateX(-50%) translateY(-.3em)}
 #toast.show{transform:translateX(-50%) translateY(0)}
 body:not(.port) #toast{top:3.2em}
 #hint{font-size:.7em;border-width:.35em}
@@ -512,6 +512,10 @@ const duraOf = id => (S.dura && S.dura[id] !== undefined) ? S.dura[id] : ITEM[id
 const iconOf = id => id.replace('-', '_');
 const SELLABLE = [...Object.keys(CROPS), 'berry', 'wood'];
 const sellOf = id => ITEM[id].sell || 0;
+const priceOf = id => (S.prices && S.prices[id]) || sellOf(id);
+const prStep = id => Math.max(1, Math.round(sellOf(id) / 10));
+const appeal = id => Math.pow(sellOf(id) / priceOf(id), 2);
+const priceTag = id => { const r = priceOf(id) / sellOf(id); return r <= .75 ? 'sehr schnell' : r < .95 ? 'schnell' : r <= 1.05 ? 'normal' : r <= 1.3 ? 'langsam' : 'sehr langsam'; };
 const SEASONS = ['Frühling', 'Sommer', 'Herbst', 'Winter'];
 const WDAYS = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 const SOLID = new Set(['T', 'H', 'S', 'B', 'U', 'W', 'L', 'X', 'Y', 'F', 'O', 'N']);
@@ -849,44 +853,52 @@ function drawPondAnim(t) {
 }
 const WINDOWS = [[42, 55, 12, 10], [90, 55, 12, 10]];
 function drawHouse(g, o) {
-  const C = c => (o && o[c]) || c;
-  const x0 = 32, y0 = 16;
-  R(g, x0 + 4, y0 + 62, 74, 3, 'rgba(60,20,40,.18)');
-  R(g, x0 + 2, y0 + 30, 76, 34, C('#f6d2a8'));
-  for (let y = y0 + 33; y < y0 + 64; y += 4) R(g, x0 + 2, y, 76, 1, C('#e8bf94'));
-  R(g, x0 + 2, y0 + 30, 3, 34, C('#c08a64')); R(g, x0 + 75, y0 + 30, 3, 34, C('#c08a64'));
-  R(g, x0 + 2, y0 + 62, 76, 2, C('#a06e52'));
-  for (let r = 0; r < 30; r++) {
-    const ins = Math.max(0, 8 - r);
-    R(g, x0 + ins, y0 + r, 80 - ins * 2, 1, r % 5 === 4 ? C('#de6994') : C('#f58bb3'));
+  o = o || {};
+  const C = c => o[c] || c, x0 = 32, y0 = 16;
+  const roof = C('#f58bb3'), roofD = C('#de6994'), roofM = C('#e8779f'), roofL = C('#ffb8d1'), edge = C('#c4527e');
+  const wall = C('#f6d2a8'), wallL = C('#e8bf94'), beam = '#b07a5a', beamD = '#8a5a40';
+  R(g, x0 + 1, y0 + 62, 80, 3, 'rgba(60,20,40,.2)');
+  // Wände mit Fachwerk
+  R(g, x0 + 3, y0 + 28, 74, 30, wall);
+  for (let y = y0 + 32; y < y0 + 58; y += 4) R(g, x0 + 3, y, 74, 1, wallL);
+  for (const bx of [x0 + 3, x0 + 27, x0 + 50, x0 + 74]) { R(g, bx, y0 + 28, 3, 30, beam); R(g, bx + 2, y0 + 28, 1, 30, beamD); }
+  // Steinsockel
+  R(g, x0 + 2, y0 + 57, 76, 6, '#b8a4ac');
+  for (let i = 0; i < 12; i++) { R(g, x0 + 3 + i * 6, y0 + 58, 5, 2, '#d6c6cc'); if (i < 11) R(g, x0 + 6 + i * 6, y0 + 61, 5, 1, '#d6c6cc'); }
+  // Schindeldach mit Überstand
+  for (let r = 0; r < 28; r++) {
+    const ins = Math.max(0, 12 - r), xa = x0 - 2 + ins, w = 84 - ins * 2, band = r >> 2, rr = r & 3;
+    R(g, xa, y0 + r, w, 1, rr === 3 ? roofD : rr === 0 ? roofL : roof);
+    if (rr === 1 || rr === 2) for (let xx = xa + 2 + (band % 2) * 3; xx < xa + w - 1; xx += 6) R(g, xx, y0 + r, 1, 1, roofM);
+    R(g, xa, y0 + r, 1, 1, edge); R(g, xa + w - 1, y0 + r, 1, 1, edge);
   }
-  for (let row = 0; row < 6; row++)
-    for (let xx = 4 + (row % 2) * 3; xx < 78; xx += 6) {
-      const ins = Math.max(0, 8 - row * 5);
-      if (xx > ins && xx < 80 - ins) R(g, x0 + xx, y0 + row * 5 + 1, 1, 3, C('#e8779f'));
-    }
-  R(g, x0 + 8, y0, 64, 1, C('#ffb8d1'));
-  R(g, x0, y0 + 29, 80, 2, C('#c4527e'));
-  for (let xx = 0; xx < 80; xx += 4) R(g, x0 + xx + 1, y0 + 31, 2, 1, C('#c4527e'));
-  // Schornstein
-  if (!o || o.chimney !== false) {
-  R(g, x0 + 60, y0 - 3, 8, 9, C('#f1d3dc')); R(g, x0 + 59, y0 - 4, 10, 2, C('#d9aebd'));
-  R(g, x0 + 60, y0, 8, 1, C('#ddb6c3')); R(g, x0 + 63, y0 - 2, 1, 2, C('#ddb6c3')); R(g, x0 + 61, y0 + 1, 1, 3, C('#ddb6c3'));
+  R(g, x0 + 10, y0 - 1, 60, 1, edge);
+  R(g, x0 - 2, y0 + 28, 84, 2, edge);
+  for (let xx = x0; xx < x0 + 80; xx += 4) R(g, xx + 1, y0 + 30, 2, 1, edge);
+  if (o.attic !== false) {
+    disc(g, x0 + 40, y0 + 15, 6, C('#c08a64')); disc(g, x0 + 40, y0 + 15, 5, '#ffffff'); disc(g, x0 + 40, y0 + 15, 4, '#c4ecff');
+    R(g, x0 + 40, y0 + 11, 1, 9, '#ffffff'); R(g, x0 + 36, y0 + 15, 9, 1, '#ffffff'); R(g, x0 + 37, y0 + 12, 2, 2, '#e8f8ff');
   }
-  // Tür
-  R(g, x0 + 31, y0 + 37, 18, 3, C('#c08a64'));
-  R(g, x0 + 33, y0 + 40, 14, 24, C('#a85a74')); R(g, x0 + 35, y0 + 42, 10, 22, C('#ff9fc0')); R(g, x0 + 35, y0 + 42, 10, 1, C('#ffc6da'));
-  R(g, x0 + 37, y0 + 45, 6, 5, C('#c4ecff')); R(g, x0 + 39, y0 + 45, 1, 5, C('#ffc6da')); R(g, x0 + 37, y0 + 47, 6, 1, C('#ffc6da'));
-  R(g, x0 + 37, y0 + 53, 6, 1, C('#f07ca6')); R(g, x0 + 37, y0 + 58, 6, 1, C('#f07ca6')); R(g, x0 + 43, y0 + 54, 1, 2, C('#ffd84a'));
-  R(g, x0 + 32, y0 + 63, 16, 1, C('#e8bf94'));
-  // Fenster mit Gardinen
+  if (o.chimney !== false) {
+    R(g, x0 + 58, y0 - 4, 8, 11, C('#f1d3dc')); R(g, x0 + 57, y0 - 6, 10, 2, C('#d9aebd'));
+    R(g, x0 + 58, y0, 8, 1, C('#ddb6c3')); R(g, x0 + 61, y0 - 3, 1, 3, C('#ddb6c3')); R(g, x0 + 59, y0 + 2, 1, 4, C('#ddb6c3')); R(g, x0 + 63, y0 + 2, 1, 4, C('#ddb6c3'));
+  }
+  // Tür mit Vordach und Stufe
+  R(g, x0 + 31, y0 + 36, 18, 22, beam);
+  R(g, x0 + 33, y0 + 38, 14, 20, C('#a85a74')); R(g, x0 + 34, y0 + 39, 12, 19, C('#ff9fc0')); R(g, x0 + 34, y0 + 39, 12, 1, C('#ffc6da'));
+  R(g, x0 + 37, y0 + 41, 6, 5, '#c4ecff'); R(g, x0 + 39, y0 + 41, 1, 5, C('#ffc6da')); R(g, x0 + 37, y0 + 43, 6, 1, C('#ffc6da'));
+  R(g, x0 + 36, y0 + 49, 8, 1, C('#f07ca6')); R(g, x0 + 36, y0 + 53, 8, 1, C('#f07ca6')); R(g, x0 + 43, y0 + 50, 1, 2, '#ffd84a');
+  R(g, x0 + 29, y0 + 33, 22, 3, edge); R(g, x0 + 30, y0 + 33, 20, 1, roofL); R(g, x0 + 30, y0 + 36, 1, 2, beamD); R(g, x0 + 49, y0 + 36, 1, 2, beamD);
+  R(g, x0 + 31, y0 + 58, 18, 4, '#d6c6cc'); R(g, x0 + 31, y0 + 58, 18, 1, '#ece0e4');
+  // Fenster mit Läden, Gardinen und Blumenkasten
   for (const wx of [x0 + 9, x0 + 57]) {
-    R(g, wx, y0 + 38, 14, 12, C('#c08a64')); R(g, wx + 1, y0 + 39, 12, 10, C('#c4ecff'));
-    R(g, wx + 6, y0 + 39, 2, 10, C('#fff')); R(g, wx + 1, y0 + 43, 12, 1, C('#fff')); R(g, wx + 2, y0 + 40, 2, 2, C('#ffffff'));
+    R(g, wx, y0 + 38, 14, 12, C('#c08a64')); R(g, wx + 1, y0 + 39, 12, 10, '#c4ecff');
+    R(g, wx + 6, y0 + 39, 2, 10, '#ffffff'); R(g, wx + 1, y0 + 43, 12, 1, '#ffffff'); R(g, wx + 2, y0 + 40, 2, 2, '#ffffff');
     R(g, wx + 1, y0 + 39, 3, 9, C('#ffb3cf')); R(g, wx + 10, y0 + 39, 3, 9, C('#ffb3cf')); R(g, wx + 1, y0 + 39, 12, 2, C('#ff9fc0'));
+    for (const sx of [wx - 3, wx + 14]) { R(g, sx, y0 + 38, 3, 12, C('#ff9fc0')); for (let y = y0 + 40; y < y0 + 49; y += 3) R(g, sx, y, 3, 1, C('#f07ca6')); }
     R(g, wx - 1, y0 + 50, 16, 3, C('#e59ab5')); R(g, wx - 1, y0 + 50, 16, 1, C('#ffc2d8'));
-    R(g, wx, y0 + 49, 14, 1, C('#5aa040'));
-    R(g, wx + 1, y0 + 48, 2, 2, C('#ff6f9f')); R(g, wx + 6, y0 + 48, 2, 2, C('#fff')); R(g, wx + 11, y0 + 48, 2, 2, C('#ff6f9f'));
+    R(g, wx, y0 + 49, 14, 1, '#5aa040');
+    R(g, wx + 1, y0 + 48, 2, 2, C('#ff6f9f')); R(g, wx + 6, y0 + 48, 2, 2, '#ffffff'); R(g, wx + 11, y0 + 48, 2, 2, C('#ff6f9f'));
   }
 }
 function drawShop(g) {
@@ -944,7 +956,7 @@ function makeTown() {
   // Ortsschild am Eingang
   R(g, 20, 98, 2, 12, '#8a5a40'); R(g, 13, 92, 16, 8, '#a86d48'); R(g, 14, 93, 14, 6, '#d8a878'); R(g, 15, 95, 3, 2, '#f08a3a'); R(g, 16, 94, 1, 4, '#f08a3a');
   // Bäckerei Mehlstaub: Lavendeldach
-  g.save(); g.translate(0, 16); drawHouse(g, { '#f58bb3': '#b9a0e8', '#de6994': '#9a80d0', '#e8779f': '#a88cdc', '#ffb8d1': '#d8c8f8', '#c4527e': '#7a5ab0',
+  g.save(); g.translate(0, 16); drawHouse(g, { attic: false, '#f58bb3': '#b9a0e8', '#de6994': '#9a80d0', '#e8779f': '#a88cdc', '#ffb8d1': '#d8c8f8', '#c4527e': '#7a5ab0',
     '#f6d2a8': '#fff0dc', '#e8bf94': '#f0dcc0', '#ff9fc0': '#b9a0e8', '#a85a74': '#6a4a90', '#ffc6da': '#d8c8f8', '#f07ca6': '#9a80d0',
     '#ffb3cf': '#fff4c0', '#e59ab5': '#c0a0e0', '#ffc2d8': '#e0d0f8', '#ff6f9f': '#ffe066' }); g.restore();
   R(g, 59, 41, 26, 13, '#8a5a40'); R(g, 60, 42, 24, 11, '#fff6e8');
@@ -1358,6 +1370,7 @@ function migrate(d) {
   return migrate2(d);
 }
 function migrate2(d) {
+  if (!d.prices) d.prices = {};
   for (const id of ['axe', 'shovel']) if (!d.items[id]) {
     d.items[id] = 1;
     for (const c of ['bar', 'bag']) { const i = d[c].indexOf(null); if (i >= 0) { d[c][i] = id; break; } }
@@ -1575,18 +1588,25 @@ function bagView(q) {
 }
 function standHTML() {
   const bag = SELLABLE.filter(t => cnt(t) > 0), on = SELLABLE.filter(t => S.stand[t] > 0);
-  const onVal = on.reduce((a, t) => a + S.stand[t] * sellOf(t), 0), hrs = Math.round((S.staffMin || 0) / 60 * 10) / 10;
+  const onVal = on.reduce((a, t) => a + S.stand[t] * priceOf(t), 0), hrs = Math.round((S.staffMin || 0) / 60 * 10) / 10;
   let h = T('stand', 'Verkaufsstand') + `<div class="chips"><span class="chip">Offen 8–18 Uhr</span></div><div class="ssec"><div class="lrow"><img src="${lotteIcon}" alt=""><div class="ln"><b>Lohn für ${STAFF}</b><small>${standOpen() ? 'Ab 18 Uhr änderbar' : `Tempo: ${paceOf(wageOf())}`}</small></div><div class="qty"><button class="btn sq" data-act="wage:-1" ${wageOf() > 4 && !standOpen() ? '' : 'disabled'}>−</button><span class="qv">${wageOf()}</span><button class="btn sq" data-act="wage:1" ${wageOf() < 16 && !standOpen() ? '' : 'disabled'}>+</button></div><small>Taler/Std.</small></div></div>`;
   h += `<div class="ssec"><div class="ssech"><span>Am Stand</span>${on.length ? `<b>${onVal.toLocaleString('de-DE')} Taler</b>` : ''}</div>`;
-  if (on.length) for (const t of on) h += `<div class="lrow"><img src="${ICONURL[iconOf(t)]}" alt=""><div class="ln"><b>${ITEM[t].name}</b><small>${sellOf(t)} Taler/Stück</small></div><span class="cntb">${S.stand[t]}×</span><div class="lbtns"><button class="btn sq" data-act="back1:${t}" title="1 zurücknehmen">−1</button><button class="btn" data-act="back:${t}">Alle</button></div></div>`;
+  if (on.length) for (const t of on) h += `<div class="lrow"><img src="${ICONURL[iconOf(t)]}" alt=""><div class="ln"><b>${ITEM[t].name}</b><small>${priceOf(t)} Taler/Stück</small></div><span class="cntb">${S.stand[t]}×</span><div class="lbtns"><button class="btn sq" data-act="back1:${t}" title="1 zurücknehmen">−1</button><button class="btn" data-act="back:${t}">Alle</button></div></div>`;
   else h += '<div class="sempty">Noch nichts ausgelegt.</div>';
   h += '</div>';
+  const pl = SELLABLE.filter(t => cnt(t) > 0 || S.stand[t] > 0);
+  if (pl.length) {
+    h += `<div class="ssec"><div class="ssech"><span>Preise</span><small class="phint">günstiger = schneller verkauft</small></div>`;
+    for (const t of pl) { const p = priceOf(t), lo = Math.ceil(sellOf(t) * .5), hi = Math.floor(sellOf(t) * 1.5);
+      h += `<div class="lrow"><img src="${ICONURL[iconOf(t)]}" alt=""><div class="ln"><b>${ITEM[t].name}</b><small>Verkauf: ${priceTag(t)}</small></div><div class="qty"><button class="btn sq" data-act="pr:${t}:-1" ${p > lo ? '' : 'disabled'}>−</button><span class="qv">${p}</span><button class="btn sq" data-act="pr:${t}:1" ${p < hi ? '' : 'disabled'}>+</button></div><small>Taler</small></div>`; }
+    h += '</div>';
+  }
   let n = 0, sum = 0;
   h += bagView(qOf);
   h += `<div class="ssec"><div class="ssech"><span>Zum Auslegen</span></div>`;
   if (bag.length) for (const t of bag) {
-    const q = qOf(t), need = neededForOrders(t); n += q; sum += q * sellOf(t);
-    h += `<div class="lrow${q ? ' on' : ''}"><img src="${ICONURL[iconOf(t)]}" alt=""><div class="ln"><b>${ITEM[t].name}</b><small>${sellOf(t)} Taler/Stück</small></div>
+    const q = qOf(t), need = neededForOrders(t); n += q; sum += q * priceOf(t);
+    h += `<div class="lrow${q ? ' on' : ''}"><img src="${ICONURL[iconOf(t)]}" alt=""><div class="ln"><b>${ITEM[t].name}</b><small>${priceOf(t)} Taler/Stück</small></div>
       <div class="qty"><button class="btn sq" data-act="q:${t}:-1" ${q ? '' : 'disabled'}>−</button><span class="qv">${q}</span><button class="btn sq" data-act="q:${t}:1" ${q < cnt(t) ? '' : 'disabled'}>+</button></div>
       <button class="btn sq" data-act="qa:${t}">${q < cnt(t) ? 'Alle' : '0'}</button></div>`;
   }
@@ -1661,8 +1681,8 @@ function spawnCustomer() {
 function customerBuys(c) {
   let k = 1 + (Math.random() < .4) + (Math.random() < .15), got = {}, gold = 0;
   while (k-- > 0 && standStock() > 0) {
-    let r = Math.random() * standStock();
-    for (const t of SELLABLE) { r -= S.stand[t] || 0; if (r < 0) { S.stand[t]--; got[t] = (got[t] || 0) + 1; gold += sellOf(t); break; } }
+    let r = Math.random() * SELLABLE.reduce((a, t) => a + (S.stand[t] || 0) * appeal(t), 0);
+    for (const t of SELLABLE) { r -= (S.stand[t] || 0) * appeal(t); if (r < 0 && S.stand[t] > 0) { S.stand[t]--; got[t] = (got[t] || 0) + 1; gold += priceOf(t); break; } }
   }
   if (!gold) { toast('Eine Kundin schaut vorbei – aber der Stand ist leer.'); return; }
   for (const t in got) S.sold[t] = (S.sold[t] || 0) + got[t];
@@ -1673,7 +1693,7 @@ function customerBuys(c) {
 function updateCustomers(dt) {
   const open = S.time >= 480 && S.time < 1080;
   if (open && standStock() > 0 && !paused) S.staffMin = (S.staffMin || 0) + dt * 2;
-  if (open && standStock() > 0 && custs.length < (wageOf() >= 12 ? 3 : 2) && Math.random() < dt * (S.rain ? .025 : .06) * wageOf() / 8) spawnCustomer();
+  if (open && standStock() > 0 && custs.length < (wageOf() >= 12 ? 3 : 2) && Math.random() < dt * (S.rain ? .025 : .06) * wageOf() / 8 * Math.max(.3, Math.min(2.5, SELLABLE.reduce((a, t) => a + (S.stand[t] || 0) * appeal(t), 0) / standStock()))) spawnCustomer();
   for (let i = custs.length - 1; i >= 0; i--) {
     const c = custs[i];
     c.a = Math.min(1, c.a + dt * 2.5);
@@ -1777,6 +1797,8 @@ $('dlg').addEventListener('click', e => {
     standQ = 1; rerenderShip();
   }
   else if (a.startsWith('wage:') && standOpen()) { toast('Den Lohn kannst du nur außerhalb der Öffnungszeit ändern.'); snd('err'); }
+  else if (a.startsWith('pr:')) { const [, t, d] = a.split(':'), lo = Math.ceil(sellOf(t) * .5), hi = Math.floor(sellOf(t) * 1.5);
+    S.prices = S.prices || {}; S.prices[t] = Math.max(lo, Math.min(hi, priceOf(t) + +d * prStep(t))); if (S.prices[t] === sellOf(t)) delete S.prices[t]; snd('sel'); rerenderShip(); }
   else if (a.startsWith('wage:')) { S.wage = Math.max(4, Math.min(16, wageOf() + +a.slice(5))); snd('sel'); rerenderShip(); }
   else if (a === 'shop') { $('dlg').innerHTML = shopHTML(); $('dlg').scrollTop = 0; }
   else if (a.startsWith('pk1:') || a.startsWith('up1:')) { const [k, id, t] = a.split(':'); packOne(id, t, k === 'pk1' ? 1 : -1); }
@@ -1943,7 +1965,7 @@ function endDay(passedOut) {
     let lines = '';
     for (const t of SELLABLE) {
       const n = S.sold[t]; if (!n) continue;
-      lines += `<div class="kv"><img src="${ICONURL[iconOf(t)]}" alt=""><span>${n}× ${ITEM[t].name}</span><b>${(n * sellOf(t)).toLocaleString('de-DE')} Taler</b></div>`;
+      lines += `<div class="kv"><img src="${ICONURL[iconOf(t)]}" alt=""><span>${n}× ${ITEM[t].name}</span><b>${(n * priceOf(t)).toLocaleString('de-DE')} Taler</b></div>`;
     }
     const income = S.soldGold; S.sold = {}; S.soldGold = 0; custs.length = 0;
     const hrs = Math.round((S.staffMin || 0) / 60 * 10) / 10, wage = Math.min(Math.round(hrs * wageOf()), S.gold); S.gold -= wage; S.staffMin = 0; delete S.staffed;

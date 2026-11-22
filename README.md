@@ -34,7 +34,7 @@ Im Hochformat liegen Steuerung und Werkzeugleiste unter dem Spielfeld, und die K
 2. **Samen** säen (Rübe, Kohl, Kürbis)
 3. Täglich mit der **Gießkanne** gießen – am Teich auffüllen
 4. Reife Pflanzen mit der **Sichel** ernten (ein Feld pro Schwung)
-5. Ernte am **Verkaufsstand** auslegen – von 8 bis 18 Uhr verkauft Mitarbeiterin Lotte zufällig an Leute aus dem Dorf. Ihren Stundenlohn (4–16 Taler) stellst du selbst ein – je mehr sie verdient, desto schneller verkauft sie. Bezahlt wird nur die Zeit, in der Ware ausliegt
+5. Ernte am **Verkaufsstand** auslegen – von 8 bis 18 Uhr verkauft Mitarbeiterin Lotte zufällig an Leute aus dem Dorf. Ihren Stundenlohn (4–16 Taler) stellst du selbst ein – je mehr sie verdient, desto schneller verkauft sie. Bezahlt wird nur die Zeit, in der Ware ausliegt Den **Preis pro Ware** stellst du am Stand selbst ein (50–150 % des Normalpreises): je günstiger, desto schneller wird verkauft.
 6. Am **Auftragsbrett** warten Bestellungen mit Frist: Ware in die Lieferkiste packen, nachts wird abgeholt und mit Aufschlag bezahlt
 7. Mit der **Axt** Bäume fällen (3 Schläge, 5–8 Holz) und Stümpfe entfernen (2 Holz) – höchstens 10 Holz pro Baum. Stümpfe wachsen nicht nach – dafür kann man **Setzlinge** (Laden oder Glück beim Fällen) auf freier Wiese pflanzen, die in 4 Tagen zu Bäumen werden
 8. **Beerensträucher** pflanzen: ab dem 3. Tag und danach alle 2 Tage reife Beeren pflücken (einfach mit A).
