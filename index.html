@@ -499,6 +499,7 @@ const ITEM = {
   berry: { name: 'Beeren', kind: 'crop', eat: 10, sell: 25, desc: 'Süße Beeren vom eigenen Strauch. Bringen 25 Taler am Verkaufsstand.' },
   'sap-cherry': { name: 'Kirschbaum-Setzling', kind: 'sapling', k: 'cherry', desc: 'Auf freier Wiese pflanzen. Wird in 4 Tagen zu einem blühenden Kirschbaum.' },
   snack: { name: 'Gartensalat', kind: 'food', eat: 40, desc: 'Ein knackiger Salat aus dem Dorfladen.' },
+  milk: { name: 'Milch', kind: 'mat', sell: 45, desc: 'Frische Milch von deinen Kühen. Bringt 45 Taler am Verkaufsstand.' },
 };
 for (const t in CROPS) {
   const c = CROPS[t];
@@ -518,7 +519,7 @@ const duraCol = f => f > .5 ? '#7cc85a' : f > .2 ? '#ffb84d' : '#e0503a';
 function duraBar(id, cls) { const f = duraOf(id) / ITEM[id].dura; return `<span class="${cls}"><i style="width:${Math.max(4, f * 100)}%;background:${duraCol(f)}"></i></span>`; }
 const duraOf = id => (S.dura && S.dura[id] !== undefined) ? S.dura[id] : ITEM[id].dura;
 const iconOf = id => id.replace('-', '_');
-const SELLABLE = [...Object.keys(CROPS), 'berry', 'wood'];
+const SELLABLE = [...Object.keys(CROPS), 'berry', 'wood', 'milk'];
 const sellOf = id => ITEM[id].sell || 0;
 const priceOf = id => (S.prices && S.prices[id]) || sellOf(id);
 const prStep = id => Math.max(1, Math.round(sellOf(id) / 10));
@@ -549,6 +550,15 @@ for (let x = 4; x <= 23; x++) set(x, 6, 'P');
 const GATE = [23, 6];
 const STX = 304, STY = 48; // Verkaufsstand (Kacheln 19–20 / 3–4)
 const BDX = 128, BDY = 48; // Auftragsbrett (Kacheln 8–9 / 3–4)
+// Kuhweide (Kacheln 12–17 / 2–5) mit Holzzaun, Tor unten zum Weg
+const PAST = { x0: 192, y0: 38, x1: 288, y1: 92, g0: 232, g1: 248 }, COW_MAX = 4, COW_PRICE = 500;
+const inPast = (x, y) => x > PAST.x0 && x < PAST.x1 && y > PAST.y0 && y < PAST.y1;
+function fenceAt(x, y) {
+  const P = PAST, inX = x >= P.x0 - 3 && x <= P.x1 + 3, inY = y >= P.y0 - 2 && y <= P.y1 + 2;
+  if (inX && Math.abs(y - P.y0) <= 2) return true;
+  if (inX && Math.abs(y - P.y1) <= 2 && !(x > P.g0 && x < P.g1)) return true;
+  return inY && (Math.abs(x - P.x0) <= 3 || Math.abs(x - P.x1) <= 3);
+}
 const isEdge = (x, y) => x <= 0 || y <= 0 || x >= COLS - 1 || y >= ROWS - 1;
 // Innenstadt: eigene Karte
 const MAP_T = [];
@@ -1035,6 +1045,16 @@ function drawStand(g) {
   const px = (x, y, rows, pal) => rows.forEach((r, j) => [...r].forEach((ch, i) => { if (pal[ch]) R(g, x + i, y + j, 1, 1, pal[ch]); }));
   for (const wx of [x0 + 3, x0 + 21]) px(wx, y0 + 24, ['..ooooo..', '.oLLLLLo.', 'oL..s..Lo', 'oL..s..Lo', 'oLsshssLo', 'oD..s..Do', 'oD..s..Do', '.oDDDDDo.', '..ooooo..'], { o: '#6a3a2a', L: '#e0a874', D: '#c08a64', s: '#a86d48', h: '#ff8fb8' });
 }
+function drawFence(g) {
+  // Holzzaun der Kuhweide, zwei Latten, Pfosten alle 8 Pixel, Tor unten offen
+  const P = PAST, post = (x, y) => { R(g, x, y - 7, 2, 9, '#c08a64'); R(g, x, y - 7, 1, 9, '#e0a874'); R(g, x, y - 8, 2, 1, '#f6cf9c'); R(g, x - 1, y + 2, 4, 1, 'rgba(60,20,40,.15)'); };
+  const rail = (x, y, w) => { R(g, x, y - 5, w, 1, '#e0a874'); R(g, x, y - 4, w, 1, '#c08a64'); R(g, x, y - 1, w, 1, '#e0a874'); R(g, x, y, w, 1, '#c08a64'); };
+  rail(P.x0, P.y0, P.x1 - P.x0 + 2);
+  rail(P.x0, P.y1, P.g0 - P.x0); rail(P.g1, P.y1, P.x1 - P.g1 + 2);
+  for (let y = P.y0 + 8; y < P.y1; y += 8) { R(g, P.x0, y - 7, 2, 8, '#d9a070'); R(g, P.x1, y - 7, 2, 8, '#d9a070'); }
+  for (let x = P.x0; x <= P.x1; x += 8) { post(x, P.y0); if (x <= P.g0 || x >= P.g1) post(x, P.y1); }
+  for (let y = P.y0 + 8; y < P.y1; y += 8) { post(P.x0, y); post(P.x1, y); }
+}
 function drawSign(g) {
   // Wegweiser zur Stadt: Holzpfosten, cremefarbenes Pfeilschild mit Herz
   const x0 = 352, y0 = 72;
@@ -1242,6 +1262,11 @@ function cropStage(c) { const N = CROPS[c.t].days; return c.d >= N ? 4 : Math.mi
 
 /* ---------- icons ---------- */
 const ICON = {}, ICONURL = {};
+const COW = ['.............c..c.', '............SWWWWS', '..WWWSSWWWWWWWeWW.', '.WWWSSSSWWWWWWWWW.', 'tWWWWSSWWWWSSWPPPP', 'tWWWWWWWWWSSSWPnPn', '.WWWWWWWWWWSSWPPPP', '.ddddddddddddd....', '..WW.WW.uu.WW.WW..', '..WW.WW....WW.WW..', '..hh.hh....hh.hh..'];
+const COWC = { c: '#f6e6cf', S: '#a8735a', W: '#ffffff', e: '#3a2030', d: '#ecd6e0', P: '#ffb3cf', n: '#e86f9c', t: '#a8735a', u: '#ffb3cf', h: '#8a5a4a' };
+const COWSPR = [1, -1].map(dir => { const [c, g] = mk(20, 13), on = (i, j) => j >= 0 && j < 11 && i >= 0 && i < 18 && COW[j][i] !== '.';
+  for (let j = -1; j <= 11; j++) for (let i = -1; i <= 18; i++) if (!on(i, j) && [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([a, b]) => on(i + a, j + b))) R(g, (dir > 0 ? i : 17 - i) + 1, j + 1, 1, 1, 'rgba(120,70,90,.45)');
+  COW.forEach((r, j) => [...r].forEach((ch, i) => { if (COWC[ch]) R(g, (dir > 0 ? i : 17 - i) + 1, j + 1, 1, 1, COWC[ch]); })); return c; });
 function icon(name, fn) { const [c, g] = mk(16, 16); fn(g); ICON[name] = c; ICONURL[name] = c.toDataURL(); }
 icon('hoe', g => {
   // Stiel
@@ -1397,6 +1422,11 @@ icon('snack', g => {
   disc(g, 6, 7, 3, '#5fb043'); disc(g, 10, 6, 3, '#7fcc5a'); R(g, 8, 5, 2, 2, '#e8473b'); R(g, 5, 6, 1, 1, '#b7ec92');
   R(g, 2, 9, 12, 2, '#f3ede0'); R(g, 3, 11, 10, 2, '#d9cdb5'); R(g, 5, 13, 6, 1, '#b8a888');
 });
+icon('milk', g => {
+  const B = ['......pp......', '.....pPPp.....', '......oo......', '.....oWWo.....', '....oWWWWo....', '....oWWWWo....', '....oPPPPo....', '....oWWWWo....', '....oWWWWo....', '....oWWWWo....', '....odddWo....', '.....oooo.....'];
+  B.forEach((r, j) => [...r].forEach((ch, i) => { const c = { p: '#d9608c', P: '#ff8fb8', o: '#8cc6e2', W: '#ffffff', d: '#e2f2fa' }[ch]; if (c) R(g, i + 1, j + 2, 1, 1, c); }));
+});
+icon('cow', g => g.drawImage(COWSPR[0], 0, 0, 20, 13, -3, 2, 20, 13));
 icon('coin', g => { disc(g, 8, 8, 6, '#9c6b12'); disc(g, 8, 8, 5, '#f2c13a'); R(g, 7, 5, 2, 6, '#d29a1e'); R(g, 5, 5, 2, 1, '#fff0a8'); });
 
 /* ---------- static background ---------- */
@@ -1418,7 +1448,7 @@ for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
   drawGrass(bg, x, y);
 }
 drawPaths(bg);
-drawFarmHouse(bg); drawStand(bg); drawCrate(bg); drawSign(bg);
+drawFarmHouse(bg); drawStand(bg); drawCrate(bg); drawSign(bg); drawFence(bg);
 for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
   if (MAP[y][x] === 'U') drawBush(bg, x, y);
 }
@@ -1509,7 +1539,7 @@ function migrate2(d) {
     for (const c of ['bar', 'bag']) { const i = d[c].indexOf(null); if (i >= 0) { d[c][i] = id; break; } }
   }
   d.dura = d.dura || {};
-  d.stand = d.stand || {}; d.sold = d.sold || {}; d.soldGold = d.soldGold || 0; d.trees = d.trees || {};
+  d.cows = d.cows || []; d.stand = d.stand || {}; d.sold = d.sold || {}; d.soldGold = d.soldGold || 0; d.trees = d.trees || {};
   if (!d.orders) d.orders = [{ id: 'o1', who: 'Frau Lind', items: { ruebe: 3 }, packed: {}, days: 4, reward: 200 }];
   if (d.shipped) { for (const t in d.shipped) if (d.shipped[t]) d.stand[t] = (d.stand[t] || 0) + d.shipped[t]; delete d.shipped; }
   return d;
@@ -1531,6 +1561,7 @@ let S = load();
 const firstRun = !S;
 if (!S) S = newState();
 for (const k of ['19,3', '20,3', '19,4', '20,4', '19,5', '20,5', '8,3', '9,3', '8,4', '9,4', '8,5', '9,5']) { delete S.soil[k]; delete S.trees[k]; }
+for (const k in S.soil) { const [x, y] = k.split(',').map(Number); if (inPast(x * 16 + 8, y * 16 + 8)) delete S.soil[k]; }
 TREES = S.trees; for (const k in TREES) { const [x, y] = k.split(',').map(Number); if (isEdge(x, y)) delete TREES[k]; } rebuildTrees();
 
 /* ---------- sound ---------- */
@@ -1630,6 +1661,7 @@ function updateHUD() {
   if (!paused) {
     const [tx, ty] = targetTile(), t = tileAt(tx, ty), s = S.soil[tx + ',' + ty], tool = { kind: held() ? ITEM[held()].kind : '' };
     if (LOC === 'town') h = t === 'S' ? 'Einkaufen' : t === 'N' ? 'Plaudern' : tx <= 0 ? 'Zur Farm' : '';
+    else if (cowNear() >= 0) h = S.cows[cowNear()].m ? 'Schon gemolken' : 'Melken';
     else if (s && s.c && s.c.d >= CROPS[s.c.t].days) h = tool.kind === 'sickle' ? CROPS[s.c.t].name + ' ernten' : 'Sichel wählen zum Ernten';
     else if (tx === DOOR[0] && ty === DOOR[1]) h = 'Schlafen gehen';
     else if (t === 'S') h = 'Einkaufen';
@@ -1666,7 +1698,7 @@ function helpHTML(intro) {
   if (intro) h += '<p class="lead">Du hast den kleinen Hof deines Großvaters geerbt. Das Feld liegt brach – Zeit, etwas daraus zu machen!</p>';
   h += `<div class="ssec"><div class="ssech"><span>Steuerung</span></div>${ctl.map(([k, v]) => `<div class="kv"><kbd>${k}</kbd><span>${v}</span></div>`).join('')}</div>`;
   const steps = [['hoe', 'Gras mit der Hacke auflockern'], ['seed_ruebe', 'Samen säen'], ['can', 'Täglich gießen, am Teich auffüllen'], ['sickle', 'Reife Pflanzen mit der Sichel ernten'],
-    ['stand', 'Ernte am Verkaufsstand auslegen'], ['board', 'Bestellungen am Auftragsbrett einpacken'], ['axe', 'Bäume fällen für Holz'], ['shopi', 'Samen und Setzlinge im Laden kaufen']];
+    ['stand', 'Ernte am Verkaufsstand auslegen'], ['milk', 'Kühe im Dorfladen kaufen und täglich melken'], ['board', 'Bestellungen am Auftragsbrett einpacken'], ['axe', 'Bäume fällen für Holz'], ['shopi', 'Samen und Setzlinge im Laden kaufen']];
   if (!intro) h += `<div class="ssec"><div class="ssech"><span>Anzeige</span></div>${[['bar', 'Werkzeugleiste'], ['top', 'Datum und Hilfe-Knopf'], ['dlg', 'Fenster']].map(([k, n]) => `<div class="lrow"><span></span><div class="ln"><b>${n}</b><small>Größe anpassen</small></div><div class="qty"><button class="btn sq" data-act="ui:${k}:-1" ${UIS[k] > .5 ? '' : 'disabled'}>−</button><span class="qv">${Math.round(UIS[k] * 100)}%</span><button class="btn sq" data-act="ui:${k}:1" ${UIS[k] < 1.5 ? '' : 'disabled'}>+</button></div><span></span></div>`).join('')}</div>`;
   h += `<div class="ssec"><div class="ssech"><span>So geht's</span></div><div class="steps">${steps.map(([ic, t]) => `<div class="step"><img src="${ICONURL[ic]}" alt=""><span>${t}</span></div>`).join('')}</div></div>`;
   h += `<div class="ssec"><div class="ssech"><span>Gut zu wissen</span></div><div class="kv"><img src="${ICONURL.w_moon}" alt=""><span>Geh vor 2 Uhr nachts durch die Haustür ins Bett – sonst kippst du um. Gespeichert wird beim Schlafen.</span></div></div>`;
@@ -1771,9 +1803,9 @@ function rerenderShip() { const sc = $('dlg').scrollTop; $('dlg').innerHTML = $(
 
 /* ---------- Lieferungen ---------- */
 const WHO = ['Frau Lind', 'Opa Karl', 'Café Kirschblüte', 'Bäckerei Mehlstaub', 'Mia vom Hügel', 'Herr Brombeer', 'Oma Rosi', 'Gasthaus Zum Häschen'];
-const QR = { ruebe: [3, 6], kohl: [2, 4], kuerbis: [1, 3], wood: [5, 12], berry: [3, 6] };
+const QR = { ruebe: [3, 6], kohl: [2, 4], kuerbis: [1, 3], wood: [5, 12], berry: [3, 6], milk: [2, 4] };
 function genOrder() {
-  const pool = ['ruebe', 'wood']; if (S.day >= 3) pool.push('berry'); if (S.day >= 2) pool.push('kohl'); if (S.day >= 4) pool.push('kuerbis');
+  const pool = ['ruebe', 'wood']; if (S.day >= 3) pool.push('berry'); if (S.day >= 2) pool.push('kohl'); if (S.day >= 4) pool.push('kuerbis'); if (S.cows && S.cows.length) pool.push('milk');
   const sh = pool.slice().sort(() => Math.random() - .5), kinds = Math.random() < .35 ? 2 : 1, items = {};
   for (let i = 0; i < kinds; i++) { const t = sh[i], [a, b] = QR[t]; items[t] = a + Math.floor(Math.random() * (b - a + 1)); }
   let val = 0; for (const t in items) val += items[t] * sellOf(t);
@@ -1878,12 +1910,12 @@ function drawStandGoods(t) {
     if (!(S.stand[id] > 0) || i > 3) continue;
     const bx = x0 + 3 + i * 7, by = y0 + 11;
     R(X, bx, by + 3, 6, 3, '#a86d48'); R(X, bx, by + 3, 6, 1, '#c48a5e');
-    const col = { ruebe: '#f1e4bb', kohl: '#8fd16a', kuerbis: '#e07b24', wood: '#b87a4a', berry: '#e0466e' }[id];
+    const col = { ruebe: '#f1e4bb', kohl: '#8fd16a', kuerbis: '#e07b24', wood: '#b87a4a', berry: '#e0466e', milk: '#ffffff' }[id];
     R(X, bx + 1, by + 1, 2, 2, col); R(X, bx + 3, by + 1, 2, 2, col); R(X, bx + 2, by, 2, 2, col);
     i++;
   }
   // Bestellzettel am Auftragsbrett
-  const IC = { ruebe: '#f1e4bb', kohl: '#8fd16a', kuerbis: '#e07b24', wood: '#b87a4a', berry: '#e0466e' };
+  const IC = { ruebe: '#f1e4bb', kohl: '#8fd16a', kuerbis: '#e07b24', wood: '#b87a4a', berry: '#e0466e', milk: '#ffffff' };
   S.orders.forEach((o, k) => {
     if (k > 2) return;
     const nx = BDX + 4 + k * 9, ny = BDY + 5 + (k % 2) * 2, ready = orderReady(o);
@@ -1913,6 +1945,8 @@ function shopHTML() {
   h += shopRow(ICONURL.sap_green, 'Baumsetzling', '4 Tage bis zum Baum', 40, 'sap-green');
   h += shopRow(ICONURL.sap_cherry, 'Kirschbaum-Setzling', '4 Tage bis zum Kirschbaum', 60, 'sap-cherry');
   h += shopRow(ICONURL.sap_berry, 'Beerenstrauch', 'Beeren alle 2 Tage', 50, 'sap-berry');
+  h += '</div><div class="ssec"><div class="ssech"><span>Tiere</span></div>';
+  h += S.cows.length < COW_MAX ? shopRow(ICONURL.cow, 'Kuh', `${S.cows.length}/${COW_MAX} auf der Weide · täglich 1 Milch`, COW_PRICE, 'cow', true) : `<div class="lrow"><img src="${ICONURL.cow}" alt=""><div class="ln"><b>Kuh</b><small>Die Weide ist voll (${COW_MAX}/${COW_MAX}).</small></div></div>`;
   h += '</div><div class="ssec"><div class="ssech"><span>Sonstiges</span></div>';
   h += shopRow(ICONURL.snack, 'Gartensalat', '+40 Energie', 30, 'snack');
   if (S.canCap < 40) h += shopRow(ICONURL.can, 'Kupfer-Gießkanne', '40 statt 20 Füllungen', 400, 'can', true);
@@ -1928,9 +1962,10 @@ function buy(id, n) {
     if (!addItem(t, 1)) return;
     S.gold -= pr; if (!S.dura) S.dura = {}; if (!had) S.dura[t] = ITEM[t].dura; snd('coin'); $('dlg').innerHTML = shopHTML(); return;
   }
-  price = id.startsWith('seed-') ? CROPS[id.slice(5)].buy : { snack: 30, can: 400, 'sap-green': 40, 'sap-cherry': 60, 'sap-berry': 50 }[id];
+  price = id.startsWith('seed-') ? CROPS[id.slice(5)].buy : { snack: 30, can: 400, cow: COW_PRICE, 'sap-green': 40, 'sap-cherry': 60, 'sap-berry': 50 }[id];
   if (S.gold < price * n) { snd('err'); return; }
-  if (id === 'can') { S.canCap = 40; S.water = 40; }
+  if (id === 'cow') { if (S.cows.length >= COW_MAX) return; S.cows.push({ m: false }); toast('Deine neue Kuh wartet auf der Weide!'); }
+  else if (id === 'can') { S.canCap = 40; S.water = 40; }
   else if (!addItem(id, n)) return;
   S.gold -= price * n;
   snd('coin'); $('dlg').innerHTML = shopHTML();
@@ -2011,6 +2046,9 @@ function act(tx, ty) {
     else if (id && ITEM[id].kind && ITEM[id].kind !== 'snack') toast('Das geht nur auf deiner Farm.');
     return;
   }
+  const ci = cowNear();
+  if (ci >= 0) { milkCow(ci); return; }
+  if (inPast(tx * 16 + 8, ty * 16 + 8) && ['hoe', 'seed', 'sapling'].includes(kind)) { toast('Das ist die Kuhweide.'); snd('err'); return; }
   const bush = TREES[k];
   if (bush && bush.s === 'bush' && bush.ripe && kind !== 'shovel') {
     const n = 2 + Math.floor(Math.random() * 3);
@@ -2134,7 +2172,7 @@ function endDay(passedOut) {
       const n = S.sold[t]; if (!n) continue;
       lines += `<div class="kv"><img src="${ICONURL[iconOf(t)]}" alt=""><span>${n}× ${ITEM[t].name}</span><b>${(n * priceOf(t)).toLocaleString('de-DE')} Taler</b></div>`;
     }
-    const income = S.soldGold; S.sold = {}; S.soldGold = 0; custs.length = 0;
+    const income = S.soldGold; S.sold = {}; S.soldGold = 0; custs.length = 0; for (const c of S.cows) c.m = false;
     const hrs = Math.round((S.staffMin || 0) / 60 * 10) / 10, wage = Math.min(Math.round(hrs * wageOf()), S.gold); S.gold -= wage; S.staffMin = 0; delete S.staffed;
     // Lieferungen
     let dl = '';
@@ -2402,6 +2440,41 @@ function drawBunny(c) {
   P(5, 1, 4, 4, '#ffffff'); P(5, -2, 1, 3, '#fff'); P(7, -2, 1, 3, '#fff'); P(5, -1, 1, 1, '#ffb3cf'); P(7, -1, 1, 1, '#ffb3cf');
   P(7, 2, 1, 1, '#3a2030'); P(8, 3, 1, 1, '#ff8fb8'); P(6, 3, 1, 1, '#ffd6e5');
 }
+/* ---------- Kühe ---------- */
+const cows = [];
+function syncCows() {
+  while (cows.length < S.cows.length) { const x = PAST.x0 + 14 + Math.random() * (PAST.x1 - PAST.x0 - 28), y = PAST.y0 + 18 + Math.random() * (PAST.y1 - PAST.y0 - 24); cows.push({ x, y, gx: x, gy: y, wait: Math.random() * 3, dir: Math.random() < .5 ? 1 : -1, walk: 0 }); }
+  cows.length = S.cows.length;
+}
+function updateCows(dt) {
+  syncCows();
+  cows.forEach((c, i) => {
+    if (c.wait > 0) { c.wait -= dt; if (c.wait <= 0) { c.gx = PAST.x0 + 14 + Math.random() * (PAST.x1 - PAST.x0 - 28); c.gy = PAST.y0 + 18 + Math.random() * (PAST.y1 - PAST.y0 - 24); } return; }
+    const dx = c.gx - c.x, dy = c.gy - c.y, d = Math.hypot(dx, dy);
+    if (d < 1) { c.wait = 2 + Math.random() * 5; c.walk = 0; return; }
+    const sp = 9 * dt; c.x += dx / d * Math.min(sp, d); c.y += dy / d * Math.min(sp, d); if (Math.abs(dx) > .5) c.dir = dx > 0 ? 1 : -1; c.walk += dt;
+  });
+}
+function drawCow(c, i, t) {
+  const x = Math.round(c.x), y = Math.round(c.y), bob = c.walk && Math.floor(c.walk * 6) % 2 ? 1 : 0;
+  R(X, x - 8, y, 16, 2, 'rgba(60,20,40,.18)');
+  X.drawImage(COWSPR[c.dir > 0 ? 0 : 1], x - 10, y - 11 - bob);
+  if (S.cows[i] && !S.cows[i].m) heart(X, x + (c.dir > 0 ? 4 : -8), y - 17 - Math.floor(t * 4 % 2), '#ff5f8f');
+}
+function cowNear() {
+  if (LOC !== 'farm') return -1;
+  const d = DIRS[S.dir], px = S.px + d[0] * 10, py = S.py - 4 + d[1] * 10;
+  let best = -1, bd = 14;
+  cows.forEach((c, i) => { const dd = Math.hypot(c.x - px, c.y - 5 - py); if (dd < bd) { bd = dd; best = i; } });
+  return best;
+}
+function milkCow(i) {
+  const c = S.cows[i];
+  if (c.m) { toast('Diese Kuh hast du heute schon gemolken.'); snd('err'); return; }
+  if (!addItem('milk', 1)) return;
+  c.m = true; snd('harvest'); toast('+1 Milch');
+  for (let k = 0; k < 3; k++) parts.push({ x: cows[i].x + (Math.random() - .5) * 10, y: cows[i].y - 14, vx: (Math.random() - .5) * 20, vy: -30 - Math.random() * 20, life: .8, h: 1, col: '#ff8fb8' });
+}
 function drawFly(c, glow) {
   const x = Math.round(c.x), y = Math.round(c.y);
   if (glow) { X.fillStyle = `rgba(255,246,160,${.5 + .5 * Math.sin(c.t * 4)})`; X.fillRect(x - 1, y - 1, 3, 3); X.fillStyle = 'rgba(255,246,160,.18)'; X.fillRect(x - 3, y - 3, 7, 7); return; }
@@ -2413,7 +2486,7 @@ function drawFly(c, glow) {
 
 /* ---------- update ---------- */
 let animT = 0, moving = false;
-function blocked(x, y) { return wetAt(x, y) || SOLID.has(tileAt(Math.floor(x / 16), Math.floor(y / 16))); }
+function blocked(x, y) { return wetAt(x, y) || SOLID.has(tileAt(Math.floor(x / 16), Math.floor(y / 16))) || (LOC === 'farm' && fenceAt(x, y)); }
 function wetCount(tx, ty, pad) { let n = 0; for (let y = ty * 16 - pad; y < ty * 16 + 16 + pad; y++) for (let x = tx * 16 - pad; x < tx * 16 + 16 + pad; x++) if (wetAt(x, y)) n++; return n; }
 function isWater(tx, ty) { return wetCount(tx, ty, 0) >= 24; }
 function free(nx, ny) { return !(blocked(nx - 5, ny - 5) || blocked(nx + 5, ny - 5) || blocked(nx - 5, ny - 1) || blocked(nx + 5, ny - 1) || blocked(nx, ny - 1)); }
@@ -2445,7 +2518,7 @@ function update(dt) {
   for (const [tx, ty] of (LOC === 'farm' ? CHERRY : TOWN_TREES.filter((_, i) => i % 2 === 0))) if (Math.random() < dt * .18 && parts.length < 160)
     parts.push({ x: tx * 16 + 3 + Math.random() * 10, y: ty * 16 + 6 + Math.random() * 6, vx: -5 - Math.random() * 6, vy: 7 + Math.random() * 5,
       life: 2.5 + Math.random() * 2, col: Math.random() < .5 ? '#ffc2dc' : '#ffe3ee', pt: 1, s: Math.random() * 6 });
-  if (LOC === 'farm') { updateCritters(dt); updatePond(dt); }
+  if (LOC === 'farm') { updateCritters(dt); updatePond(dt); updateCows(dt); }
   if (!paused) updateCustomers(dt);
   if (S.rain) for (const d of rain) { d.y += d.s * dt; d.x -= d.s * .25 * dt; if (d.y > VH) { d.y = -4; d.x = Math.random() * (VW + 60); } }
   if (paused) { moving = false; return; }
@@ -2548,6 +2621,7 @@ function render(t) {
   const night = S.time > 1200;
   const buns = farm ? critters.filter(c => c.k === 'bun') : [], cs = farm ? custs : [];
   for (const c of buns) if (c.y <= S.py) drawBunny(c);
+  if (farm) cows.forEach((c, i) => { if (c.y <= S.py) drawCow(c, i, t); });
   for (const c of cs) if (c.y <= S.py) drawCustomer(c);
   // player
   const f = moving ? Math.floor(animT * 8) % 4 : 0;
@@ -2565,6 +2639,7 @@ function render(t) {
     else X.drawImage(ICON[actTool], ix, iy);
   }
   for (const c of buns) if (c.y > S.py) drawBunny(c);
+  if (farm) cows.forEach((c, i) => { if (c.y > S.py) drawCow(c, i, t); });
   for (const c of cs) if (c.y > S.py) drawCustomer(c);
   for (const p of parts) {
     if (p.h) heart(X, Math.round(p.x) - 2, Math.round(p.y) - 2, p.col);
