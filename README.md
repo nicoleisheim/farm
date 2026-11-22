@@ -17,7 +17,14 @@ Ein kleines, gemütliches Farm-Spiel im Pixel-Look – inspiriert von Stardew Va
 | Klick auf Nachbarfeld | Dort handeln |
 | Esc | Dialog schließen |
 
-Auf Touch-Geräten erscheinen Steuerkreuz und A-Knopf.
+### Auf dem Handy
+
+- **Joystick** (links unten) – laufen, stufenlos
+- **A-Knopf** (rechts unten) – Werkzeug benutzen, interagieren
+- Gegenstand in der Leiste antippen – auswählen
+- Feld direkt neben der Figur antippen – dort handeln
+
+Im Hochformat liegen Steuerung und Werkzeugleiste unter dem Spielfeld, und die Kamera folgt der Figur. Im Querformat sitzen Joystick und A-Knopf links und rechts neben dem Spielfeld.
 
 ## Spielablauf
 

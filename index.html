@@ -2,95 +2,125 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#132010">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Sonnenhof – Ein kleines Farmspiel</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%}
-body{background:radial-gradient(circle at 50% 30%,#35522a,#132010 75%);display:flex;align-items:center;justify-content:center;font-family:'Pixelify Sans',ui-monospace,monospace;overflow:hidden;user-select:none;-webkit-user-select:none;touch-action:manipulation}
-#wrap{position:relative;font-size:14px}
-#c{display:block;width:100%;height:100%;image-rendering:pixelated;image-rendering:crisp-edges;border-radius:6px;box-shadow:0 10px 40px rgba(0,0,0,.55);cursor:pointer}
+body{background:radial-gradient(circle at 50% 30%,#35522a,#132010 75%);font-family:'Pixelify Sans',ui-monospace,monospace;overflow:hidden;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:manipulation;overscroll-behavior:none}
+#app{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;font-size:14px}
+#stage{position:relative;flex:none}
+#c{display:block;width:100%;height:100%;image-rendering:pixelated;image-rendering:crisp-edges;border-radius:6px;box-shadow:0 10px 40px rgba(0,0,0,.55);cursor:pointer;touch-action:none}
 .panel{background:#f7d99c;border:.2em solid #6b3f1a;border-radius:.35em;box-shadow:inset 0 0 0 .14em #e2ae62,inset 0 0 0 .28em #fbe7bd,0 .2em 0 #3d220c;color:#4a2a10}
-#clock{position:absolute;top:.6em;right:.6em;padding:.4em .7em;text-align:right;min-width:8.6em;line-height:1.2}
+#topbar{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:flex-start;padding:.6em;gap:.5em;pointer-events:none}
+#topbar>*{pointer-events:auto}
+#tl{display:flex;gap:.5em;align-items:flex-start}
+#clock{padding:.4em .7em;text-align:right;min-width:8.6em;line-height:1.2}
 #date{font-weight:700}
 #time{font-size:1.45em;font-weight:700;letter-spacing:.03em}
 #weather{margin-right:.3em}
 #gold{margin-top:.25em;display:flex;align-items:center;justify-content:flex-end;gap:.3em;font-weight:700;border-top:.12em dashed #c99353;padding-top:.25em}
 #gold img{width:1.2em;height:1.2em;image-rendering:pixelated}
-#energy{position:absolute;right:.6em;bottom:.6em;width:2.3em;height:9.5em;padding:.4em .4em .25em;display:flex;flex-direction:column;align-items:center;gap:.15em}
+#basket{padding:.3em .55em;display:flex;gap:.55em;align-items:center;font-weight:700}
+#basket .lbl{font-size:.75em;opacity:.75}
+#basket .it{display:flex;align-items:center;gap:.1em}
+#basket img{width:1.55em;height:1.55em;image-rendering:pixelated}
+#helpBtn{width:2.3em;height:2.3em;font:inherit;font-weight:700;cursor:pointer;padding:0;flex:none}
+#bottom{position:absolute;left:0;right:0;bottom:.6em;display:flex;justify-content:center;pointer-events:none}
+#bottom>*{pointer-events:auto}
+#energy{position:absolute;right:.6em;bottom:0;width:2.3em;height:9.5em;padding:.4em .4em .25em;display:flex;flex-direction:column;align-items:center;gap:.15em}
 #ebar{flex:1;width:100%;background:#4a2a10;border-radius:.2em;position:relative;overflow:hidden}
-#efill{position:absolute;left:0;right:0;bottom:0;background:#5fcf3a;transition:height .3s}
-#elabel{font-weight:700;font-size:.9em}
-#hotbar{position:absolute;left:50%;bottom:.6em;transform:translateX(-50%);display:flex;gap:.25em;padding:.3em}
-.slot{width:2.9em;height:2.9em;background:#e9b96e;border:.14em solid #9c6127;border-radius:.25em;position:relative;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .1s}
+#efill{position:absolute;left:0;right:0;bottom:0;height:var(--e,100%);background:#5fcf3a;transition:height .3s,width .3s}
+#elabel{font-weight:700;font-size:.9em;order:2}
+#hotbar{display:flex;gap:.25em;padding:.3em}
+.slot{width:2.9em;height:2.9em;background:#e9b96e;border:.14em solid #9c6127;border-radius:.25em;position:relative;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .1s;touch-action:manipulation}
 .slot.sel{border-color:#d9301e;box-shadow:0 0 0 .14em #ffdf6b;transform:translateY(-.2em)}
 .slot img{width:80%;height:80%;image-rendering:pixelated;pointer-events:none}
 .slot .n{position:absolute;right:.15em;bottom:-.05em;font-weight:700;font-size:.85em;color:#fff;text-shadow:0 .08em 0 #3d220c,.08em 0 0 #3d220c,-.08em 0 0 #3d220c,0 -.08em 0 #3d220c;pointer-events:none}
 .slot .k{position:absolute;left:.2em;top:0;font-size:.6em;color:#7a4a1e;pointer-events:none}
 .slot .wl{position:absolute;left:.3em;right:.3em;bottom:.22em;height:.28em;background:#4a2a10;border-radius:.1em;overflow:hidden;pointer-events:none}
 .slot .wl i{display:block;height:100%;background:#4fb3ff}
-#basket{position:absolute;top:.6em;left:3.3em;padding:.3em .55em;display:flex;gap:.55em;align-items:center;font-weight:700}
-#basket .lbl{font-size:.75em;opacity:.75}
-#basket .it{display:flex;align-items:center;gap:.1em}
-#basket img{width:1.55em;height:1.55em;image-rendering:pixelated}
-#helpBtn{position:absolute;top:.6em;left:.6em;width:2.3em;height:2.3em;font:inherit;font-weight:700;cursor:pointer;padding:0}
-#hint{position:absolute;left:50%;bottom:4.4em;transform:translateX(-50%);padding:.2em .6em;font-size:.85em;font-weight:600;white-space:nowrap;display:none}
+#hint{position:absolute;left:50%;bottom:4.4em;transform:translateX(-50%);padding:.2em .6em;font-size:.85em;font-weight:600;white-space:nowrap;display:none;pointer-events:none}
 #hint kbd{font-family:inherit;background:#6b3f1a;color:#fbe7bd;border-radius:.2em;padding:0 .3em;margin-right:.3em}
-#toast{position:absolute;left:50%;bottom:6.4em;transform:translateX(-50%) translateY(.4em);padding:.35em .8em;font-weight:600;white-space:nowrap;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none}
+#toast{position:absolute;left:50%;bottom:6.4em;transform:translateX(-50%) translateY(.4em);padding:.35em .8em;font-weight:600;width:max-content;max-width:94%;text-align:center;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-#shade{position:absolute;inset:0;background:rgba(25,12,0,.5);display:none;align-items:center;justify-content:center;border-radius:6px;z-index:5}
-#dlg{width:min(92%,31em);max-height:92%;overflow:auto;padding:.9em 1.2em 1em}
+#shade{position:absolute;inset:0;background:rgba(25,12,0,.55);display:none;align-items:center;justify-content:center;z-index:20}
+#dlg{width:min(94%,31em);max-height:92%;overflow:auto;padding:.9em 1.2em 1em;-webkit-overflow-scrolling:touch}
 #dlg h2{margin:0 0 .35em;font-size:1.35em}
 #dlg p{margin:.35em 0;line-height:1.35}
 #dlg .sub{opacity:.8;margin-top:0}
 #dlg ul{margin:.3em 0;padding-left:1.2em;line-height:1.45}
 #dlg kbd{font-family:inherit;background:#6b3f1a;color:#fbe7bd;border-radius:.2em;padding:0 .3em}
-.btn{font:inherit;font-weight:700;background:#e9b96e;border:.14em solid #6b3f1a;border-radius:.25em;padding:.25em .75em;color:#4a2a10;cursor:pointer;box-shadow:0 .15em 0 #6b3f1a}
+.btn{font:inherit;font-weight:700;background:#e9b96e;border:.14em solid #6b3f1a;border-radius:.25em;padding:.3em .75em;color:#4a2a10;cursor:pointer;box-shadow:0 .15em 0 #6b3f1a;touch-action:manipulation}
 .btn:hover:not(:disabled){background:#f6cd8a}
 .btn:active:not(:disabled){transform:translateY(.1em);box-shadow:0 .05em 0 #6b3f1a}
 .btn:disabled{opacity:.4;cursor:default}
 .btn.red{background:#e3876b}
-.row{display:flex;align-items:center;gap:.55em;padding:.4em 0;border-bottom:.1em dashed #c99353}
+.row{display:flex;align-items:center;gap:.5em;padding:.45em 0;border-bottom:.1em dashed #c99353}
 .row img{width:2.1em;height:2.1em;image-rendering:pixelated}
-.row .info{flex:1;display:flex;flex-direction:column;line-height:1.2}
+.row .info{flex:1;display:flex;flex-direction:column;line-height:1.2;min-width:0}
 .row small{opacity:.75}
-.row .price{font-weight:700;min-width:3em;text-align:right}
+.row .price{font-weight:700;min-width:2.8em;text-align:right}
 .foot{display:flex;gap:.5em;justify-content:flex-end;margin-top:.7em;flex-wrap:wrap}
 .sumline{display:flex;justify-content:space-between;padding:.15em 0}
 .total{font-weight:700;border-top:.12em solid #c99353;margin-top:.3em;padding-top:.3em}
-#fade{position:absolute;inset:0;background:#0b0704;opacity:0;pointer-events:none;transition:opacity .6s;border-radius:6px;z-index:4}
-#touch{display:none}
-@media (pointer:coarse){#touch{display:block}}
-#dpad{position:absolute;left:.6em;bottom:.6em;display:grid;grid-template-columns:repeat(3,2.5em);grid-template-rows:repeat(3,2.5em);gap:.1em}
-#dpad button,#abtn{font:inherit;font-weight:700;background:rgba(247,217,156,.85);border:.15em solid #6b3f1a;border-radius:.4em;color:#4a2a10;padding:0;touch-action:none}
-#abtn{position:absolute;right:.6em;bottom:10.8em;width:3.2em;height:3.2em;border-radius:50%;font-size:1.1em}
+#fade{position:absolute;inset:0;background:#0b0704;opacity:0;pointer-events:none;transition:opacity .6s;z-index:19}
+#ctrl{display:none;position:absolute;left:0;right:0;bottom:0;justify-content:space-between;align-items:flex-end;padding:1em max(1em,env(safe-area-inset-right)) max(1em,env(safe-area-inset-bottom)) max(1em,env(safe-area-inset-left));pointer-events:none;z-index:3}
+#ctrl>*{pointer-events:auto}
+body.touch #ctrl{display:flex}
+#joy{width:8em;height:8em;border-radius:50%;background:rgba(247,217,156,.25);border:.2em solid rgba(107,63,26,.55);position:relative;touch-action:none;flex:none}
+#knob{position:absolute;left:50%;top:50%;width:3.4em;height:3.4em;margin:-1.7em 0 0 -1.7em;border-radius:50%;background:#f7d99c;border:.2em solid #6b3f1a;box-shadow:0 .2em 0 #3d220c;pointer-events:none}
+#abtn{width:4.6em;height:4.6em;border-radius:50%;font:inherit;font-weight:700;font-size:1.3em;background:#e9b96e;border:.18em solid #6b3f1a;color:#4a2a10;box-shadow:0 .2em 0 #3d220c;touch-action:none;flex:none}
+#abtn.down{transform:translateY(.12em);box-shadow:0 .08em 0 #3d220c;background:#f6cd8a}
+/* Handy hochkant */
+body.port #app{flex-direction:column;justify-content:flex-start;align-items:stretch;padding-top:env(safe-area-inset-top)}
+body.port #c{border-radius:0;box-shadow:none}
+body.port #topbar{position:static;padding:.45em .5em;align-items:center;font-size:.84em;gap:.35em}
+body.port #tl{gap:.35em}
+body.port #clock{flex-wrap:wrap;row-gap:0;column-gap:.5em;justify-content:flex-end}
+body.port #date{width:100%;text-align:right;font-size:.85em}
+body.touch #clock{display:flex;align-items:center;gap:.55em;text-align:left;min-width:0;padding:.3em .6em;white-space:nowrap}
+body.touch #time{font-size:1.2em}
+body.touch #gold{margin:0;border:0;padding:0}
+body.touch #basket .lbl{display:none}
+body.touch #topbar{padding:.4em}
+body.port #bottom{position:static;flex:1;flex-direction:column;align-items:center;justify-content:flex-start;gap:.55em;padding:.55em .6em max(.6em,env(safe-area-inset-bottom))}
+body.port #energy{position:static;width:100%;max-width:24em;height:auto;flex-direction:row;padding:.35em .6em;gap:.5em}
+body.port #elabel{order:0}
+body.port #ebar{height:.8em}
+body.port #efill{top:0;right:auto;height:100%;width:var(--e,100%)}
+body.port .slot{width:3.3em;height:3.3em}
+body.port #ctrl{position:static;width:100%;max-width:26em;flex:1;align-items:center;padding:0 .6em}
+body.port #joy{width:9em;height:9em}
+body.port #hint{bottom:.5em}
+body.port #toast{bottom:2.7em}
 </style>
 </head>
 <body>
-<div id="wrap">
-  <canvas id="c" width="384" height="256"></canvas>
-  <button id="helpBtn" class="panel" title="Hilfe & Steuerung">?</button>
-  <div id="basket" class="panel"></div>
-  <div id="clock" class="panel">
-    <div id="date"></div>
-    <div><span id="weather"></span><span id="time"></span></div>
-    <div id="gold"></div>
-  </div>
-  <div id="energy" class="panel" title="Energie"><div id="ebar"><div id="efill"></div></div><div id="elabel">E</div></div>
-  <div id="hotbar" class="panel"></div>
-  <div id="hint" class="panel"></div>
-  <div id="toast" class="panel"></div>
-  <div id="touch">
-    <div id="dpad">
-      <button data-k="u" style="grid-area:1/2">▲</button>
-      <button data-k="l" style="grid-area:2/1">◀</button>
-      <button data-k="r" style="grid-area:2/3">▶</button>
-      <button data-k="d" style="grid-area:3/2">▼</button>
+<div id="app">
+  <div id="stage">
+    <canvas id="c" width="384" height="256"></canvas>
+    <div id="topbar">
+      <div id="tl"><button id="helpBtn" class="panel" title="Hilfe & Steuerung">?</button><div id="basket" class="panel"></div></div>
+      <div id="clock" class="panel">
+        <div id="date"></div>
+        <div><span id="weather"></span><span id="time"></span></div>
+        <div id="gold"></div>
+      </div>
     </div>
-    <button id="abtn">A</button>
+    <div id="hint" class="panel"></div>
+    <div id="toast" class="panel"></div>
+    <div id="bottom">
+      <div id="hotbar" class="panel"></div>
+      <div id="energy" class="panel" title="Energie"><div id="elabel">E</div><div id="ebar"><div id="efill"></div></div></div>
+    </div>
   </div>
+  <div id="ctrl"><div id="joy"><div id="knob"></div></div><button id="abtn" aria-label="Aktion">A</button></div>
   <div id="fade"></div>
   <div id="shade"><div id="dlg" class="panel"></div></div>
 </div>
@@ -102,6 +132,8 @@ const W = 384, H = 256, TS = 16, COLS = 24, ROWS = 16;
 const C = document.getElementById('c'), X = C.getContext('2d');
 X.imageSmoothingEnabled = false;
 const $ = id => document.getElementById(id);
+let VW = W, VH = H, camX = 0, camY = 0;
+let touchMode = matchMedia('(pointer:coarse)').matches || ('ontouchstart' in window);
 
 /* ---------- helpers ---------- */
 function R(g, x, y, w, h, c) { g.fillStyle = c; g.fillRect(x, y, w, h); }
@@ -431,7 +463,7 @@ function toast(m) {
   clearTimeout(toastTimer); toastTimer = setTimeout(() => e.classList.remove('show'), 2300);
 }
 let paused = false;
-function openDlg(html) { $('dlg').innerHTML = html; $('shade').style.display = 'flex'; paused = true; keys.clear(); }
+function openDlg(html) { $('dlg').innerHTML = html; $('dlg').scrollTop = 0; $('shade').style.display = 'flex'; paused = true; keys.clear(); joyReset(); }
 function closeDlg() { $('shade').style.display = 'none'; paused = false; }
 
 function buildHotbar() {
@@ -464,7 +496,7 @@ function updateHUD() {
     $('weather').textContent = S.rain ? '🌧️' : (S.time >= 1140 ? '🌙' : '☀️');
     $('gold').innerHTML = `<img src="${ICONURL.coin}" alt="">${S.gold.toLocaleString('de-DE')}g`;
     const p = S.energy / S.maxEnergy;
-    $('efill').style.height = (p * 100) + '%';
+    $('efill').style.setProperty('--e', (p * 100) + '%');
     $('efill').style.background = p > .5 ? '#5fcf3a' : p > .25 ? '#f0c23a' : '#e0503a';
     [...$('hotbar').children].forEach((d, i) => {
       const s = SLOTS[i]; d.classList.toggle('sel', i === S.sel);
@@ -489,7 +521,7 @@ function updateHUD() {
     else if (t === 'W' && tool.kind === 'can') h = 'Gießkanne füllen';
   }
   const he = $('hint');
-  if (h) { he.innerHTML = `<kbd>${coarse ? 'A' : 'Leertaste'}</kbd>${h}`; he.style.display = 'block'; }
+  if (h) { he.innerHTML = `<kbd>${touchMode ? 'A' : 'Leertaste'}</kbd>${h}`; he.style.display = 'block'; }
   else he.style.display = 'none';
 }
 function fmtTime(t) {
@@ -501,12 +533,17 @@ function fmtTime(t) {
 function helpHTML(intro) {
   return `<h2>${intro ? 'Willkommen auf dem Sonnenhof!' : 'Hilfe & Steuerung'}</h2>
   ${intro ? '<p>Du hast den kleinen Hof deines Großvaters geerbt. Das Feld liegt brach – Zeit, etwas daraus zu machen!</p>' : ''}
-  <ul>
+  ${touchMode ? `<ul>
+    <li><b>Joystick</b> (links) – laufen</li>
+    <li><b>A-Knopf</b> (rechts) – Werkzeug benutzen / interagieren</li>
+    <li>Gegenstand in der Leiste antippen – auswählen</li>
+    <li>Feld direkt neben dir antippen – dort handeln</li>
+  </ul>` : `<ul>
     <li><kbd>WASD</kbd> / Pfeiltasten – laufen</li>
     <li><kbd>Leertaste</kbd> oder <kbd>E</kbd> – Werkzeug benutzen / interagieren</li>
     <li><kbd>1</kbd>–<kbd>6</kbd> oder Mausrad – Gegenstand wählen</li>
     <li>Klick auf ein Feld direkt neben dir – dort handeln</li>
-  </ul>
+  </ul>`}
   <p><b>So geht's:</b> Mit der <b>Hacke</b> Gras auflockern, <b>Samen</b> säen, täglich mit der <b>Gießkanne</b> gießen (am Teich auffüllen). Reife Pflanzen erntest du, die Ernte kommt in die <b>Versandkiste</b> neben dem Haus und wird über Nacht bezahlt. Im <b>Laden</b> rechts oben gibt's Samen.</p>
   <p>Geh vor 2 Uhr nachts ins Bett (Haustür) – sonst kippst du um. Gespeichert wird beim Schlafen.</p>
   <div class="foot">${intro ? '' : '<button class="btn red" data-act="new">Neues Spiel</button>'}<button class="btn" data-act="close">${intro ? "Los geht's!" : 'Weiter'}</button></div>`;
@@ -645,7 +682,6 @@ function endDay(passedOut) {
 /* ---------- input ---------- */
 const keys = new Set();
 const KMAP = { ArrowLeft: 'l', a: 'l', A: 'l', ArrowRight: 'r', d: 'r', D: 'r', ArrowUp: 'u', w: 'u', W: 'u', ArrowDown: 'd', s: 'd', S: 'd' };
-const coarse = matchMedia('(pointer:coarse)').matches;
 addEventListener('keydown', e => {
   if (e.key === 'Escape') { if (paused && !fading) closeDlg(); return; }
   if (KMAP[e.key]) { keys.add(KMAP[e.key]); e.preventDefault(); return; }
@@ -657,7 +693,7 @@ addEventListener('keyup', e => { if (KMAP[e.key]) keys.delete(KMAP[e.key]); });
 addEventListener('blur', () => keys.clear());
 C.addEventListener('wheel', e => { e.preventDefault(); if (!paused) selectSlot(S.sel + (e.deltaY > 0 ? 1 : -1)); }, { passive: false });
 let mouseTile = null;
-function evTile(e) { const r = C.getBoundingClientRect(); return [Math.floor((e.clientX - r.left) / r.width * W / 16), Math.floor((e.clientY - r.top) / r.height * H / 16)]; }
+function evTile(e) { const r = C.getBoundingClientRect(); return [Math.floor(((e.clientX - r.left) / r.width * VW + camX) / 16), Math.floor(((e.clientY - r.top) / r.height * VH + camY) / 16)]; }
 function inReach(tx, ty) { const [px, py] = playerTile(); return Math.abs(tx - px) <= 1 && Math.abs(ty - py) <= 1 && !(tx === px && ty === py); }
 C.addEventListener('mousemove', e => { mouseTile = evTile(e); });
 C.addEventListener('mouseleave', () => { mouseTile = null; });
@@ -670,12 +706,31 @@ C.addEventListener('click', e => {
   act(tx, ty);
 });
 $('helpBtn').addEventListener('click', () => { if (!fading) openDlg(helpHTML(false)); });
-document.querySelectorAll('#dpad button').forEach(b => {
-  const k = b.dataset.k;
-  b.addEventListener('pointerdown', e => { e.preventDefault(); keys.add(k); });
-  ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => b.addEventListener(ev, () => keys.delete(k)));
+// Joystick
+let joy = null;
+const J = $('joy'), K = $('knob');
+function joyReset() { joy = null; K.style.transform = ''; }
+function joyMove(e) {
+  let dx = e.clientX - joy.cx, dy = e.clientY - joy.cy;
+  const m = Math.hypot(dx, dy), max = joy.rad * .62;
+  if (m > max) { dx *= max / m; dy *= max / m; }
+  K.style.transform = `translate(${dx}px,${dy}px)`;
+  joy.vx = dx / max; joy.vy = dy / max;
+}
+J.addEventListener('pointerdown', e => {
+  e.preventDefault();
+  try { J.setPointerCapture(e.pointerId); } catch (_) {}
+  const r = J.getBoundingClientRect();
+  joy = { id: e.pointerId, cx: r.left + r.width / 2, cy: r.top + r.height / 2, rad: r.width / 2, vx: 0, vy: 0 };
+  joyMove(e);
 });
-$('abtn').addEventListener('pointerdown', e => { e.preventDefault(); act(...targetTile()); });
+J.addEventListener('pointermove', e => { if (joy && e.pointerId === joy.id) joyMove(e); });
+['pointerup', 'pointercancel', 'lostpointercapture'].forEach(ev => J.addEventListener(ev, e => { if (joy && e.pointerId === joy.id) joyReset(); }));
+const AB = $('abtn');
+AB.addEventListener('pointerdown', e => { e.preventDefault(); AB.classList.add('down'); if (!paused) act(...targetTile()); });
+['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => AB.addEventListener(ev, () => AB.classList.remove('down')));
+addEventListener('contextmenu', e => { if (touchMode) e.preventDefault(); });
+addEventListener('touchstart', () => { if (!touchMode) { touchMode = true; fit(); } }, { passive: true });
 
 /* ---------- update ---------- */
 let animT = 0, moving = false;
@@ -692,15 +747,17 @@ function update(dt) {
     const p = parts[i]; p.life -= dt; p.vy += 160 * dt; p.x += p.vx * dt; p.y += p.vy * dt;
     if (p.life <= 0) parts.splice(i, 1);
   }
-  if (S.rain) for (const d of rain) { d.y += d.s * dt; d.x -= d.s * .25 * dt; if (d.y > H) { d.y = -4; d.x = Math.random() * (W + 60); } }
+  if (S.rain) for (const d of rain) { d.y += d.s * dt; d.x -= d.s * .25 * dt; if (d.y > VH) { d.y = -4; d.x = Math.random() * (VW + 60); } }
   if (paused) { moving = false; return; }
   let dx = 0, dy = 0;
   if (keys.has('l')) dx--; if (keys.has('r')) dx++; if (keys.has('u')) dy--; if (keys.has('d')) dy++;
+  if (joy && Math.hypot(joy.vx, joy.vy) > .25) { dx = joy.vx; dy = joy.vy; }
   moving = !!(dx || dy);
   if (moving) {
-    if (dx) S.dir = dx > 0 ? 'right' : 'left'; else S.dir = dy > 0 ? 'down' : 'up';
-    const len = Math.hypot(dx, dy), sp = 64 * dt;
-    tryMove(dx / len * sp, 0); tryMove(0, dy / len * sp);
+    if (Math.abs(dx) >= Math.abs(dy)) S.dir = dx > 0 ? 'right' : 'left'; else S.dir = dy > 0 ? 'down' : 'up';
+    const len = Math.hypot(dx, dy), k = len > 1 ? 1 / len : Math.max(.45, len), sp = 64 * dt;
+    const nx = len > 1 ? dx * k : dx / len * k, ny = len > 1 ? dy * k : dy / len * k;
+    tryMove(nx * sp, 0); tryMove(0, ny * sp);
     animT += dt;
   } else animT = 0;
   S.time += dt * 2;
@@ -715,6 +772,10 @@ function corners(x, y) {
   R(X, x, y + 15, 4, 1, c); R(X, x, y + 12, 1, 4, c); R(X, x + 12, y + 15, 4, 1, c); R(X, x + 15, y + 12, 1, 4, c);
 }
 function render(t) {
+  camX = Math.round(Math.max(0, Math.min(W - VW, S.px - VW / 2)));
+  camY = Math.round(Math.max(0, Math.min(H - VH, S.py - 8 - VH / 2)));
+  X.fillStyle = '#132010'; X.fillRect(0, 0, VW, VH);
+  X.save(); X.translate(-camX, -camY);
   X.drawImage(BG, 0, 0);
   for (const [x, y] of WATER) drawWater(X, x, y, t);
   const has = (x, y) => !!S.soil[x + ',' + y];
@@ -755,19 +816,21 @@ function render(t) {
     else X.drawImage(ICON[actTool], ix, iy);
   }
   for (const p of parts) R(X, Math.round(p.x), Math.round(p.y), 2, 2, p.col);
+  X.restore();
   // light
   const tm = S.time;
   let dark = 0;
   if (tm > 1080) dark = Math.min(.55, (tm - 1080) / 240 * .55);
-  if (tm > 1000 && tm < 1200) { X.fillStyle = `rgba(255,140,40,${.12 * Math.sin((tm - 1000) / 200 * Math.PI)})`; X.fillRect(0, 0, W, H); }
+  if (tm > 1000 && tm < 1200) { X.fillStyle = `rgba(255,140,40,${.12 * Math.sin((tm - 1000) / 200 * Math.PI)})`; X.fillRect(0, 0, VW, VH); }
   if (S.rain) {
-    X.fillStyle = 'rgba(40,60,90,.22)'; X.fillRect(0, 0, W, H);
+    X.fillStyle = 'rgba(40,60,90,.22)'; X.fillRect(0, 0, VW, VH);
     X.fillStyle = 'rgba(190,215,255,.55)';
     for (const d of rain) { X.fillRect(Math.round(d.x), Math.round(d.y), 1, 4); }
   }
   if (dark > 0) {
-    X.fillStyle = `rgba(16,20,64,${dark})`; X.fillRect(0, 0, W, H);
-    for (const [x, y, w, h] of WINDOWS) {
+    X.fillStyle = `rgba(16,20,64,${dark})`; X.fillRect(0, 0, VW, VH);
+    for (const [wx, wy, w, h] of WINDOWS) {
+      const x = wx - camX, y = wy - camY;
       X.fillStyle = `rgba(255,200,90,${Math.min(1, dark * 2)})`; X.fillRect(x, y, w, h);
       X.fillStyle = `rgba(255,190,80,${dark * .35})`; X.fillRect(x - 3, y + h, w + 6, 6);
     }
@@ -776,13 +839,30 @@ function render(t) {
 
 /* ---------- layout & loop ---------- */
 function fit() {
-  let s = Math.min(innerWidth / W, innerHeight / H) * .97;
-  if (s >= 2) s = Math.floor(s);
-  const w = $('wrap');
-  w.style.width = W * s + 'px'; w.style.height = H * s + 'px';
-  w.style.fontSize = Math.max(9, Math.min(18, s * 4.6)) + 'px';
+  const iw = innerWidth, ih = innerHeight, port = touchMode && ih > iw;
+  document.body.classList.toggle('touch', touchMode);
+  document.body.classList.toggle('port', port);
+  const app = $('app'), stage = $('stage'), top = $('topbar'), bot = $('bottom'), ctrl = $('ctrl');
+  let s;
+  if (port) {
+    const fs = Math.min(17, iw / 25);
+    app.style.fontSize = fs + 'px';
+    app.insertBefore(top, stage); stage.after(bot); bot.appendChild(ctrl);
+    VW = 240; s = iw / VW;
+    const free = ih - top.offsetHeight - fs * 17.5;
+    VH = Math.max(150, Math.min(H, Math.floor(free / s)));
+    stage.style.width = iw + 'px'; stage.style.height = VH * s + 'px';
+  } else {
+    stage.insertBefore(top, $('hint')); stage.appendChild(bot); app.insertBefore(ctrl, $('fade'));
+    VW = W; VH = H;
+    s = Math.min(iw / W, ih / H) * .97;
+    if (s >= 2 && !touchMode) s = Math.floor(s);
+    app.style.fontSize = (touchMode ? Math.max(11, Math.min(16, s * 4.6)) : Math.max(9, Math.min(18, s * 4.6))) + 'px';
+    stage.style.width = W * s + 'px'; stage.style.height = H * s + 'px';
+  }
+  if (C.width !== VW || C.height !== VH) { C.width = VW; C.height = VH; X.imageSmoothingEnabled = false; }
 }
-addEventListener('resize', fit); fit();
+addEventListener('resize', fit); addEventListener('orientationchange', () => setTimeout(fit, 200)); fit();
 buildHotbar();
 if (firstRun) openDlg(helpHTML(true));
 let last = performance.now();
