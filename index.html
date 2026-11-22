@@ -346,6 +346,27 @@ body.port #toast{bottom:2.7em}
 #dlg .have.short{border-image-source:var(--t-dchiphot);color:#c4402e}
 .slot .wl.du{bottom:.22em;height:.22em}
 #dlg .hrow{display:flex;align-items:center;gap:.5em;flex-wrap:wrap}
+#dlg .chips{display:flex;flex-wrap:wrap;justify-content:center;gap:.35em;margin:-.1em 0 .45em}
+#dlg .chips .chip{font-size:.75em}
+#dlg .lrow{display:grid;grid-template-columns:2.1em minmax(0,1fr) auto auto;align-items:center;gap:.5em;padding:.4em 0;background:linear-gradient(90deg,#f7d3e0 50%,transparent 0) left bottom/.5em .12em repeat-x}
+#dlg .lrow:last-child{background-image:none}
+#dlg .lrow.on{background-color:#fff0f6}
+#dlg .lrow.o{grid-template-columns:2.1em minmax(0,1fr) auto}
+#dlg .lrow>img{width:2.1em;height:2.1em}
+#dlg .ln{display:flex;flex-direction:column;min-width:0;line-height:1.25}
+#dlg .ln small{display:flex;align-items:center;gap:.4em;font-size:.78em;opacity:.85;margin-top:.1em}
+#dlg .cntb{font-weight:600;font-size:1.05em;color:#c4527e}
+#dlg .lbtns{display:flex;gap:.3em}
+#dlg .bagc{display:inline-flex;align-items:center;gap:.2em;font-weight:600;color:#fff;background:#e0578c;padding:0 .35em 0 .15em;box-shadow:0 0 0 .12em #7a2a4a;font-size:1.05em;line-height:1.35}
+#dlg .bagc img{width:1.15em;height:1.15em}
+#dlg .bagc.short{background:#e05a4a;box-shadow:0 0 0 .12em #8a2a2a}
+#dlg .res{color:#c4527e;font-weight:600}
+#dlg .odue{margin:.15em 0 .1em}
+#dlg .odue .chip{font-size:.75em}
+#dlg .ssech b{display:flex;align-items:center;gap:.25em}
+#dlg .okmark{font-size:1.2em;padding:0 .4em}
+#dlg .qty .btn.sq,#dlg .lbtns .btn.sq{min-width:1.9em}
+@media (max-width:420px){#dlg .lrow{gap:.35em}#dlg .lrow small{flex-wrap:wrap}}
 </style>
 </head>
 <body>
@@ -1328,25 +1349,23 @@ const qOf = t => Math.max(0, Math.min(cnt(t), shipQ[t] || 0));
 function neededForOrders(id) { return S.orders.reduce((a, o) => a + Math.max(0, (o.items[id] || 0) - (o.packed[id] || 0)), 0); }
 function standHTML() {
   const bag = SELLABLE.filter(t => cnt(t) > 0), on = SELLABLE.filter(t => S.stand[t] > 0);
-  const onVal = on.reduce((a, t) => a + S.stand[t] * sellOf(t), 0);
-  let h = `${T('stand', 'Verkaufsstand')}<div class="sinfo"><span>Geöffnet von 7 bis 17 Uhr · ${STAFF} verkauft für ${WAGE} Taler am Tag (nur wenn Ware ausliegt)</span><span>Heute verkauft: <b>${S.soldGold.toLocaleString('de-DE')} Taler</b></span></div>`;
-  // Abschnitt 1: Am Stand
-  h += `<div class="ssec"><div class="ssech"><span>Am Stand ausgelegt</span>${on.length ? `<b>${onVal.toLocaleString('de-DE')} Taler</b>` : ''}</div>`;
-  if (on.length) for (const t of on) h += `<div class="srow"><div class="ibox"><img src="${ICONURL[iconOf(t)]}" alt=""></div><div class="sname"><b>${ITEM[t].name}</b><small>${S.stand[t]} am Stand · ${(S.stand[t] * sellOf(t)).toLocaleString('de-DE')} Taler</small></div><button class="btn" data-act="back1:${t}">1 zurück</button><button class="btn" data-act="back:${t}">Alle</button></div>`;
+  const onVal = on.reduce((a, t) => a + S.stand[t] * sellOf(t), 0), hrs = Math.round((S.staffMin || 0) / 60 * 10) / 10;
+  let h = T('stand', 'Verkaufsstand') + `<div class="chips"><span class="chip">Offen 7–17 Uhr</span><span class="chip">${STAFF}: ${WAGE} Taler/Std.${hrs ? ` · bisher ${Math.round(hrs * WAGE)}` : ''}</span><span class="chip ok">Heute +${S.soldGold.toLocaleString('de-DE')} Taler</span></div>`;
+  h += `<div class="ssec"><div class="ssech"><span>Am Stand</span>${on.length ? `<b>${onVal.toLocaleString('de-DE')} Taler</b>` : ''}</div>`;
+  if (on.length) for (const t of on) h += `<div class="lrow"><img src="${ICONURL[iconOf(t)]}" alt=""><div class="ln"><b>${ITEM[t].name}</b><small>${sellOf(t)} Taler/Stück</small></div><span class="cntb">${S.stand[t]}×</span><div class="lbtns"><button class="btn sq" data-act="back1:${t}" title="1 zurücknehmen">−1</button><button class="btn" data-act="back:${t}">Alle</button></div></div>`;
   else h += '<div class="sempty">Noch nichts ausgelegt.</div>';
   h += '</div>';
-  // Abschnitt 2: Aus dem Rucksack
   let n = 0, sum = 0;
-  h += `<div class="ssec"><div class="ssech"><span>Aus dem Rucksack auslegen</span></div>`;
+  h += `<div class="ssec"><div class="ssech"><span>Aus dem Rucksack</span></div>`;
   if (bag.length) for (const t of bag) {
     const q = qOf(t), need = neededForOrders(t); n += q; sum += q * sellOf(t);
-    h += `<div class="srow${q ? ' on' : ''}"><div class="ibox"><img src="${ICONURL[iconOf(t)]}" alt=""></div><div class="sname"><b>${ITEM[t].name}</b><span class="have" title="Im Rucksack"><img src="${ICONURL.bag}" alt="">${cnt(t)}</span><small>${sellOf(t)} Taler/Stück</small>${need ? `<small class="sneed">${need} für Lieferung reserviert</small>` : ''}</div>
+    h += `<div class="lrow${q ? ' on' : ''}"><img src="${ICONURL[iconOf(t)]}" alt=""><div class="ln"><b>${ITEM[t].name}</b><small><span class="bagc"><img src="${ICONURL.bag}" alt="">${cnt(t)}</span>${need ? `<span class="res">${need} reserviert</span>` : ''}</small></div>
       <div class="qty"><button class="btn sq" data-act="q:${t}:-1" ${q ? '' : 'disabled'}>−</button><span class="qv">${q}</span><button class="btn sq" data-act="q:${t}:1" ${q < cnt(t) ? '' : 'disabled'}>+</button></div>
-      <button class="btn sall" data-act="qa:${t}">${q < cnt(t) ? 'Alle' : 'Keine'}</button></div>`;
+      <button class="btn sq" data-act="qa:${t}">${q < cnt(t) ? 'Alle' : '0'}</button></div>`;
   }
-  else h += '<div class="sempty">Du hast gerade nichts zum Verkaufen dabei.</div>';
+  else h += '<div class="sempty">Nichts zum Verkaufen dabei.</div>';
   h += '</div>';
-  h += `<div class="sfoot"><div class="ssum">${n ? `Auslegen: <b>${n} Stück</b> · ${sum.toLocaleString('de-DE')} Taler` : 'Wähle oben aus, was du auslegen möchtest.'}</div>
+  h += `<div class="sfoot"><div class="ssum">${n ? `<b>${n} Stück</b> · ${sum.toLocaleString('de-DE')} Taler` : 'Menge wählen, dann auslegen.'}</div>
     <div class="sbtns"><button class="btn" data-act="close">Schließen</button>${bag.length ? `<button class="btn primary" data-act="ship" ${n ? '' : 'disabled'}>Auslegen</button>` : ''}</div></div>`;
   return h;
 }
@@ -1366,22 +1385,21 @@ function genOrder() {
 const orderReady = o => Object.keys(o.items).every(t => (o.packed[t] || 0) >= o.items[t]);
 function ordersHTML() {
   const readySum = S.orders.filter(orderReady).reduce((a, o) => a + o.reward, 0);
-  let h = `${T('board', 'Auftragsbrett')}<div class="sinfo"><span>Fertig gepackte Lieferungen werden nachts abgeholt und bezahlt.</span></div>`;
+  let h = T('board', 'Auftragsbrett') + `<div class="chips"><span class="chip">${S.orders.length} Bestellung${S.orders.length === 1 ? '' : 'en'}</span><span class="chip ok">Heute Nacht +${readySum.toLocaleString('de-DE')} Taler</span></div>`;
   if (!S.orders.length) h += '<div class="ssec"><div class="sempty">Gerade keine Bestellungen. Schau morgen wieder vorbei!</div></div>';
   for (const o of S.orders) {
     const r = orderReady(o);
-    h += `<div class="ssec${r ? ' ready' : ''}"><div class="ssech"><span>${o.who}</span><span class="chip${r ? ' ok' : o.days <= 1 ? ' hot' : ''}">${r ? 'Bereit zur Abholung' : `noch ${o.days} Tag${o.days > 1 ? 'e' : ''}`}</span></div>`;
+    h += `<div class="ssec${r ? ' ready' : ''}"><div class="ssech"><span>${o.who}</span><b><span class="p-coin"></span>${o.reward.toLocaleString('de-DE')} Taler</b></div>
+      <div class="odue"><span class="chip${r ? ' ok' : o.days <= 1 ? ' hot' : ''}">${r ? 'Bereit – wird heute Nacht abgeholt' : `Frist: noch ${o.days} Tag${o.days > 1 ? 'e' : ''}`}</span></div>`;
     for (const t in o.items) {
-      const need = o.items[t], have = o.packed[t] || 0, inv = cnt(t), pct = Math.round(have / need * 100), miss = need - have;
-      h += `<div class="orow"><div class="ibox"><img src="${ICONURL[iconOf(t)]}" alt=""></div><div class="sname"><div class="otop"><b>${ITEM[t].name}</b><span>${have}/${need}</span></div>
-        <div class="obar"><i style="width:${pct}%"></i></div>
-        <div class="hrow"><span class="have${!r && miss > 0 && inv < miss ? ' short' : ''}" title="Im Rucksack"><img src="${ICONURL.bag}" alt="">${inv}</span>${miss > 0 ? `<small>fehlen noch ${miss}</small>` : ''}</div></div>` +
-        (miss > 0 ? `<button class="btn" data-act="pack:${o.id}:${t}" ${inv ? '' : 'disabled'}>${inv ? `${Math.min(inv, miss)} einpacken` : 'Fehlt'}</button>` : '<span class="okmark">✓ Fertig</span>') + '</div>';
+      const need = o.items[t], have = o.packed[t] || 0, inv = cnt(t), miss = need - have;
+      h += `<div class="lrow o"><img src="${ICONURL[iconOf(t)]}" alt=""><div class="ln"><div class="otop"><b>${ITEM[t].name}</b><span>${have}/${need}</span></div><div class="obar"><i style="width:${Math.round(have / need * 100)}%"></i></div>
+        ${miss > 0 ? `<small><span class="bagc${inv < miss ? ' short' : ''}"><img src="${ICONURL.bag}" alt="">${inv}</span>im Rucksack</small>` : ''}</div>` +
+        (miss > 0 ? `<button class="btn${inv ? ' primary' : ''}" data-act="pack:${o.id}:${t}" ${inv ? '' : 'disabled'}>${inv ? `+${Math.min(inv, miss)}` : 'Fehlt'}</button>` : '<span class="okmark">✓</span>') + '</div>';
     }
-    h += `<div class="oreward"><span>Belohnung</span><b>${o.reward.toLocaleString('de-DE')} Taler</b></div></div>`;
+    h += '</div>';
   }
-  h += `<div class="sfoot"><div class="ssum">${readySum ? `Heute Nacht: <b>+${readySum.toLocaleString('de-DE')} Taler</b>` : `${S.orders.length} offene Bestellung${S.orders.length === 1 ? '' : 'en'}`}</div><div class="sbtns"><button class="btn" data-act="close">Schließen</button></div></div>`;
-  return h;
+  return h + `<div class="sfoot"><div class="ssum">Fertige Lieferungen werden nachts bezahlt.</div><div class="sbtns"><button class="btn" data-act="close">Schließen</button></div></div>`;
 }
 function packOrder(id, t) {
   const o = S.orders.find(x => x.id === id); if (!o) return;
@@ -1393,7 +1411,7 @@ function packOrder(id, t) {
 
 /* ---------- Kundschaft am Stand ---------- */
 const custs = [];
-const WAGE = 30, STAFF = 'Lotte';
+const WAGE = 8, STAFF = 'Lotte';
 const PAL_STAFF = { skin: '#ffe0cc', hair: '#5a3a2a', hairL: '#7a5440', dress: '#b8e0a0', dressD: '#8fc878', apron: '#ffffff', shoe: '#5a6a4a', bow: '#ff8fb8', tails: 1, hat: 0 };
 const CUST_PATH = [[312, 78], [312, 108], [152, 108], [152, 92]];
 function standStock() { return SELLABLE.reduce((a, t) => a + (S.stand[t] || 0), 0); }
@@ -1414,7 +1432,7 @@ function customerBuys(c) {
 }
 function updateCustomers(dt) {
   const open = S.time >= 420 && S.time < 1020;
-  if (open && standStock() > 0) S.staffed = 1;
+  if (open && standStock() > 0 && !paused) S.staffMin = (S.staffMin || 0) + dt * 2;
   if (open && standStock() > 0 && custs.length < 2 && Math.random() < dt * (S.rain ? .025 : .06)) spawnCustomer();
   for (let i = custs.length - 1; i >= 0; i--) {
     const c = custs[i];
@@ -1668,7 +1686,7 @@ function endDay(passedOut) {
       lines += `<div class="kv"><img src="${ICONURL[iconOf(t)]}" alt=""><span>${n}× ${ITEM[t].name}</span><b>${(n * sellOf(t)).toLocaleString('de-DE')} Taler</b></div>`;
     }
     const income = S.soldGold; S.sold = {}; S.soldGold = 0; custs.length = 0;
-    const wage = S.staffed ? Math.min(WAGE, S.gold) : 0; S.gold -= wage; S.staffed = 0;
+    const hrs = Math.round((S.staffMin || 0) / 60 * 10) / 10, wage = Math.min(Math.round(hrs * WAGE), S.gold); S.gold -= wage; S.staffMin = 0; delete S.staffed;
     // Lieferungen
     let dl = '';
     for (const o of S.orders.slice()) {
@@ -1711,7 +1729,7 @@ function endDay(passedOut) {
     html += `<div class="sinfo"><span>${WDAYS[(S.day - 1) % 7]}. ${sd}. ${season} · Tag ${S.day}</span><span>Kasse: <b>${S.gold.toLocaleString('de-DE')} Taler</b></span></div>`;
     if (passedOut) html += `<div class="ssec warn"><p class="lead">Ein Nachbar hat dich nach Hause gebracht. Für die Hilfe fehlen dir <b>${lost} Taler</b>, und du bist nicht ganz ausgeruht.</p></div>`;
     html += `<div class="ssec"><div class="ssech"><span>Gestern am Stand verkauft</span>${income ? `<b>+${income.toLocaleString('de-DE')} Taler</b>` : ''}</div>${lines || '<div class="sempty">Gestern wurde am Stand nichts verkauft.</div>'}</div>`;
-    if (wage) html += `<div class="ssec"><div class="kv"><img src="${ICONURL.stand}" alt=""><span>Lohn für ${STAFF} am Verkaufsstand</span><b>−${wage} Taler</b></div></div>`;
+    if (wage) html += `<div class="ssec"><div class="kv"><img src="${ICONURL.stand}" alt=""><span>Lohn für ${STAFF} (${hrs.toLocaleString('de-DE')} Std. × ${WAGE} Taler)</span><b>−${wage} Taler</b></div></div>`;
     if (dl) html += `<div class="ssec"><div class="ssech"><span>Lieferungen</span></div>${dl}</div>`;
     let farm = '';
     if (S.rain) farm += `<div class="kv"><img src="${ICONURL.w_rain}" alt=""><span>Heute regnet es – deine Felder sind schon gegossen.</span></div>`;
