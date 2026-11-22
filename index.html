@@ -78,8 +78,12 @@ body{background:radial-gradient(circle at 50% 30%,#6a3d5e,#26121f 75%);font-fami
 .btn.red{background:#ff8a8a}
 .row{display:flex;align-items:center;gap:.5em;padding:.45em 0;border-bottom:.1em dashed #ec9dbd}
 .row img{width:2.1em;height:2.1em;image-rendering:pixelated}
-.row .info{flex:1;display:flex;flex-direction:column;line-height:1.2;min-width:0}
+.row .info{flex:1;display:flex;flex-direction:column;line-height:1.2;min-width:6.5em}
+.row{flex-wrap:wrap}
 .row small{opacity:.75}
+.qty{display:flex;align-items:center;gap:.25em}
+.btn.sq{width:1.9em;padding:.25em 0;text-align:center}
+.qv{min-width:1.7em;text-align:center;font-weight:600}
 .row .price{font-weight:600;min-width:2.8em;text-align:right}
 .foot{display:flex;gap:.5em;justify-content:flex-end;margin-top:.7em;flex-wrap:wrap}
 .sumline{display:flex;justify-content:space-between;padding:.15em 0}
@@ -250,30 +254,35 @@ function drawPaths(g) {
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (pathPix(x, y)) P[y * W + x] = edge(x, y) ? 2 : 1;
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
     const v = P[y * W + x];
-    if (v === 2) R(g, x, y, 1, 1, '#d6ad84');
-    else if (v === 1) R(g, x, y, 1, 1, hash(x, y, 2) < .1 ? '#e7c59d' : '#f0d3ae');
-    else if ((y > 0 && P[(y - 1) * W + x] === 2) && hash(x, y, 6) < .9) R(g, x, y, 1, 1, '#76b650');
-  }
-  // Pflastersteine
-  for (let ty = 0; ty < ROWS; ty++) for (let tx = 0; tx < COLS; tx++) {
-    if (!isPT(tx, ty)) continue;
-    for (let k = 0; k < 4; k++) {
-      const sx = tx * 16 + (k % 2) * 8 + 1 + Math.floor(hash(tx, ty, k) * 2), sy = ty * 16 + (k >> 1) * 8 + 1 + Math.floor(hash(tx, ty, k + 9) * 2);
-      const w = 5 + (hash(tx, ty, k + 3) < .5 ? 1 : 0), h = 4 + (hash(tx, ty, k + 5) < .5 ? 1 : 0);
-      const tone = hash(tx, ty, k + 7) < .25 ? ['#fde3ec', '#fff3f7', '#e8bfcf'] : ['#f8e8d4', '#fff7ec', '#dcbf9c'];
-      for (let yy = 0; yy < h; yy++) for (let xx = 0; xx < w; xx++) {
-        if ((xx === 0 || xx === w - 1) && (yy === 0 || yy === h - 1)) continue;
-        const x = sx + xx, y = sy + yy;
-        if (P[y * W + x] !== 1) continue;
-        R(g, x, y, 1, 1, yy === 0 ? tone[1] : yy === h - 1 ? tone[2] : tone[0]);
-      }
+    if (v === 2) R(g, x, y, 1, 1, '#b07a4c');
+    else if (v === 1) {
+      const nearEdge = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => P[(y + dy) * W + x + dx] === 2);
+      const blk = hash(x >> 1, y >> 1, 3), px = hash(x, y, 5);
+      let c = '#d29e6c';
+      if (nearEdge) c = '#c48f5e';
+      else if (blk < .14) c = '#dcad7d';
+      else if (blk > .9) c = '#c99463';
+      if (px < .035) c = '#b8834f';
+      else if (px > .985) c = '#e8c49a';
+      R(g, x, y, 1, 1, c);
     }
   }
-  // Grashalme am Rand
+  // Kleine Kiesel
+  for (let ty = 0; ty < ROWS; ty++) for (let tx = 0; tx < COLS; tx++) {
+    if (!isPT(tx, ty)) continue;
+    for (let k = 0; k < 2; k++) {
+      const x = tx * 16 + 3 + Math.floor(hash(tx, ty, k + 20) * 10), y = ty * 16 + 3 + Math.floor(hash(tx, ty, k + 30) * 10);
+      if (P[y * W + x] !== 1 || P[y * W + x + 1] !== 1 || hash(tx, ty, k + 40) < .4) continue;
+      R(g, x, y, 2, 1, '#ead2b6'); R(g, x, y + 1, 2, 1, '#b8834f');
+    }
+  }
+  // Gras wächst über den Rand
   for (let y = 1; y < H - 1; y++) for (let x = 1; x < W - 1; x++) {
-    if (P[y * W + x] !== 2 || hash(x, y, 8) > .12) continue;
-    const up = !P[(y - 1) * W + x];
-    if (up) { R(g, x, y, 1, 2, '#6aae4a'); } else if (!P[(y + 1) * W + x]) { R(g, x, y - 1, 1, 2, '#7bbf55'); }
+    if (P[y * W + x] !== 2 || hash(x, y, 8) > .16) continue;
+    if (!P[(y - 1) * W + x]) R(g, x, y, 1, 2, '#6aae4a');
+    else if (!P[(y + 1) * W + x]) R(g, x, y - 1, 1, 2, '#7bbf55');
+    else if (!P[y * W + x - 1]) R(g, x, y, 2, 1, '#6aae4a');
+    else if (!P[y * W + x + 1]) R(g, x - 1, y, 2, 1, '#6aae4a');
   }
 }
 function drawTree(g, tx, ty) {
@@ -643,7 +652,7 @@ function buildHotbar() {
   v.forEach((bi, n) => {
     const id = S.bar[bi], d = document.createElement('div'); d.className = 'slot'; d.dataset.bi = bi;
     d.innerHTML = `<span class="k">${n + 1}</span><img src="${ICONURL[iconOf(id)]}" alt=""><span class="n"></span>` + (id === 'can' ? '<span class="wl"><i></i></span>' : '');
-    d.addEventListener('click', () => setSel(bi));
+    d.addEventListener('pointerdown', e => { e.preventDefault(); setSel(bi); });
     hb.appendChild(d);
   });
 }
@@ -739,7 +748,6 @@ function invHTML() {
     if (id === 'can') d += ` Füllstand ${S.water}/${S.canCap}.`;
     h += `<div class="detail"><img src="${ICONURL[iconOf(id)]}" alt=""><div class="t"><b>${itemName(id)}</b>${it.tool ? '' : ` <small>×${cnt(id)}</small>`}<br><small>${d}</small>${it.eat ? `<br><small>Essen: +${it.eat} Energie</small>` : ''}<div class="acts">`;
     h += `<button class="btn" data-act="mv" ${free ? '' : 'disabled'}>${other === 'bar' ? 'In die Leiste' : 'In den Rucksack'}</button>`;
-    if (invSel[0] === 'bar') h += `<button class="btn" data-act="hold">In die Hand</button>`;
     if (it.eat) h += `<button class="btn" data-act="eat" ${S.energy >= S.maxEnergy ? 'disabled' : ''}>Essen</button>`;
     h += `</div><small class="tip">Tipp: Danach ein freies Feld antippen, um es dorthin zu legen.</small></div></div>`;
   } else h += `<div class="detail empty"><small>Tippe auf einen Gegenstand, um ihn anzusehen oder zu verschieben.</small></div>`;
@@ -774,6 +782,29 @@ function eatItem() {
   if (!S[invSel[0]][invSel[1]]) invSel = null;
   rerenderInv();
 }
+let shipQ = {};
+const qOf = t => Math.max(0, Math.min(cnt(t), shipQ[t] === undefined ? cnt(t) : shipQ[t]));
+function shipHTML() {
+  let h = '<h2>Versandkiste</h2><p class="sub">Alles in der Kiste wird heute Nacht verkauft.</p>';
+  const have = Object.keys(CROPS).filter(t => cnt(t) > 0);
+  let n = 0, sum = 0;
+  if (have.length) {
+    for (const t of have) {
+      const c = CROPS[t], q = qOf(t); n += q; sum += q * c.sell;
+      h += `<div class="row"><img src="${ICONURL[t]}" alt=""><div class="info"><b>${c.name}</b><small>Du hast ${cnt(t)} · ${c.sell}g pro Stück</small></div>
+        <div class="qty"><button class="btn sq" data-act="q:${t}:-1" ${q ? '' : 'disabled'}>−</button><span class="qv">${q}</span><button class="btn sq" data-act="q:${t}:1" ${q < cnt(t) ? '' : 'disabled'}>+</button></div>
+        <button class="btn" data-act="qa:${t}">${q < cnt(t) ? 'Alle' : 'Keine'}</button></div>`;
+    }
+    h += `<div class="sumline total"><span>Ausgewählt: ${n} Stück</span><span>${sum.toLocaleString('de-DE')}g</span></div>`;
+  } else h += '<p>Du hast gerade keine Ernte dabei.</p>';
+  const inBox = Object.keys(CROPS).filter(t => S.shipped[t] > 0);
+  if (inBox.length) {
+    h += '<div class="invlbl">Schon in der Kiste</div>';
+    for (const t of inBox) h += `<div class="row"><img src="${ICONURL[t]}" alt=""><div class="info"><b>${S.shipped[t]}× ${CROPS[t].name}</b><small>${(S.shipped[t] * CROPS[t].sell).toLocaleString('de-DE')}g</small></div><button class="btn" data-act="back:${t}">Zurücknehmen</button></div>`;
+  }
+  return h + `<div class="foot"><button class="btn" data-act="close">Schließen</button>${have.length ? `<button class="btn" data-act="ship" ${n ? '' : 'disabled'}>In die Kiste legen</button>` : ''}</div>`;
+}
+function rerenderShip() { const sc = $('dlg').scrollTop; $('dlg').innerHTML = shipHTML(); $('dlg').scrollTop = sc; }
 function shopRow(img, name, info, price, id, single) {
   const d1 = S.gold < price ? 'disabled' : '', d5 = S.gold < price * 5 ? 'disabled' : '';
   return `<div class="row"><img src="${img}" alt=""><div class="info"><b>${name}</b><small>${info}</small></div><span class="price">${price}g</span>
@@ -803,6 +834,14 @@ $('dlg').addEventListener('click', e => {
   else if (a.startsWith('buy:')) { const [, id, n] = a.split(':'); buy(id, +n); }
   else if (a.startsWith('slot:')) { const [, c, i] = a.split(':'); invClick(c, i); }
   else if (a === 'mv') invMove();
+  else if (a.startsWith('q:')) { const [, t, d] = a.split(':'); shipQ[t] = qOf(t) + +d; snd('sel'); rerenderShip(); }
+  else if (a.startsWith('qa:')) { const t = a.slice(3); shipQ[t] = qOf(t) < cnt(t) ? cnt(t) : 0; snd('sel'); rerenderShip(); }
+  else if (a === 'ship') {
+    let n = 0;
+    for (const t in CROPS) { const q = qOf(t); if (q) { S.shipped[t] += q; useItem(t, q); n += q; } }
+    closeDlg(); snd('ship'); toast(`${n} Stück in die Versandkiste gelegt`);
+  }
+  else if (a.startsWith('back:')) { const t = a.slice(5), m = S.shipped[t]; if (m && addItem(t, m)) { S.shipped[t] = 0; delete shipQ[t]; shipQ[t] = 0; snd('plant'); } rerenderShip(); }
   else if (a === 'eat') eatItem();
   else if (a === 'hold') { const bi = invSel[1]; closeDlg(); setSel(bi); }
   else if (a === 'new') $('dlg').innerHTML = `<h2>Neues Spiel?</h2><p>Dein ganzer Fortschritt geht verloren.</p><div class="foot"><button class="btn" data-act="close">Abbrechen</button><button class="btn red" data-act="newc">Ja, neu anfangen</button></div>`;
@@ -839,10 +878,9 @@ function act(tx, ty) {
   if (t === 'H') { toast('Die Haustür ist in der Mitte.'); return; }
   if (t === 'S') { openDlg(shopHTML()); return; }
   if (t === 'B') {
-    let n = 0;
-    for (const c in CROPS) { const m = cnt(c); if (m) { n += m; S.shipped[c] += m; useItem(c, m); } }
-    if (!n) { toast('Leg hier deine Ernte rein – sie wird über Nacht verkauft.'); return; }
-    snd('ship'); toast(`${n} Stück in die Versandkiste gelegt`); return;
+    const any = Object.keys(CROPS).some(c => cnt(c) > 0 || S.shipped[c] > 0);
+    if (!any) { toast('Leg hier deine Ernte rein – sie wird über Nacht verkauft.'); return; }
+    shipQ = {}; openDlg(shipHTML()); return;
   }
   if (!id) { toast('Du hast nichts in der Hand.'); return; }
   if (kind === 'sickle') {
@@ -906,7 +944,6 @@ function endDay(passedOut) {
     for (const k in S.soil) {
       const s = S.soil[k];
       if (s.c) { if (s.w && s.c.d < CROPS[s.c.t].days) { s.c.d++; grown++; } }
-      else if (!s.w && Math.random() < .2) { delete S.soil[k]; continue; }
       s.w = false;
     }
     S.day++; S.rain = Math.random() < .22;
@@ -946,17 +983,17 @@ function evTile(e) { const r = C.getBoundingClientRect(); return [Math.floor(((e
 function inReach(tx, ty) { const [px, py] = playerTile(); return Math.abs(tx - px) <= 1 && Math.abs(ty - py) <= 1 && !(tx === px && ty === py); }
 C.addEventListener('mousemove', e => { mouseTile = evTile(e); });
 C.addEventListener('mouseleave', () => { mouseTile = null; });
-C.addEventListener('click', e => {
-  if (paused) return;
+C.addEventListener('pointerdown', e => {
+  if (paused || (e.pointerType === 'mouse' && e.button !== 0)) return;
   const [tx, ty] = evTile(e);
   if (!inReach(tx, ty)) return;
   const [px, py] = playerTile(), dx = tx - px, dy = ty - py;
   S.dir = Math.abs(dx) >= Math.abs(dy) && dx ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up');
   act(tx, ty);
 });
-$('helpBtn').addEventListener('click', () => { if (!fading) openDlg(helpHTML(false)); });
+$('helpBtn').addEventListener('pointerup', () => { if (!fading && !paused) openDlg(helpHTML(false)); });
 $('invIcon').src = ICONURL.bag; $('heartIcon').src = ICONURL.heart;
-$('invBtn').addEventListener('click', openInv);
+$('invBtn').addEventListener('pointerup', openInv);
 // Joystick
 let joy = null;
 const J = $('joy'), K = $('knob');
@@ -981,7 +1018,13 @@ const AB = $('abtn');
 AB.addEventListener('pointerdown', e => { e.preventDefault(); AB.classList.add('down'); if (!paused) act(...targetTile()); });
 ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => AB.addEventListener(ev, () => AB.classList.remove('down')));
 addEventListener('contextmenu', e => { if (touchMode) e.preventDefault(); });
-// Zoomen verhindern: Pinch (iOS), Doppeltippen, Strg+Mausrad, Strg +/-
+// Zoomen verhindern: Außerhalb von Dialogen jede Touch-Standardgeste unterbinden (Pinch, Doppeltippen, Lupe).
+// Die Bedienung läuft über Pointer-Events, die davon unberührt bleiben.
+['touchstart', 'touchmove'].forEach(ev => document.addEventListener(ev, e => {
+  if (e.touches.length > 1 || !e.target.closest('#dlg')) e.preventDefault();
+}, { passive: false }));
+document.addEventListener('dblclick', e => e.preventDefault());
+// Weitere Absicherung: Pinch (iOS), Doppeltippen, Strg+Mausrad, Strg +/-
 ['gesturestart', 'gesturechange', 'gestureend'].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), { passive: false }));
 document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
 let lastTouchEnd = 0;
@@ -992,7 +1035,7 @@ document.addEventListener('touchend', e => {
 }, { passive: false });
 addEventListener('wheel', e => { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
 addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && ['+', '-', '=', '0'].includes(e.key)) e.preventDefault(); });
-addEventListener('touchstart', () => { if (!touchMode) { touchMode = true; fit(); } }, { passive: true });
+addEventListener('pointerdown', e => { if (e.pointerType === 'touch' && !touchMode) { touchMode = true; fit(); } });
 
 /* ---------- Tierchen ---------- */
 const critters = [];

@@ -33,7 +33,7 @@ Im Hochformat liegen Steuerung und Werkzeugleiste unter dem Spielfeld, und die K
 1. Gras mit der **Hacke** auflockern
 2. **Samen** säen (Rübe, Kohl, Kürbis)
 3. Täglich mit der **Gießkanne** gießen – am Teich auffüllen
-4. Reife Pflanzen mit der **Sichel** ernten (erntet auch die beiden Nachbarfelder) und in die **Versandkiste** legen – bezahlt wird über Nacht
+4. Reife Pflanzen mit der **Sichel** ernten (erntet auch die beiden Nachbarfelder) und in die **Versandkiste** legen – du wählst selbst, wie viel; bezahlt wird über Nacht
 5. Im **Dorfladen** neue Samen, Salat (Energie) und eine größere Gießkanne kaufen
 6. Im **Rucksack** (16 Plätze) liegt die Ernte. Gegenstände lassen sich zwischen Rucksack und Werkzeugleiste (8 Plätze) verschieben; Ernte und Salat kann man essen
 7. Vor 2 Uhr nachts durch die Haustür **schlafen gehen** – dabei wird gespeichert
