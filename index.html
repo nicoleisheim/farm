@@ -1542,7 +1542,7 @@ function toast(m) {
   clearTimeout(toastTimer); toastTimer = setTimeout(() => e.classList.remove('show'), 1700 + Math.max(0, m.length - 25) * 40);
 }
 let paused = false;
-function openDlg(html) { delete $('dlg').dataset.inv; delete $('dlg').dataset.orders; $('dlg').classList.remove('standdlg', 'pixdlg'); $('dlg').innerHTML = html; $('dlg').scrollTop = 0; $('shade').style.display = 'flex'; paused = true; keys.clear(); joyReset(); }
+function openDlg(html) { delete $('dlg').dataset.inv; delete $('dlg').dataset.orders; $('dlg').classList.remove('standdlg', 'pixdlg'); $('dlg').innerHTML = html; $('dlg').scrollTop = 0; $('shade').style.display = 'flex'; paused = true; keys.clear(); joyReset();  if (padMode) setTimeout(() => { if (paused) dlgNav('d'); }, 30); }
 function closeDlg() { $('shade').style.display = 'none'; paused = false; }
 
 const cnt = id => (id && S.items[id]) || 0;
@@ -2176,21 +2176,33 @@ function endDay(passedOut) {
 const keys = new Set();
 const KMAP = { ArrowLeft: 'l', a: 'l', A: 'l', ArrowRight: 'r', d: 'r', D: 'r', ArrowUp: 'u', w: 'u', W: 'u', ArrowDown: 'd', s: 'd', S: 'd' };
 function dlgEls() { return [...$('dlg').querySelectorAll('button:not([disabled]),[data-act]:not(button)')].filter(e => e.offsetParent); }
-function dlgFocus(el) { if (!el) return; $('dlg').querySelectorAll('.padfocus').forEach(e => e.classList.remove('padfocus')); el.classList.add('padfocus'); el.tabIndex = -1; el.focus({ preventScroll: true }); el.scrollIntoView({ block: 'nearest' }); }
+function dlgFocus(el) {
+  if (!el) return;
+  const d = $('dlg');
+  d.querySelectorAll('.padfocus').forEach(e => e.classList.remove('padfocus'));
+  el.classList.add('padfocus'); el.tabIndex = -1; el.focus({ preventScroll: true });
+  // sichtbar halten, auch hinter der festen Fußleiste
+  const foot = d.querySelector('.sfoot'), dr = d.getBoundingClientRect(), er = el.getBoundingClientRect();
+  const bottom = dr.bottom - (foot && !foot.contains(el) ? foot.offsetHeight : 0) - 10;
+  if (er.bottom > bottom) d.scrollTop += er.bottom - bottom;
+  else if (er.top < dr.top + 10) d.scrollTop -= dr.top + 10 - er.top;
+}
 function dlgNav(dir) {
   const els = dlgEls(); if (!els.length) return;
   const cur = $('dlg').querySelector('.padfocus');
-  if (!cur || !els.includes(cur)) { dlgFocus($('dlg').querySelector('.btn.primary:not([disabled])') || els[0]); return; }
-  const r = cur.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-  let best = null, bd = 1e9;
-  for (const e of els) {
-    if (e === cur) continue;
-    const q = e.getBoundingClientRect(), x = q.left + q.width / 2 - cx, y = q.top + q.height / 2 - cy;
-    const main = dir === 'l' ? -x : dir === 'r' ? x : dir === 'u' ? -y : y, side = dir === 'l' || dir === 'r' ? Math.abs(y) : Math.abs(x);
-    if (main <= 3) continue;
-    const d = main + side * 2.5; if (d < bd) { bd = d; best = e; }
-  }
-  if (best) { dlgFocus(best); snd('sel'); }
+  if (!cur || !els.includes(cur)) { dlgFocus(els.find(e => !e.closest('.sfoot,.foot')) || els[0]); return; }
+  if (dir === 'l' || dir === 'r') { const n = els[els.indexOf(cur) + (dir === 'r' ? 1 : -1)]; if (n) { dlgFocus(n); snd('sel'); } return; }
+  const mid = e => { const q = e.getBoundingClientRect(); return [q.left + q.width / 2, q.top + q.height / 2]; };
+  const [cx, cy] = mid(cur);
+  const inFoot = e => !!e.closest('.sfoot'), body = els.filter(e => !inFoot(e)), foot = els.filter(inFoot);
+  let cand;
+  if (inFoot(cur)) cand = dir === 'u' ? body.filter(e => mid(e)[1] < cy - 4) : [];
+  else { cand = body.filter(e => { const y = mid(e)[1]; return dir === 'd' ? y > cy + 4 : y < cy - 4; }); if (!cand.length && dir === 'd') cand = foot; }
+  if (!cand.length) return;
+  const rowY = inFoot(cur) && dir === 'u' ? Math.max(...cand.map(e => mid(e)[1])) : cand.map(e => mid(e)[1]).reduce((a, y) => Math.abs(y - cy) < Math.abs(a - cy) ? y : a);
+  const row = cand.filter(e => Math.abs(mid(e)[1] - rowY) < 8);
+  const best = row.reduce((a, e) => Math.abs(mid(e)[0] - cx) < Math.abs(mid(a)[0] - cx) ? e : a);
+  dlgFocus(best); snd('sel');
 }
 function dlgPress() {
   const cur = $('dlg').querySelector('.padfocus');
