@@ -396,7 +396,9 @@ body.port #toast{bottom:2.7em}
 body.touch #gold{background:none}
 #hotbar{border-radius:0;padding:.1em}
 .slot{background:none;border:.38em solid transparent;border-image:var(--t-slot) 4 fill / .38em stretch;border-radius:0}
-.slot.sel{border-image:none;border:.24em solid #f06a8c;background:#ffe0ec;box-shadow:0 0 0 .12em #fff,0 .3em 0 #d8819f;transform:translateY(-.3em);z-index:1}
+.slot.sel{border-image-source:var(--t-slot)}
+#hotbar .slot.sel{outline:.26em solid #f06a8c;outline-offset:-.26em;transform:none;box-shadow:none}
+#hotbar .slot .n{top:.15em;right:.15em;bottom:auto;font-size:.6em;padding:.05em .25em;border-width:.1em}
 #dlg .inv .slot.sel{border:.38em solid transparent;border-image:var(--t-slotsel) 4 fill / .38em stretch;box-shadow:none;transform:none;background:none}
 .slot .n{border-radius:0;border:.12em solid #f0b2c8;background:#fff}
 .slot .wl{left:.15em;right:.15em;bottom:.1em;border-radius:0}
@@ -895,7 +897,7 @@ function drawPondAnim(t) {
 const WINDOWS = [[43, 55, 10, 10], [91, 55, 10, 10], [68, 31, 9, 9], [BDX + 32, BDY + 6, 5, 4]];
 function drawFarmHouse(g) {
   const x0 = 32, y0 = 16;
-  const TH = '#ecc878', TL = '#f6dc9a', TD = '#d4a654', TS = '#e0b864', TO = '#b8863a';
+  const TH = '#dcae62', TL = '#e8c47e', TD = '#c0904a', TS = '#cfa056', TO = '#a07032';
   R(g, x0 + 3, y0 + 62, 76, 3, 'rgba(60,20,40,.18)');
   // Wände: glatter rosa Putz, Steinsockel
   R(g, x0 + 4, y0 + 28, 72, 34, '#fbe4ec'); R(g, x0 + 4, y0 + 28, 72, 2, '#f7dbe5');
