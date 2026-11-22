@@ -214,6 +214,23 @@ body{background:radial-gradient(circle at 50% 30%,#6a3d5e,#26121f 75%);font-fami
 .sfoot{position:sticky;bottom:-1em;background:#ffd9e7;margin:.4em -1.2em -1em;padding:.6em 1.2em .9em;border-top:.12em solid #f5a3c3;display:flex;align-items:center;justify-content:space-between;gap:.5em;flex-wrap:wrap}
 .ssum{font-size:.85em}
 .sbtns{display:flex;gap:.5em;margin-left:auto}
+.ssec.ready{background:#effbe8;border-color:#b8e0a0}
+.ssec.ready .ssech{color:#3f8a37;border-color:#b8e0a0}
+.chip{font-size:.85em;font-weight:600;background:#fff;border-radius:1em;padding:.1em .55em;color:#c4527e;white-space:nowrap}
+.chip.hot{color:#d94a3a}
+.chip.ok{color:#3f8a37}
+.orow{display:grid;grid-template-columns:2.2em minmax(0,1fr) auto;align-items:center;gap:.55em;padding:.45em 0;border-bottom:.1em dashed #f5c0d4}
+.ssec.ready .orow{border-color:#cfeac0}
+.orow img{width:2.2em;height:2.2em;image-rendering:pixelated}
+.otop{display:flex;justify-content:space-between;gap:.5em}
+.otop span{font-weight:600;font-size:.9em}
+.obar{height:.45em;background:#f7dbe6;border-radius:1em;margin:.25em 0 .2em;overflow:hidden}
+.obar i{display:block;height:100%;background:#ff7fae;border-radius:1em}
+.ssec.ready .obar{background:#d8f0cc}.ssec.ready .obar i{background:#7cc85a}
+.orow small{font-size:.78em;opacity:.8}
+.orow small.short{color:#c4527e;opacity:1}
+.okmark{color:#3f8a37;font-weight:600;font-size:.9em;white-space:nowrap}
+.oreward{display:flex;justify-content:space-between;padding:.4em 0 .2em;font-size:.9em}
 .order{background:#fff0f6;border-radius:.7em;padding:.55em .7em;margin:.5em 0;border:.12em solid #f5c0d4}
 .order.done{background:#effbe8;border-color:#b8e0a0}
 .ohead{display:flex;justify-content:space-between;align-items:center;gap:.5em;margin-bottom:.25em}
@@ -1246,21 +1263,23 @@ function genOrder() {
 }
 const orderReady = o => Object.keys(o.items).every(t => (o.packed[t] || 0) >= o.items[t]);
 function ordersHTML() {
-  let h = '<div class="pwin pboard"><div class="p-sign">Auftragsbrett</div><div class="p-cork">';
-  if (!S.orders.length) h += '<div class="p-note"><span class="p-pin"></span><div class="p-empty dark">Gerade keine Bestellungen. Schau morgen wieder vorbei!</div></div>';
-  S.orders.forEach((o, i) => {
+  const readySum = S.orders.filter(orderReady).reduce((a, o) => a + o.reward, 0);
+  let h = `<h2>Auftragsbrett</h2><div class="sinfo"><span>Fertig gepackte Lieferungen werden nachts abgeholt und bezahlt.</span></div>`;
+  if (!S.orders.length) h += '<div class="ssec"><div class="sempty">Gerade keine Bestellungen. Schau morgen wieder vorbei!</div></div>';
+  for (const o of S.orders) {
     const r = orderReady(o);
-    h += `<div class="p-note${r ? ' done' : ''}" style="transform:rotate(${i % 2 ? .8 : -.8}deg)"><span class="p-pin"></span>
-      <div class="nh"><b>${o.who}</b><span class="p-stamp${r ? ' ok' : o.days <= 1 ? ' hot' : ''}">${r ? 'Bereit' : `noch ${o.days} Tag${o.days > 1 ? 'e' : ''}`}</span></div>`;
+    h += `<div class="ssec${r ? ' ready' : ''}"><div class="ssech"><span>${o.who}</span><span class="chip${r ? ' ok' : o.days <= 1 ? ' hot' : ''}">${r ? 'Bereit zur Abholung' : `noch ${o.days} Tag${o.days > 1 ? 'e' : ''}`}</span></div>`;
     for (const t in o.items) {
-      const need = o.items[t], have = o.packed[t] || 0, inv = cnt(t), pct = Math.round(have / need * 100);
-      h += `<div class="nl"><img src="${ICONURL[iconOf(t)]}" alt=""><div class="nm"><div class="nt"><span>${ITEM[t].name}</span><b>${have}/${need}</b></div><div class="p-bar"><i style="width:${pct}%"></i></div></div>` +
-        (have < need ? `<button class="pbtn sm" data-act="pack:${o.id}:${t}" ${inv ? '' : 'disabled'}>${inv ? `+${Math.min(inv, need - have)}` : 'fehlt'}</button>` : '<span class="p-check">✓</span>') + '</div>';
+      const need = o.items[t], have = o.packed[t] || 0, inv = cnt(t), pct = Math.round(have / need * 100), miss = need - have;
+      h += `<div class="orow"><img src="${ICONURL[iconOf(t)]}" alt=""><div class="sname"><div class="otop"><b>${ITEM[t].name}</b><span>${have}/${need}</span></div>
+        <div class="obar"><i style="width:${pct}%"></i></div>
+        <small class="${!r && miss > 0 && inv < miss ? 'short' : ''}">Im Rucksack: <b>${inv}</b>${miss > 0 ? ` · es fehlen noch ${miss}` : ''}</small></div>` +
+        (miss > 0 ? `<button class="btn" data-act="pack:${o.id}:${t}" ${inv ? '' : 'disabled'}>${inv ? `${Math.min(inv, miss)} einpacken` : 'Fehlt'}</button>` : '<span class="okmark">✓ Fertig</span>') + '</div>';
     }
-    h += `<div class="nf"><span>Belohnung</span><b><span class="p-coin"></span>${o.reward.toLocaleString('de-DE')}g</b></div></div>`;
-  });
-  h += '</div><div class="p-cratebar"><span class="p-cicon"></span><span>Fertig gepackte Lieferungen werden heute Nacht aus der Lieferkiste abgeholt und bezahlt.</span></div>';
-  return h + '<div class="p-foot wood"><button class="pbtn sec" data-act="close">Schließen</button></div></div>';
+    h += `<div class="oreward"><span>Belohnung</span><b>${o.reward.toLocaleString('de-DE')}g</b></div></div>`;
+  }
+  h += `<div class="sfoot"><div class="ssum">${readySum ? `Heute Nacht: <b>+${readySum.toLocaleString('de-DE')}g</b>` : `${S.orders.length} offene Bestellung${S.orders.length === 1 ? '' : 'en'}`}</div><div class="sbtns"><button class="btn" data-act="close">Schließen</button></div></div>`;
+  return h;
 }
 function packOrder(id, t) {
   const o = S.orders.find(x => x.id === id); if (!o) return;
@@ -1414,7 +1433,7 @@ function act(tx, ty) {
   if (t === 'H') { toast('Die Haustür ist in der Mitte.'); return; }
   if (t === 'S') { openDlg(shopHTML()); return; }
   if (t === 'B') { shipQ = {}; openDlg(standHTML()); return; }
-  if (t === 'L') { openDlg(ordersHTML()); $('dlg').dataset.orders = 1; $('dlg').classList.add('pixdlg'); return; }
+  if (t === 'L') { openDlg(ordersHTML()); $('dlg').dataset.orders = 1; return; }
   if (!id) { toast('Du hast nichts in der Hand.'); return; }
   if (kind === 'sickle') {
     actTool = 'sickle';
@@ -1606,10 +1625,10 @@ $('invBtn').addEventListener('pointerup', openInv);
 // Joystick
 let joy = null;
 const J = $('joy'), K = $('knob');
-function joyReset() { joy = null; K.style.transform = ''; }
+function joyReset() { joy = null; K.style.transform = ''; K.style.transition = 'transform .12s'; }
 function joyMove(e) {
   let dx = e.clientX - joy.cx, dy = e.clientY - joy.cy;
-  const m = Math.hypot(dx, dy), max = joy.rad * .62;
+  const m = Math.hypot(dx, dy), max = joy.rad * .7;
   if (m > max) { dx *= max / m; dy *= max / m; }
   K.style.transform = `translate(${dx}px,${dy}px)`;
   joy.vx = dx / max; joy.vy = dy / max;
@@ -1618,7 +1637,7 @@ J.addEventListener('pointerdown', e => {
   e.preventDefault();
   try { J.setPointerCapture(e.pointerId); } catch (_) {}
   const r = J.getBoundingClientRect();
-  joy = { id: e.pointerId, cx: r.left + r.width / 2, cy: r.top + r.height / 2, rad: r.width / 2, vx: 0, vy: 0 };
+  joy = { id: e.pointerId, cx: r.left + r.width / 2, cy: r.top + r.height / 2, rad: r.width / 2, vx: 0, vy: 0 }; K.style.transition = 'none';
   joyMove(e);
 });
 J.addEventListener('pointermove', e => { if (joy && e.pointerId === joy.id) joyMove(e); });
@@ -1736,11 +1755,22 @@ let animT = 0, moving = false;
 function blocked(x, y) { return wetAt(x, y) || SOLID.has(tileAt(Math.floor(x / 16), Math.floor(y / 16))); }
 function wetCount(tx, ty, pad) { let n = 0; for (let y = ty * 16 - pad; y < ty * 16 + 16 + pad; y++) for (let x = tx * 16 - pad; x < tx * 16 + 16 + pad; x++) if (wetAt(x, y)) n++; return n; }
 function isWater(tx, ty) { return wetCount(tx, ty, 0) >= 24; }
-function tryMove(dx, dy) {
-  const nx = S.px + dx, ny = S.py + dy;
-  if (blocked(nx - 5, ny - 5) || blocked(nx + 5, ny - 5) || blocked(nx - 5, ny - 1) || blocked(nx + 5, ny - 1)) return;
-  S.px = nx; S.py = ny;
+function free(nx, ny) { return !(blocked(nx - 5, ny - 5) || blocked(nx + 5, ny - 5) || blocked(nx - 5, ny - 1) || blocked(nx + 5, ny - 1) || blocked(nx, ny - 1)); }
+// Bewegt entlang einer Achse; an Ecken wird sanft seitlich nachgeholfen, damit man nicht hängen bleibt
+function moveAxis(dx, dy, other) {
+  if (!dx && !dy) return;
+  if (free(S.px + dx, S.py + dy)) { S.px += dx; S.py += dy; return; }
+  if (Math.abs(other) > .35) return;
+  const step = Math.abs(dx || dy);
+  for (let n = 1; n <= 6; n++) for (const sg of [-1, 1]) {
+    const ox = dx ? 0 : sg * n, oy = dx ? sg * n : 0;
+    if (free(S.px + ox, S.py + oy) && free(S.px + ox + dx, S.py + oy + dy)) {
+      const k = Math.min(n, step);
+      S.px += dx ? 0 : sg * k; S.py += dx ? sg * k : 0; return;
+    }
+  }
 }
+const vel = { x: 0, y: 0 };
 const rain = Array.from({ length: 80 }, () => ({ x: Math.random() * W, y: Math.random() * H, s: 180 + Math.random() * 80 }));
 function update(dt) {
   if (actT > 0) actT -= dt;
@@ -1758,16 +1788,28 @@ function update(dt) {
   updatePond(dt);
   if (S.rain) for (const d of rain) { d.y += d.s * dt; d.x -= d.s * .25 * dt; if (d.y > VH) { d.y = -4; d.x = Math.random() * (VW + 60); } }
   if (paused) { moving = false; return; }
-  let dx = 0, dy = 0;
-  if (keys.has('l')) dx--; if (keys.has('r')) dx++; if (keys.has('u')) dy--; if (keys.has('d')) dy++;
-  if (joy && Math.hypot(joy.vx, joy.vy) > .25) { dx = joy.vx; dy = joy.vy; }
-  moving = !!(dx || dy);
+  let tx = 0, ty = 0;
+  if (keys.has('l')) tx--; if (keys.has('r')) tx++; if (keys.has('u')) ty--; if (keys.has('d')) ty++;
+  if (tx && ty) { tx *= .7071; ty *= .7071; }
+  if (joy) {
+    const m = Math.hypot(joy.vx, joy.vy);
+    if (m > .15) { const sp = .4 + .6 * Math.min(1, (m - .15) / .55); tx = joy.vx / m * sp; ty = joy.vy / m * sp; }
+  }
+  const a = Math.min(1, dt * 18);
+  vel.x += (tx - vel.x) * a; vel.y += (ty - vel.y) * a;
+  if (!tx && Math.abs(vel.x) < .03) vel.x = 0; if (!ty && Math.abs(vel.y) < .03) vel.y = 0;
+  const spd = Math.hypot(vel.x, vel.y);
+  moving = spd > .05;
+  if (tx || ty) {
+    // Blickrichtung mit Hysterese: bei Schrägen bleibt die bisherige Achse
+    const ax = Math.abs(tx), ay = Math.abs(ty), horiz = S.dir === 'left' || S.dir === 'right';
+    if (ax > ay * 1.3 || (horiz && ax >= ay / 1.3 && ax > 0)) S.dir = tx > 0 ? 'right' : 'left';
+    else S.dir = ty > 0 ? 'down' : 'up';
+  }
   if (moving) {
-    if (Math.abs(dx) >= Math.abs(dy)) S.dir = dx > 0 ? 'right' : 'left'; else S.dir = dy > 0 ? 'down' : 'up';
-    const len = Math.hypot(dx, dy), k = len > 1 ? 1 / len : Math.max(.45, len), sp = 64 * dt;
-    const nx = len > 1 ? dx * k : dx / len * k, ny = len > 1 ? dy * k : dy / len * k;
-    tryMove(nx * sp, 0); tryMove(0, ny * sp);
-    animT += dt;
+    const sp = 64 * dt;
+    moveAxis(vel.x * sp, 0, vel.y); moveAxis(0, vel.y * sp, vel.x);
+    animT += dt * (.5 + .5 * Math.min(1, spd));
   } else animT = 0;
   S.time += dt * 2;
   if (S.time >= 1440 && !S.warned) { S.warned = true; toast('Mitternacht! Du solltest ins Bett gehen.'); }
@@ -1786,8 +1828,8 @@ function corners(x, y) {
   R(X, x, y + 15, 4, 1, c); R(X, x, y + 12, 1, 4, c); R(X, x + 12, y + 15, 4, 1, c); R(X, x + 15, y + 12, 1, 4, c);
 }
 function render(t) {
-  camX = Math.round(Math.max(0, Math.min(W - VW, S.px - VW / 2)));
-  camY = Math.round(Math.max(0, Math.min(H - VH, S.py - 8 - VH / 2)));
+  camX = Math.max(0, Math.min(W - VW, Math.round(S.px) - (VW >> 1)));
+  camY = Math.max(0, Math.min(H - VH, Math.round(S.py) - 8 - (VH >> 1)));
   X.fillStyle = '#26121f'; X.fillRect(0, 0, VW, VH);
   X.save(); X.translate(-camX, -camY);
   X.drawImage(BG, 0, 0); X.drawImage(TL, 0, 0);
@@ -1815,7 +1857,7 @@ function render(t) {
   const f = moving ? Math.floor(animT * 8) % 4 : 0;
   const flip = S.dir === 'left';
   drawPlayerSprite(pg, flip ? 'right' : S.dir, f);
-  const ox = Math.round(S.px - 8), oy = Math.round(S.py - 19) - (moving && f % 2 ? 1 : 0);
+  const ox = Math.round(S.px) - 8, oy = Math.round(S.py) - 19 - (moving && f % 2 ? 1 : 0);
   R(X, Math.round(S.px) - 5, Math.round(S.py) - 2, 10, 2, 'rgba(0,0,0,.25)');
   if (flip) { X.save(); X.translate(ox + 16, oy); X.scale(-1, 1); X.drawImage(PC, 0, 0); X.restore(); }
   else X.drawImage(PC, ox, oy);
