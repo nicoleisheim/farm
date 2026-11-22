@@ -899,15 +899,22 @@ function drawStump(g, tx, ty) {
 /* ---------- crops ---------- */
 function drawCrop(g, t, v, x0, y0) {
   const G1 = '#4f9a3a', G2 = '#6cc04f', G3 = '#94dc6c';
-  if (v <= 2) { // Pflanzschild in der Farbe der Sorte
-    const tc = { ruebe: ['#fff3cf', '#c9a860'], kohl: ['#9fe07a', '#4f9a3a'], kuerbis: ['#ffa04a', '#c0611a'] }[t];
-    R(g, x0 + 12, y0 + 8, 1, 6, '#c9a07a'); R(g, x0 + 10, y0 + 5, 5, 4, tc[1]); R(g, x0 + 11, y0 + 6, 3, 2, tc[0]);
-    if (v === 0) { for (const [a, b] of [[4, 9], [7, 8], [5, 11]]) { R(g, x0 + a, y0 + b + 1, 2, 1, '#3a2415'); R(g, x0 + a, y0 + b, 2, 1, tc[0]); R(g, x0 + a, y0 + b, 1, 1, '#fffbe6'); } R(g, x0 + 6, y0 + 7, 1, 2, '#8fd86a'); return; }
-  }
-  if (v === 1) { R(g, x0 + 7, y0 + 8, 1, 4, G1); R(g, x0 + 5, y0 + 7, 2, 2, G2); R(g, x0 + 8, y0 + 6, 2, 2, G2); return; }
-  if (v === 2) {
-    R(g, x0 + 7, y0 + 6, 2, 7, G1); R(g, x0 + 4, y0 + 6, 3, 2, G2); R(g, x0 + 9, y0 + 5, 3, 2, G2);
-    R(g, x0 + 5, y0 + 9, 2, 2, G2); R(g, x0 + 9, y0 + 9, 2, 2, G2); R(g, x0 + 4, y0 + 6, 1, 1, G3); R(g, x0 + 11, y0 + 5, 1, 1, G3); return;
+  if (v <= 2) { // jede Sorte hat ab dem Samen eine eigene Form
+    if (t === 'ruebe') {
+      if (v === 0) { for (const [a, b] of [[5, 9], [8, 8], [10, 10], [6, 11]]) { R(g, x0 + a, y0 + b + 1, 1, 1, '#3a2415'); R(g, x0 + a, y0 + b, 1, 1, '#fff3cf'); } return; }
+      if (v === 1) { R(g, x0 + 7, y0 + 7, 1, 5, '#6cc04f'); R(g, x0 + 9, y0 + 6, 1, 6, '#8fd86a'); R(g, x0 + 7, y0 + 6, 1, 1, '#b8f09a'); R(g, x0 + 9, y0 + 5, 1, 1, '#b8f09a'); return; }
+      R(g, x0 + 6, y0 + 5, 1, 7, '#58aa40'); R(g, x0 + 8, y0 + 3, 1, 9, '#6cc04f'); R(g, x0 + 10, y0 + 5, 1, 7, '#58aa40');
+      R(g, x0 + 5, y0 + 4, 1, 2, '#8fd86a'); R(g, x0 + 8, y0 + 2, 1, 2, '#b8f09a'); R(g, x0 + 11, y0 + 4, 1, 2, '#8fd86a'); R(g, x0 + 7, y0 + 11, 3, 1, '#f1e4bb'); return;
+    }
+    if (t === 'kohl') {
+      if (v === 0) { for (const [a, b] of [[5, 9], [9, 8], [7, 11]]) { R(g, x0 + a, y0 + b + 1, 2, 1, '#3a2415'); R(g, x0 + a, y0 + b, 2, 1, '#8fd08a'); R(g, x0 + a, y0 + b, 1, 1, '#d4f5cc'); } return; }
+      if (v === 1) { R(g, x0 + 7, y0 + 9, 2, 3, '#5a9a5a'); disc(g, x0 + 6, y0 + 8, 2, '#7fb88a'); disc(g, x0 + 10, y0 + 8, 2, '#7fb88a'); R(g, x0 + 5, y0 + 7, 1, 1, '#c4e8cc'); R(g, x0 + 9, y0 + 7, 1, 1, '#c4e8cc'); return; }
+      disc(g, x0 + 8, y0 + 9, 4, '#5f9e6a'); disc(g, x0 + 5, y0 + 8, 2, '#7fb88a'); disc(g, x0 + 11, y0 + 8, 2, '#7fb88a'); disc(g, x0 + 8, y0 + 7, 2, '#9fd0a8'); R(g, x0 + 8, y0 + 6, 1, 5, '#c4e8cc'); return;
+    }
+    if (v === 0) { for (const [a, b] of [[4, 9], [8, 8], [9, 11]]) { R(g, x0 + a, y0 + b + 1, 3, 1, '#3a2415'); R(g, x0 + a, y0 + b, 3, 1, '#ffd9a0'); R(g, x0 + a, y0 + b, 1, 1, '#fff4e0'); } return; }
+    if (v === 1) { R(g, x0 + 7, y0 + 9, 1, 3, '#4f9a3a'); R(g, x0 + 3, y0 + 8, 4, 3, '#4f9a3a'); R(g, x0 + 8, y0 + 7, 5, 3, '#6cc04f'); R(g, x0 + 4, y0 + 8, 1, 1, '#8fd86a'); R(g, x0 + 9, y0 + 7, 1, 1, '#a5e08a'); return; }
+    R(g, x0 + 2, y0 + 11, 12, 1, '#4f9a3a'); R(g, x0 + 12, y0 + 9, 1, 2, '#4f9a3a'); R(g, x0 + 13, y0 + 8, 1, 1, '#4f9a3a');
+    R(g, x0 + 2, y0 + 7, 5, 4, '#4f9a3a'); R(g, x0 + 8, y0 + 6, 5, 4, '#6cc04f'); R(g, x0 + 3, y0 + 7, 1, 1, '#8fd86a'); R(g, x0 + 9, y0 + 6, 1, 1, '#a5e08a'); return;
   }
   if (t === 'ruebe') {
     R(g, x0 + 7, y0 + 2, 2, 9, G1); R(g, x0 + 4, y0 + 3, 2, 6, G2); R(g, x0 + 10, y0 + 3, 2, 6, G2);
