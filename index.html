@@ -456,7 +456,7 @@ const W = 384, H = 256, TS = 16, COLS = 24, ROWS = 16;
 const C = document.getElementById('c'), X = C.getContext('2d');
 X.imageSmoothingEnabled = false;
 const $ = id => document.getElementById(id);
-let VW = W, VH = H, camX = 0, camY = 0;
+let VW = W, VH = H, camX = 0, camY = 0, HUDB = 0;
 let touchMode = matchMedia('(pointer:coarse)').matches || ('ontouchstart' in window);
 let padMode = navigator.userAgent.includes('SonnenhofApp');
 const tmode = () => touchMode && !padMode;
@@ -2442,7 +2442,8 @@ function corners(x, y) {
 }
 function render(t) {
   camX = Math.max(0, Math.min(W - VW, Math.round(S.px) - (VW >> 1)));
-  camY = Math.max(0, Math.min(H - VH, Math.round(S.py) - 8 - (VH >> 1)));
+  // Unter der Werkzeugleiste darf die Kamera etwas weiter scrollen, damit nichts verdeckt bleibt
+  camY = Math.max(0, Math.min(H - VH + HUDB, Math.round(S.py) - 8 - ((VH - HUDB) >> 1)));
   X.fillStyle = '#26121f'; X.fillRect(0, 0, VW, VH);
   X.save(); X.translate(-camX, -camY);
   const farm = LOC === 'farm';
@@ -2456,6 +2457,8 @@ function render(t) {
   drawPondAnim(t); drawStandGoods(t);
   updateSoilLayer(); X.drawImage(SL, 0, 0);
   }
+  // Waldrand unten weiterführen, wenn die Kamera über den Kartenrand hinaus schaut
+  for (let yy = H; yy < camY + VH; yy += 16) { X.drawImage(farm ? BG : BG_T, 0, H - 16, W, 16, 0, yy, W, 16); if (farm) X.drawImage(TL, 0, H - 16, W, 16, 0, yy, W, 16); }
   if (farm) for (const k in S.soil) if (S.soil[k].w && Math.floor(t * 1.5 + hash(...k.split(',').map(Number), 12) * 4) % 4 === 0) {
     const [tx, ty] = k.split(',').map(Number); R(X, tx * 16 + 3 + Math.floor(hash(tx, ty, 13) * 9), ty * 16 + 5 + Math.floor(hash(tx, ty, 14) * 7), 1, 1, '#b8dcf0');
   }
@@ -2551,6 +2554,7 @@ function fit() {
     if (padMode) app.style.fontSize = Math.round(ih / 18) + 'px';
     stage.style.width = W * s + 'px'; stage.style.height = VH * s + 'px';
   }
+  HUDB = port ? 0 : Math.ceil(($('bottom').offsetHeight + 6) / s);
   if (C.width !== VW || C.height !== VH) { C.width = VW; C.height = VH; X.imageSmoothingEnabled = false; }
 }
 addEventListener('resize', fit); addEventListener('orientationchange', () => setTimeout(fit, 200));
