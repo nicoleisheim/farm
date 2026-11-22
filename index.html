@@ -1029,11 +1029,8 @@ function drawStand(g) {
   R(g, x0 + 1, y0 + 21, 30, 1, '#c88e5c'); R(g, x0 + 1, y0 + 26, 30, 1, '#8a5a40');
   R(g, x0 + 1, y0 + 16, 2, 11, '#c08a64'); R(g, x0 + 29, y0 + 16, 2, 11, '#c08a64');
   R(g, x0 + 31, y0 + 20, 4, 2, '#c08a64'); R(g, x0 + 31, y0 + 20, 4, 1, '#e0a874'); R(g, x0 + 34, y0 + 18, 2, 6, '#a86d48');
-  // Rundschild mit Herz und Kreuzräder (Pixelvorlagen)
+  // Kreuzräder (Pixelvorlage)
   const px = (x, y, rows, pal) => rows.forEach((r, j) => [...r].forEach((ch, i) => { if (pal[ch]) R(g, x + i, y + j, 1, 1, pal[ch]); }));
-  px(x0 + 10, y0 + 17, ['...oooooo...', '.oolllllloo.', 'owwwwwwwwwwo', 'owwwwwwwwwwo', 'owwwwwwwwwwo', 'owwwwwwwwwwo', '.oowwwwwwoo.', '...oooooo...'], { o: '#d9608c', w: '#fff4e6', l: '#ffffff' });
-  px(x0 + 12, y0 + 19, ['.pp..pp.', 'pppppppp', '.pppppp.', '..pppp..', '...pp...'], { p: '#ff8fb8' });
-  R(g, x0 + 13, y0 + 19, 1, 1, '#ffd0e2');
   for (const wx of [x0 + 3, x0 + 21]) px(wx, y0 + 24, ['..ooooo..', '.oLLLLLo.', 'oL..s..Lo', 'oL..s..Lo', 'oLsshssLo', 'oD..s..Do', 'oD..s..Do', '.oDDDDDo.', '..ooooo..'], { o: '#6a3a2a', L: '#e0a874', D: '#c08a64', s: '#a86d48', h: '#ff8fb8' });
 }
 function drawSign(g) {
