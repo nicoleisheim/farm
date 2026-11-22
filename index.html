@@ -330,7 +330,7 @@ body.port #toast{bottom:2.7em}
 #dlg .btn.red{border-image-source:var(--t-btnred);color:#fff;text-shadow:0 .1em 0 #8a2a3a}
 #dlg .btn:disabled{opacity:1;border-image-source:var(--t-btnoff);color:#c9a0b0;text-shadow:none}
 #dlg .btn.sq{width:auto;min-width:2em;padding:0 .15em}
-#dlg .inv{gap:.3em;margin:.35em 0 .2em;grid-template-columns:repeat(8,minmax(0,2.6em));justify-content:start}#dlg .bagv{grid-template-columns:repeat(5,minmax(0,2.6em))}
+#dlg .invwrap{display:flex;flex-wrap:wrap;gap:0 .55em;align-items:stretch}body.pad #dlg .invwrap{flex-wrap:nowrap}body.pad #dlg .invwrap .inv{grid-template-columns:repeat(8,minmax(0,1fr))}body.pad #dlg .invl{flex:0 0 calc(100% - 9.2em);max-width:calc(100% - 9.2em)}body.pad #dlg .invr{flex:1 0 8.5em;min-width:8.5em;font-size:.88em}body.pad #dlg .invwrap .inv{gap:.25em}body.pad #dlg .invr .detail{flex-direction:column;align-items:stretch}body.pad #dlg .invr .detail>img{width:2.2em;height:2.2em}#dlg .invl{flex:0 0 auto;min-width:0}#dlg .invr{flex:1 1 11em;min-width:0;display:flex}#dlg .invr>.ssec{flex:1;margin-top:0}#dlg .inv{gap:.3em;margin:.35em 0 .2em;grid-template-columns:repeat(8,minmax(0,2.6em));justify-content:start}#dlg .bagv{grid-template-columns:repeat(5,minmax(0,2.6em))}
 #dlg .inv .slot{background:none;border:.38em solid transparent;border-image:var(--t-slot) 4 fill / .38em stretch;border-radius:0;box-shadow:none;transform:none}
 #dlg .inv .slot.sel{border-image-source:var(--t-slotsel)}
 #dlg .inv .slot.empty{border-image-source:var(--t-slotempty)}
@@ -1684,8 +1684,10 @@ function slotHTML(c, i) {
 }
 function invHTML() {
   let h = T('bag', 'Rucksack') + `<div class="sinfo"><span class="money" title="Geld"><span class="p-coin"></span>${S.gold.toLocaleString('de-DE')}</span><span class="money" title="Energie"><img src="${ICONURL.heart}" alt="">${Math.round(S.energy)}/${S.maxEnergy}</span></div>`;
+  h += '<div class="invwrap"><div class="invl">';
   h += `<div class="ssec"><div class="ssech"><span>Werkzeugleiste</span></div><div class="inv">${S.bar.map((_, i) => slotHTML('bar', i)).join('')}</div></div>`;
   h += `<div class="ssec"><div class="ssech"><span>Rucksack</span></div><div class="inv">${S.bag.map((_, i) => slotHTML('bag', i)).join('')}</div></div>`;
+  h += '</div><div class="invr">';
   const id = invSel ? S[invSel[0]][invSel[1]] : null;
   if (id) {
     const it = ITEM[id], other = invSel[0] === 'bar' ? 'bag' : 'bar', free = S[other].includes(null);
@@ -1694,8 +1696,9 @@ function invHTML() {
     h += `<div class="ssec detail"><img src="${ICONURL[iconOf(id)]}" alt=""><div class="t"><b>${itemName(id)}</b>${it.tool ? '' : ` <small>×${cnt(id)}</small>`}<br><small>${d}</small>${it.eat ? `<br><small>Essen: +${it.eat} Energie</small>` : ''}${it.dura ? `<div class="dura"><span>Haltbarkeit</span>${duraBar(id, 'obar')}<b>${duraOf(id)}/${it.dura}</b></div>` : ''}<div class="acts">`;
     h += `<button class="btn" data-act="mv" ${free ? '' : 'disabled'}>${other === 'bar' ? 'In die Leiste' : 'In den Rucksack'}</button>`;
     if (it.eat) h += `<button class="btn" data-act="eat" ${S.energy >= S.maxEnergy ? 'disabled' : ''}>Essen</button>`;
-    h += `</div><small class="tip">Tipp: Danach ein freies Feld antippen, um es dorthin zu legen.</small></div></div>`;
-  } else h += `<div class="ssec detail empty"><small>Tippe auf einen Gegenstand, um ihn anzusehen oder zu verschieben.</small></div>`;
+    h += `</div><small class="tip">Tipp: Danach ein freies Feld ${padMode ? 'auswählen' : 'antippen'}, um es dorthin zu legen.</small></div></div>`;
+  } else h += `<div class="ssec detail empty"><small>${padMode ? 'Wähle einen Gegenstand aus und drück A, um ihn anzusehen oder zu verschieben.' : 'Tippe auf einen Gegenstand, um ihn anzusehen oder zu verschieben.'}</small></div>`;
+  h += '</div></div>';
   return h + '<div class="foot"><button class="btn" data-act="close">Schließen</button></div>';
 }
 function rerenderInv() { const sc = $('dlg').scrollTop; $('dlg').innerHTML = invHTML(); $('dlg').scrollTop = sc; }
