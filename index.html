@@ -1086,7 +1086,13 @@ function drawStore(g) {
   const x0 = STO.x0, y0 = STO.y0, cx = x0 + 32;
   const TH = '#dcae62', TL = '#e8c47e', TD = '#c0904a', TS = '#cfa056', TO = '#a07032';
   const brickWall = (ya, yb) => { R(g, x0 + 4, ya, 56, yb - ya, '#f3cddb'); for (let y = ya, k = 0; y < yb; y += 4, k++) for (let x = x0 + 4 - (k % 2 ? 4 : 0); x < x0 + 60; x += 8) { const xa = Math.max(x, x0 + 4), w = Math.min(x + 7, x0 + 60) - xa, h = Math.min(3, yb - y); if (w > 0 && h > 0) { R(g, xa, y, w, h, '#fde7ef'); R(g, xa, y, w, 1, '#fff4f8'); } } };
-  const base = () => { R(g, x0 + 3, y0 + 42, 58, 6, '#d8c0c8'); for (let i = 0; i < 9; i++) { R(g, x0 + 4 + i * 6, y0 + 43, 5, 2, '#eadbe0'); if (i < 8) R(g, x0 + 7 + i * 6, y0 + 46, 5, 1, '#eadbe0'); } };
+  const base = () => {
+    // Sockel: zwei Steinreihen im Verband, symmetrisch
+    R(g, x0 + 3, y0 + 42, 58, 6, '#d8c0c8');
+    const stone = (x, y, w) => { R(g, x, y, w, 2, '#eadbe0'); R(g, x, y, w, 1, '#f6eef2'); };
+    for (let k = 0; k < 8; k++) stone(x0 + 4 + k * 7, y0 + 43, 6);
+    stone(x0 + 4, y0 + 46, 3); for (let k = 0; k < 7; k++) stone(x0 + 8 + k * 7, y0 + 46, 6); stone(x0 + 57, y0 + 46, 3);
+  };
   const win = wx => { R(g, wx, y0 + 22, 12, 12, '#ffffff'); R(g, wx + 1, y0 + 23, 10, 10, '#c4ecff'); R(g, wx + 1, y0 + 23, 10, 4, '#e0f6ff'); R(g, wx + 5, y0 + 23, 2, 10, '#ffffff'); R(g, wx + 1, y0 + 27, 10, 2, '#ffffff'); R(g, wx - 1, y0 + 34, 14, 2, '#c08a64'); R(g, wx - 1, y0 + 34, 14, 1, '#e0a874'); };
   const thatch = (rows, ytop, w0, w1, xc) => { let pxa = null; for (let r = 0; r < rows; r++) { const ins = Math.round((w1 - w0) / 2 * (1 - Math.sin((r + 2) / (rows + 2) * Math.PI / 2))), w = w1 - ins * 2, xa = xc - (w >> 1), y = ytop + r, rr = r % 4;
     R(g, xa, y, w, 1, rr === 0 ? TL : rr === 3 ? TD : TH); if (rr === 1 || rr === 2) for (let x = xa + 2 + ((r >> 2) % 2) * 2; x < xa + w - 2; x += 4) R(g, x, y, 1, 1, TS);
@@ -1106,25 +1112,26 @@ function drawStore(g) {
   // Übergang: weiße Zierkante mit gleichmäßigen Bögen über die Wandbreite
   R(g, x0 + 4, y0 + 12, 56, 1, '#e9a9c2'); R(g, x0 + 4, y0 + 13, 56, 1, '#ffffff');
   for (let x = x0 + 4; x < x0 + 60; x += 4) { R(g, x, y0 + 14, 3, 1, '#ffffff'); R(g, x + 1, y0 + 15, 1, 1, '#ffffff'); R(g, x + 3, y0 + 14, 1, 1, '#e9a9c2'); }
-  for (let y = ap; y <= y0 + 14; y++) { const h = y - ap + 2; for (const d of [-1, 1]) { R(g, cx + d * h, y, 1, 1, TO); R(g, cx + d * (h - 1), y, 1, 1, TD); R(g, cx + d * (h - 2), y, 1, 1, TH); R(g, cx + d * (h - 3), y, 1, 1, TH); R(g, cx + d * (h - 4), y, 1, 1, TL); R(g, cx + d * (h - 5), y, 1, 1, TO); } }
-  R(g, cx - 2, ap - 1, 5, 1, TO); R(g, cx - 3, ap, 7, 1, TO); R(g, cx - 2, ap, 5, 1, TL); R(g, cx - 1, ap + 1, 3, 1, TH);
+  const BAND = [TO, TD, TH, TH, TL, TO];
+  for (let y = ap; y <= y0 + 14; y++) { const h = y - ap + 2; for (let k = BAND.length - 1; k >= 0; k--) { const o = h - k; if (o < 0) continue; R(g, cx - o, y, 1, 1, BAND[k]); R(g, cx + o, y, 1, 1, BAND[k]); } }
+  // Firstkappe: runder Abschluss oben
+  R(g, cx - 1, ap - 1, 3, 1, TO); R(g, cx, ap - 2, 1, 1, TO); R(g, cx - 1, ap, 3, 1, TL); R(g, cx, ap - 1, 1, 1, TL);
   // Heuluke: quadratisch, weißes X im 45°-Winkel
   frame(cx - 6, y0 - 4, 13, 13); R(g, cx - 5, y0 - 3, 11, 11, '#ffffff'); R(g, cx - 4, y0 - 2, 9, 9, '#eb9cb9');
   for (let i = 0; i < 9; i++) { R(g, cx - 4 + i, y0 - 2 + i, 1, 1, '#ffffff'); R(g, cx + 4 - i, y0 - 2 + i, 1, 1, '#ffffff'); }
-  // Rundbogentor im Stil der Farmhaustür: runder Bogen, 2 px Rahmen, Licht links, Schatten rechts
-  const OA = [4, 6, 7, 8, 9, 9, 10, 10], top = y0 + 18, bot = y0 + 43;
-  const hwO = y => y - top < OA.length ? OA[y - top] : 10, hwI = y => y - top - 2 < 0 ? -1 : y - top - 2 < OA.length ? OA[y - top - 2] - 2 : 8;
-  for (let y = top; y < bot; y++) {
-    const o = hwO(y), i = hwI(y);
-    R(g, cx - o, y, o * 2 + 1, 1, '#c08a64'); R(g, cx - o, y, 1, 1, '#e0a874'); R(g, cx + o, y, 1, 1, '#a86d48');
-    if (y === top) R(g, cx - o, y, o * 2 + 1, 1, '#e0a874');
-    if (i >= 0) { R(g, cx - i, y, i * 2 + 1, 1, '#eb9cb9'); for (const x of [cx - 5, cx - 2, cx + 2, cx + 5]) if (Math.abs(x - cx) < i) R(g, x, y, 1, 1, '#d8819f'); }
-  }
-  R(g, cx, top + 2, 1, bot - top - 2, '#c08a64'); R(g, cx - 3, y0 + 31, 1, 3, '#ffd84a'); R(g, cx + 3, y0 + 31, 1, 3, '#ffd84a');
+  // Rundbogentor im Stil der Farmhaustür
+  const DF = [5, 7, 8, 9, 10, 10];
+  DF.forEach((hw, i) => { R(g, cx - hw, y0 + 18 + i, hw * 2 + 1, 1, '#c08a64'); R(g, cx - hw, y0 + 18 + i, 1, 1, '#e0a874'); });
+  R(g, cx - 10, y0 + 24, 21, 19, '#c08a64'); R(g, cx - 10, y0 + 24, 1, 19, '#e0a874'); R(g, cx + 10, y0 + 24, 1, 19, '#a86d48');
+  const DI = [3, 5, 6, 7, 8];
+  DI.forEach((hw, i) => R(g, cx - hw, y0 + 20 + i, hw * 2 + 1, 1, '#eb9cb9')); R(g, cx - 8, y0 + 25, 17, 18, '#eb9cb9');
+  for (const x of [cx - 5, cx - 2, cx + 3, cx + 6]) R(g, x, y0 + 21, 1, 22, '#d8819f');
+  R(g, cx, y0 + 20, 1, 23, '#c08a64'); R(g, cx - 2, y0 + 31, 1, 3, '#ffd84a'); R(g, cx + 2, y0 + 31, 1, 3, '#ffd84a');
   // Fenster: Holzrahmen mit Kreuz
-  for (const wx of [x0 + 8, x0 + 46]) { R(g, wx, y0 + 21, 10, 10, '#c08a64'); R(g, wx, y0 + 21, 10, 1, '#e0a874'); R(g, wx, y0 + 21, 1, 10, '#e0a874'); R(g, wx + 1, y0 + 22, 8, 8, '#c4ecff'); R(g, wx + 1, y0 + 22, 8, 3, '#e0f6ff'); R(g, wx + 4, y0 + 22, 2, 8, '#c08a64'); R(g, wx + 1, y0 + 25, 8, 2, '#c08a64'); R(g, wx + 9, y0 + 22, 1, 9, '#a86d48'); R(g, wx + 2, y0 + 23, 2, 1, '#ffffff'); R(g, wx - 1, y0 + 31, 12, 2, '#c08a64'); R(g, wx - 1, y0 + 31, 12, 1, '#e0a874'); R(g, wx - 1, y0 + 33, 12, 1, 'rgba(60,20,40,.12)'); }
-  // Holzstufe vor dem Tor
-  R(g, cx - 11, y0 + 43, 23, 1, '#e0a874'); R(g, cx - 11, y0 + 44, 23, 2, '#c08a64'); R(g, cx - 10, y0 + 46, 21, 1, '#a86d48'); R(g, cx - 11, y0 + 43, 1, 3, '#e0a874'); R(g, cx + 11, y0 + 44, 1, 2, '#a86d48'); R(g, cx - 9, y0 + 47, 19, 1, 'rgba(60,20,40,.14)');
+  for (const wx of [x0 + 8, x0 + 46]) { R(g, wx, y0 + 21, 10, 10, '#c08a64'); R(g, wx, y0 + 21, 10, 1, '#e0a874'); R(g, wx, y0 + 21, 1, 10, '#e0a874'); R(g, wx + 1, y0 + 22, 8, 8, '#c4ecff'); R(g, wx + 1, y0 + 22, 8, 3, '#e0f6ff'); R(g, wx + 4, y0 + 22, 2, 8, '#c08a64'); R(g, wx + 1, y0 + 25, 8, 2, '#c08a64'); R(g, wx - 1, y0 + 31, 12, 2, '#c08a64'); R(g, wx - 1, y0 + 31, 12, 1, '#e0a874'); }
+  // Holzstufe vor dem Tor, reicht bis auf den Boden
+  R(g, cx - 11, y0 + 43, 23, 1, '#e0a874'); R(g, cx - 11, y0 + 44, 23, 4, '#c08a64'); R(g, cx - 11, y0 + 46, 23, 1, '#a86d48'); R(g, cx - 11, y0 + 47, 23, 1, '#8a5a40');
+  R(g, cx - 11, y0 + 43, 1, 4, '#e0a874'); R(g, cx + 11, y0 + 44, 1, 3, '#a86d48'); R(g, cx - 10, y0 + 48, 21, 1, 'rgba(60,20,40,.16)');
 }
 function drawFence(g) {
   // Holzzaun mit Kreuzstreben: Pfosten gleichmäßig verteilt, je Feld ein sauberes X zwischen zwei Latten
