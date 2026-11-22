@@ -396,7 +396,7 @@ body.touch #gold{background:none}
 #helpBtn{padding:0;width:2.6em;height:2.6em;font-weight:600;color:#c4527e}
 #ebar{border-radius:0;background:#6a3a4a;box-shadow:inset 0 .12em 0 rgba(0,0,0,.25)}
 #efill{box-shadow:inset 0 .14em 0 rgba(255,255,255,.35)}
-#hint{padding:0 .45em}#toast{padding:.3em .7em}
+#hint{padding:0 .45em}#toast{padding:.3em .7em;z-index:30}#savedot{display:inline-block;margin-left:.4em;color:#c4527e;font-size:.8em;opacity:0;transition:opacity .3s}#savedot.on{opacity:1}
 #hint kbd{border-radius:0}
 #dlg .foot{position:sticky;bottom:-.7em;z-index:2;background:#fff4f8;margin:.6em -.75em -.7em;padding:.6em .75em .7em;box-shadow:0 -.14em 0 #e8b8c8}
 body.touch .slot .k{display:none}
@@ -434,7 +434,7 @@ body.port #hint{bottom:.3em}
       <div id="clock" class="panel">
         <div id="date"></div>
         <div><img id="weather" alt=""><span id="time"></span></div>
-        <div id="gold"></div>
+        <div id="gold"></div><div><span id="savedot">✓ gespeichert</span></div>
       </div>
     </div>
     <div id="hint" class="panel"></div>
@@ -1518,7 +1518,13 @@ function migrate2(d) {
   if (d.shipped) { for (const t in d.shipped) if (d.shipped[t]) d.stand[t] = (d.stand[t] || 0) + d.shipped[t]; delete d.shipped; }
   return d;
 }
-function save() { S.loc = LOC; try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+let saveT = 0;
+function save() {
+  S.loc = LOC;
+  try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { return false; }
+  const d = $('savedot'); if (d) { d.classList.add('on'); clearTimeout(saveT); saveT = setTimeout(() => d.classList.remove('on'), 1800); }
+  return true;
+}
 window.__saveGame = save;
 setInterval(() => { if (!paused) save(); }, 30000);
 document.addEventListener('visibilitychange', () => { if (document.hidden) save(); });
@@ -1969,7 +1975,11 @@ $('dlg').addEventListener('click', e => {
     try { localStorage.setItem('sonnenhof-ui', JSON.stringify(UIS)); } catch (e) {}
     applyUI(); snd('sel'); const sc = $('dlg').scrollTop; $('dlg').innerHTML = helpHTML(false); $('dlg').scrollTop = sc;
   }
-  else if (a === 'save') { save(); snd('sel'); toast('Spielstand gespeichert'); }
+  else if (a === 'save') {
+    const ok = save(); snd(ok ? 'coin' : 'err'); toast(ok ? 'Spielstand gespeichert ✓' : 'Speichern hat nicht geklappt');
+    b.textContent = ok ? 'Gespeichert ✓' : 'Fehler'; b.classList.add('primary');
+    setTimeout(() => { if (b.isConnected) { b.textContent = 'Speichern'; b.classList.remove('primary'); } }, 1600);
+  }
   else if (a === 'new') $('dlg').innerHTML = `${T('heart', 'Neues Spiel?')}<div class="ssec warn"><p class="lead">Dein ganzer Fortschritt geht verloren – Hof, Geld und Rucksack.</p></div><div class="foot"><button class="btn" data-act="close">Abbrechen</button><button class="btn red" data-act="newc">Ja, neu anfangen</button></div>`;
   else if (a === 'newc') { LOC = 'farm'; S = newState(); TREES = S.trees; rebuildTrees(); custs.length = 0; save(); parts.length = 0; closeDlg(); toast('Ein neuer Anfang!'); }
 });
