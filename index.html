@@ -460,6 +460,10 @@ let VW = W, VH = H, camX = 0, camY = 0;
 let touchMode = matchMedia('(pointer:coarse)').matches || ('ontouchstart' in window);
 let padMode = navigator.userAgent.includes('SonnenhofApp');
 const tmode = () => touchMode && !padMode;
+// Anzeigegröße, selbst einstellbar in der Hilfe (Start-Taste / ?)
+let UIS = { bar: padMode ? .8 : 1, dlg: 1 };
+try { Object.assign(UIS, JSON.parse(localStorage.getItem('sonnenhof-ui') || '{}')); } catch (e) {}
+function applyUI() { $('bottom').style.fontSize = UIS.bar * 100 + '%'; $('dlg').style.fontSize = UIS.dlg * 100 + '%'; }
 
 /* ---------- helpers ---------- */
 function R(g, x, y, w, h, c) { g.fillStyle = c; g.fillRect(x, y, w, h); }
@@ -1649,6 +1653,7 @@ function helpHTML(intro) {
   h += `<div class="ssec"><div class="ssech"><span>Steuerung</span></div>${ctl.map(([k, v]) => `<div class="kv"><kbd>${k}</kbd><span>${v}</span></div>`).join('')}</div>`;
   const steps = [['hoe', 'Gras mit der Hacke auflockern'], ['seed_ruebe', 'Samen säen'], ['can', 'Täglich gießen, am Teich auffüllen'], ['sickle', 'Reife Pflanzen mit der Sichel ernten'],
     ['stand', 'Ernte am Verkaufsstand auslegen'], ['board', 'Bestellungen am Auftragsbrett einpacken'], ['axe', 'Bäume fällen für Holz'], ['shopi', 'Samen und Setzlinge im Laden kaufen']];
+  if (!intro) h += `<div class="ssec"><div class="ssech"><span>Anzeige</span></div>${[['bar', 'Werkzeugleiste'], ['dlg', 'Fenster']].map(([k, n]) => `<div class="lrow"><span></span><div class="ln"><b>${n}</b><small>Größe anpassen</small></div><div class="qty"><button class="btn sq" data-act="ui:${k}:-1" ${UIS[k] > .5 ? '' : 'disabled'}>−</button><span class="qv">${Math.round(UIS[k] * 100)}%</span><button class="btn sq" data-act="ui:${k}:1" ${UIS[k] < 1.5 ? '' : 'disabled'}>+</button></div><span></span></div>`).join('')}</div>`;
   h += `<div class="ssec"><div class="ssech"><span>So geht's</span></div><div class="steps">${steps.map(([ic, t]) => `<div class="step"><img src="${ICONURL[ic]}" alt=""><span>${t}</span></div>`).join('')}</div></div>`;
   h += `<div class="ssec"><div class="ssech"><span>Gut zu wissen</span></div><div class="kv"><img src="${ICONURL.w_moon}" alt=""><span>Geh vor 2 Uhr nachts durch die Haustür ins Bett – sonst kippst du um. Gespeichert wird beim Schlafen.</span></div></div>`;
   return h + `<div class="foot">${intro ? '' : '<button class="btn red" data-act="new">Neues Spiel</button>'}<button class="btn primary" data-act="close">${intro ? "Los geht's!" : 'Weiter'}</button></div>`;
@@ -1948,6 +1953,11 @@ $('dlg').addEventListener('click', e => {
   else if (a.startsWith('back:')) { const t = a.slice(5), m = S.stand[t]; if (m && addItem(t, m)) { S.stand[t] = 0; snd('plant'); toast(`${m}× ${ITEM[t].name} zurückgenommen`); } rerenderShip(); }
   else if (a === 'eat') eatItem();
   else if (a === 'hold') { const bi = invSel[1]; closeDlg(); setSel(bi); }
+  else if (a.startsWith('ui:')) {
+    const [, k, d] = a.split(':'); UIS[k] = Math.round(Math.max(.5, Math.min(1.5, UIS[k] + +d * .1)) * 10) / 10;
+    try { localStorage.setItem('sonnenhof-ui', JSON.stringify(UIS)); } catch (e) {}
+    applyUI(); snd('sel'); const sc = $('dlg').scrollTop; $('dlg').innerHTML = helpHTML(false); $('dlg').scrollTop = sc;
+  }
   else if (a === 'new') $('dlg').innerHTML = `${T('heart', 'Neues Spiel?')}<div class="ssec warn"><p class="lead">Dein ganzer Fortschritt geht verloren – Hof, Geld und Rucksack.</p></div><div class="foot"><button class="btn" data-act="close">Abbrechen</button><button class="btn red" data-act="newc">Ja, neu anfangen</button></div>`;
   else if (a === 'newc') { S = newState(); TREES = S.trees; rebuildTrees(); custs.length = 0; save(); parts.length = 0; closeDlg(); toast('Ein neuer Anfang!'); }
 });
@@ -2512,6 +2522,7 @@ function render(t) {
 
 /* ---------- layout & loop ---------- */
 function fit() {
+  applyUI();
   const vv = window.visualViewport;
   const iw = Math.round(vv ? vv.width : innerWidth), ih = Math.round(vv ? vv.height : innerHeight), port = tmode() && ih > iw;
   document.body.classList.toggle('touch', tmode()); document.body.classList.toggle('pad', padMode);
