@@ -891,13 +891,29 @@ function drawFarmHouse(g) {
     R(g, x0 + a - 1, y0 + b - 1, 3, 3, i % 2 ? '#ff8fb8' : '#ff5f8f'); R(g, x0 + a, y0 + b - 1, 1, 1, '#ffd6e5');
     if (i % 2 === 0) R(g, x0 + a + (a < 40 ? -2 : 2), y0 + b + 1, 1, 1, '#7cc25e');
   });
-  // Fenster mit Läden und Blumenkasten
+  // Sprossenfenster mit Gardinen, Herzläden, Sims und Blumenkasten
   for (const wx of [x0 + 9, x0 + 57]) {
-    R(g, wx, y0 + 40, 14, 12, '#c8a8b6'); R(g, wx + 1, y0 + 41, 12, 10, '#c4ecff');
-    R(g, wx + 6, y0 + 41, 2, 10, '#ffffff'); R(g, wx + 1, y0 + 45, 12, 1, '#ffffff'); R(g, wx + 2, y0 + 42, 2, 2, '#ffffff');
-    for (const sx of [wx - 3, wx + 14]) { R(g, sx, y0 + 40, 3, 12, '#ff8fb8'); R(g, sx, y0 + 43, 3, 1, '#e86f9c'); R(g, sx, y0 + 47, 3, 1, '#e86f9c'); }
-    R(g, wx - 1, y0 + 53, 16, 3, '#e59ab5'); R(g, wx - 1, y0 + 53, 16, 1, '#ffc2d8');
-    R(g, wx, y0 + 52, 14, 1, '#5aa040'); R(g, wx + 1, y0 + 51, 2, 2, '#ff6f9f'); R(g, wx + 6, y0 + 51, 2, 2, '#ffffff'); R(g, wx + 11, y0 + 51, 2, 2, '#ff6f9f');
+    const y = y0 + 40;
+    R(g, wx, y, 14, 12, '#ffffff'); R(g, wx + 13, y + 1, 1, 11, '#ecd3dd');
+    R(g, wx + 1, y + 1, 12, 10, '#c4ecff'); R(g, wx + 1, y + 1, 12, 3, '#e0f6ff');
+    R(g, wx + 3, y + 7, 1, 1, '#ffffff'); R(g, wx + 4, y + 6, 1, 1, '#ffffff'); R(g, wx + 9, y + 8, 1, 1, '#ffffff'); R(g, wx + 10, y + 7, 1, 1, '#ffffff');
+    // Gardinen, in der Mitte gerafft
+    for (let r = 0; r < 10; r++) { const w = r === 5 ? 1 : r < 5 ? 3 - (r >> 1) : 1 + ((r - 5) >> 1); R(g, wx + 1, y + 1 + r, w, 1, '#ffb3cf'); R(g, wx + 13 - w, y + 1 + r, w, 1, '#ffb3cf'); }
+    R(g, wx + 1, y + 6, 2, 1, '#ff5f8f'); R(g, wx + 11, y + 6, 2, 1, '#ff5f8f');
+    for (let x = 1; x < 13; x += 2) { R(g, wx + x, y + 1, 2, 1, '#ff9fc0'); R(g, wx + x, y + 2, 1, 1, '#ff9fc0'); }
+    R(g, wx + 7, y + 1, 1, 10, '#ffffff'); R(g, wx + 1, y + 6, 12, 1, '#ffffff');
+    R(g, wx + 1, y + 6, 1, 1, '#ff5f8f'); R(g, wx + 12, y + 6, 1, 1, '#ff5f8f');
+    // Läden mit Herz
+    for (const sx of [wx - 4, wx + 14]) {
+      R(g, sx, y, 4, 12, '#e86f9c'); R(g, sx + 1, y + 1, 2, 10, '#ff8fb8'); R(g, sx + 1, y + 1, 1, 10, '#ffa6c6');
+      R(g, sx + 1, y + 4, 1, 1, '#ffd6e5'); R(g, sx + 2, y + 4, 1, 1, '#ffd6e5'); R(g, sx + 1, y + 5, 2, 1, '#ffd6e5');
+    }
+    // Sims
+    R(g, wx - 1, y + 12, 16, 2, '#ffffff'); R(g, wx - 1, y + 13, 16, 1, '#ecd3dd'); R(g, wx, y + 14, 14, 1, 'rgba(120,60,90,.18)');
+    // Blumenkasten mit Ranken
+    R(g, wx, y + 14, 14, 3, '#e59ab5'); R(g, wx, y + 14, 14, 1, '#ffc2d8'); R(g, wx + 4, y + 15, 1, 2, '#d9809e'); R(g, wx + 9, y + 15, 1, 2, '#d9809e');
+    R(g, wx, y + 17, 1, 2, '#5aa040'); R(g, wx + 13, y + 17, 1, 1, '#5aa040'); R(g, wx + 6, y + 17, 1, 1, '#7cc25e');
+    [[1, '#ff6f9f'], [5, '#ffffff'], [9, '#ffe066'], [12, '#ff6f9f']].forEach(([d, c]) => { R(g, wx + d, y + 13, 1, 1, '#5aa040'); R(g, wx + d - (d > 11 ? 1 : 0), y + 12, 2, 1, c); });
   }
 }
 function drawHouse(g, o) {
