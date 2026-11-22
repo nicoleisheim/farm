@@ -540,6 +540,7 @@ for (let x = 18; x <= 20; x++) for (let y = 2; y <= 3; y++) set(x, y, 'G');
 set(19, 4, 'G'); set(19, 5, 'G');
 for (let x = 4; x <= 23; x++) set(x, 6, 'P');
 const GATE = [23, 6];
+const isEdge = (x, y) => x <= 0 || y <= 0 || x >= COLS - 1 || y >= ROWS - 1;
 // Innenstadt: eigene Karte
 const MAP_T = [];
 for (let y = 0; y < ROWS; y++) MAP_T.push(new Array(COLS).fill('G'));
@@ -1479,7 +1480,7 @@ function load() { try { const d = JSON.parse(localStorage.getItem(KEY)); if (d &
 let S = load();
 const firstRun = !S;
 if (!S) S = newState();
-TREES = S.trees; rebuildTrees();
+TREES = S.trees; for (const k in TREES) { const [x, y] = k.split(',').map(Number); if (isEdge(x, y)) delete TREES[k]; } rebuildTrees();
 
 /* ---------- sound ---------- */
 let AC = null;
@@ -1584,7 +1585,7 @@ function updateHUD() {
     else if (tx === GATE[0] && ty === GATE[1]) h = 'Zur Innenstadt';
     else if (t === 'B') h = 'Verkaufsstand';
     else if (t === 'L') h = S.orders.length ? `Lieferungen (${S.orders.length})` : 'Lieferungen';
-    else if (t === 'T' && tool.kind === 'axe') h = 'Baum fällen';
+    else if (t === 'T' && tool.kind === 'axe' && !isEdge(tx, ty)) h = 'Baum fällen';
     else if (t === 'X' && tool.kind === 'axe') h = 'Stumpf entfernen';
     else if (t === 'Y' && tool.kind === 'shovel') h = 'Setzling ausgraben';
     else if (t === 'G' && !s && tool.kind === 'sapling') h = 'Pflanzen';
@@ -1982,6 +1983,7 @@ function act(tx, ty) {
     actTool = 'axe';
     const key = tx + ',' + ty;
     if (t !== 'T' && t !== 'X') { toast('Hier gibt es nichts zu fällen.'); return; }
+    if (isEdge(tx, ty)) { toast('Die Bäume am Waldrand bleiben stehen.'); return; }
     if (!needEnergy(t === 'T' ? 3 : 2)) return;
     const cherry = isCherry(tx, ty);
     snd('chop'); burst(tx, ty, ['#c48a5e', '#e8c094'], 5, 50); wear('axe');
