@@ -33,21 +33,21 @@ Im Hochformat liegen Steuerung und Werkzeugleiste unter dem Spielfeld, und die K
 1. Gras mit der **Hacke** auflockern
 2. **Samen** säen (Rübe, Kohl, Kürbis)
 3. Täglich mit der **Gießkanne** gießen – am Teich auffüllen
-4. Reife Pflanzen mit der **Sichel** ernten (erntet auch die beiden Nachbarfelder)
-5. Ernte am **Verkaufsstand** auslegen – von 8 bis 18 Uhr kommen Leute aus dem Dorf vorbei und kaufen zufällig etwas
+4. Reife Pflanzen mit der **Sichel** ernten (ein Feld pro Schwung)
+5. Ernte am **Verkaufsstand** auslegen – von 7 bis 17 Uhr verkauft Mitarbeiterin Lotte zufällig an Leute aus dem Dorf. Sie bekommt 30 Taler pro Tag, aber nur, wenn Ware ausliegt
 6. Am **Auftragsbrett** warten Bestellungen mit Frist: Ware in die Lieferkiste packen, nachts wird abgeholt und mit Aufschlag bezahlt
 7. Mit der **Axt** Bäume fällen (3 Schläge, 5–8 Holz) und Stümpfe entfernen (2 Holz) – höchstens 10 Holz pro Baum. Stümpfe wachsen nicht nach – dafür kann man **Setzlinge** (Laden oder Glück beim Fällen) auf freier Wiese pflanzen, die in 4 Tagen zu Bäumen werden
 8. Mit der **Schaufel** Pflanzen und Setzlinge ausgraben und Felder wieder zu Wiese machen
 9. Im **Rucksack** (16 Plätze) liegen Ernte und Holz; Gegenstände lassen sich zwischen Rucksack und Werkzeugleiste (8 Plätze) verschieben
-10. Im **Laden** Samen, Setzlinge, Salat und eine größere Gießkanne kaufen
+10. Im **Laden** Samen, Setzlinge, Salat, Ersatzwerkzeug und eine größere Gießkanne kaufen. Werkzeuge nutzen sich ab und gehen irgendwann kaputt
 11. Vor 2 Uhr nachts durch die Haustür **schlafen gehen** – dabei wird gespeichert
 
-| Ware | Samenpreis | Wachstum | Verkaufspreis |
+| Ware | Samenpreis | Wachstum | Verkaufspreis (Taler) |
 |---|---|---|---|
-| Rübe | 20g | 2 Tage | 35g |
-| Kohl | 45g | 3 Tage | 90g |
-| Kürbis | 90g | 5 Tage | 200g |
-| Holz | – | – | 8g |
+| Rübe | 20 Taler | 2 Tage | 35 Taler |
+| Kohl | 45 Taler | 3 Tage | 90 Taler |
+| Kürbis | 90 Taler | 5 Tage | 200 Taler |
+| Holz | – | – | 8 Taler |
 
 ## Technik
 

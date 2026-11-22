@@ -336,6 +336,16 @@ body.port #toast{bottom:2.7em}
 #dlg .detail.empty{align-items:center;justify-content:center}
 #dlg .detail .t b{color:#c4527e}
 @media (max-width:420px){#dlg .steps{grid-template-columns:1fr}#dlg .kv kbd{min-width:6.4em}}
+#dlg .srow{grid-template-columns:2.4em minmax(0,1fr) auto auto}
+#dlg .orow{grid-template-columns:2.4em minmax(0,1fr) auto}
+#dlg .ibox{position:relative;width:2.3em;height:2.3em}
+#dlg .ibox img{width:2.3em;height:2.3em}
+#dlg .ib{position:absolute;right:-.45em;bottom:-.3em;min-width:1.4em;text-align:center;font-size:.7em;font-weight:600;color:#fff;background:#e0578c;box-shadow:0 0 0 .14em #7a2a4a;padding:0 .2em;line-height:1.35}
+#dlg .have{white-space:nowrap;display:inline-flex;align-items:center;gap:.3em;align-self:flex-start;margin:.15em 0 .05em;font-size:.8em;font-weight:600;color:#7a2a4a;border:.3em solid transparent;border-image:var(--t-dchip) 4 fill / .3em stretch;padding:0 .2em;line-height:1.3}
+#dlg .have img{width:1.2em;height:1.2em}
+#dlg .have.short{border-image-source:var(--t-dchiphot);color:#c4402e}
+.slot .wl.du{bottom:.22em;height:.22em}
+#dlg .hrow{display:flex;align-items:center;gap:.5em;flex-wrap:wrap}
 </style>
 </head>
 <body>
@@ -395,12 +405,12 @@ const CROPS = {
   kuerbis: { name: 'Kürbis', seed: 'Kürbissamen', days: 5, buy: 90, sell: 200, eat: 50 },
 };
 const ITEM = {
-  hoe: { name: 'Hacke', kind: 'hoe', tool: 1, desc: 'Lockert Gras zu Ackerboden auf. Kostet 2 Energie.' },
-  can: { name: 'Gießkanne', kind: 'can', tool: 1, desc: 'Gießt aufgelockerten Boden. Am Teich auffüllen.' },
-  sickle: { name: 'Sichel', kind: 'sickle', tool: 1, desc: 'Erntet reife Pflanzen – das Feld vor dir und die beiden daneben.' },
-  axe: { name: 'Axt', kind: 'axe', tool: 1, desc: 'Fällt Bäume (3 Schläge, 5–8 Holz) und entfernt Baumstümpfe (2 Holz).' },
-  shovel: { name: 'Schaufel', kind: 'shovel', tool: 1, desc: 'Gräbt Pflanzen aus und macht Felder wieder zu Wiese.' },
-  wood: { name: 'Holz', kind: 'mat', sell: 8, desc: 'Frisch gehacktes Holz. Bringt 8g am Verkaufsstand.' },
+  hoe: { name: 'Hacke', kind: 'hoe', tool: 1, dura: 60, price: 80, desc: 'Lockert Gras zu Ackerboden auf. Kostet 2 Energie.' },
+  can: { name: 'Gießkanne', kind: 'can', tool: 1, dura: 80, price: 100, desc: 'Gießt aufgelockerten Boden. Am Teich auffüllen.' },
+  sickle: { name: 'Sichel', kind: 'sickle', tool: 1, dura: 50, price: 60, desc: 'Erntet eine reife Pflanze auf dem Feld vor dir.' },
+  axe: { name: 'Axt', kind: 'axe', tool: 1, dura: 40, price: 120, desc: 'Fällt Bäume (3 Schläge, 5–8 Holz) und entfernt Baumstümpfe (2 Holz).' },
+  shovel: { name: 'Schaufel', kind: 'shovel', tool: 1, dura: 40, price: 70, desc: 'Gräbt Pflanzen aus und macht Felder wieder zu Wiese.' },
+  wood: { name: 'Holz', kind: 'mat', sell: 8, desc: 'Frisch gehacktes Holz. Bringt 8 Taler am Verkaufsstand.' },
   'sap-green': { name: 'Baumsetzling', kind: 'sapling', k: 'green', desc: 'Auf freier Wiese pflanzen. Wird in 4 Tagen zu einem Baum.' },
   'sap-cherry': { name: 'Kirschbaum-Setzling', kind: 'sapling', k: 'cherry', desc: 'Auf freier Wiese pflanzen. Wird in 4 Tagen zu einem blühenden Kirschbaum.' },
   snack: { name: 'Gartensalat', kind: 'food', eat: 40, desc: 'Ein knackiger Salat aus dem Dorfladen.' },
@@ -408,9 +418,18 @@ const ITEM = {
 for (const t in CROPS) {
   const c = CROPS[t];
   ITEM['seed-' + t] = { name: c.seed, kind: 'seed', crop: t, desc: `Reif nach ${c.days} Tagen, wenn du täglich gießt.` };
-  ITEM[t] = { name: c.name, kind: 'crop', crop: t, eat: c.eat, sell: c.sell, desc: `Frisch geerntet. Bringt ${c.sell}g am Verkaufsstand.` };
+  ITEM[t] = { name: c.name, kind: 'crop', crop: t, eat: c.eat, sell: c.sell, desc: `Frisch geerntet. Bringt ${c.sell} Taler am Verkaufsstand.` };
 }
 const BAR_N = 8, BAG_N = 16;
+const TOOLS = ['hoe', 'can', 'sickle', 'axe', 'shovel'];
+function wear(id) {
+  if (!S.dura) S.dura = {};
+  if (S.dura[id] === undefined) S.dura[id] = ITEM[id].dura;
+  S.dura[id]--;
+  if (S.dura[id] === 10) toast(`${itemName(id)} ist fast kaputt – bald im Laden eine neue kaufen!`);
+  if (S.dura[id] <= 0) { delete S.dura[id]; useItem(id); snd('err'); setTimeout(() => toast(`${itemName(id)} ist kaputtgegangen! Im Laden gibt es Ersatz.`), 400); }
+}
+const duraOf = id => (S.dura && S.dura[id] !== undefined) ? S.dura[id] : ITEM[id].dura;
 const iconOf = id => id.replace('-', '_');
 const SELLABLE = [...Object.keys(CROPS), 'wood'];
 const sellOf = id => ITEM[id].sell || 0;
@@ -812,7 +831,7 @@ function drawStump(g, tx, ty) {
 /* ---------- crops ---------- */
 function drawCrop(g, t, v, x0, y0) {
   const G1 = '#4f9a3a', G2 = '#6cc04f', G3 = '#94dc6c';
-  if (v === 0) { R(g, x0 + 5, y0 + 9, 2, 1, '#3e2613'); R(g, x0 + 9, y0 + 8, 2, 1, '#3e2613'); R(g, x0 + 7, y0 + 11, 2, 1, '#3e2613'); return; }
+  if (v === 0) { for (const [a, b] of [[5, 9], [9, 8], [7, 11]]) { R(g, x0 + a, y0 + b + 1, 2, 1, '#3a2415'); R(g, x0 + a, y0 + b, 2, 1, '#f6e7b8'); R(g, x0 + a, y0 + b, 1, 1, '#fffbe6'); } R(g, x0 + 7, y0 + 7, 1, 2, '#8fd86a'); return; }
   if (v === 1) { R(g, x0 + 7, y0 + 8, 1, 4, G1); R(g, x0 + 5, y0 + 7, 2, 2, G2); R(g, x0 + 8, y0 + 6, 2, 2, G2); return; }
   if (v === 2) {
     R(g, x0 + 7, y0 + 6, 2, 7, G1); R(g, x0 + 4, y0 + 6, 3, 2, G2); R(g, x0 + 9, y0 + 5, 3, 2, G2);
@@ -1083,7 +1102,7 @@ const KEY = 'sonnenhof-v1';
 function newState() {
   const bar = ['hoe', 'can', 'sickle', 'axe', 'shovel', 'seed-ruebe', 'snack', null];
   return { day: 1, time: 360, gold: 150, energy: 100, maxEnergy: 100, water: 20, canCap: 20, rain: false,
-    items: { hoe: 1, can: 1, sickle: 1, axe: 1, shovel: 1, 'seed-ruebe': 15, snack: 2 }, bar, bag: Array(BAG_N).fill(null),
+    items: { hoe: 1, can: 1, sickle: 1, axe: 1, shovel: 1, 'seed-ruebe': 15, snack: 2 }, dura: {}, bar, bag: Array(BAG_N).fill(null),
     stand: {}, sold: {}, soldGold: 0, trees: {}, orders: [{ id: 'o1', who: 'Frau Lind', items: { ruebe: 3 }, packed: {}, days: 4, reward: 200 }], soil: {}, sel: 0, px: 72, py: 93, dir: 'down', warned: false, earned: 0 };
 }
 function migrate(d) {
@@ -1105,6 +1124,7 @@ function migrate2(d) {
     d.items[id] = 1;
     for (const c of ['bar', 'bag']) { const i = d[c].indexOf(null); if (i >= 0) { d[c][i] = id; break; } }
   }
+  d.dura = d.dura || {};
   d.stand = d.stand || {}; d.sold = d.sold || {}; d.soldGold = d.soldGold || 0; d.trees = d.trees || {};
   if (!d.orders) d.orders = [{ id: 'o1', who: 'Frau Lind', items: { ruebe: 3 }, packed: {}, days: 4, reward: 200 }];
   if (d.shipped) { for (const t in d.shipped) if (d.shipped[t]) d.stand[t] = (d.stand[t] || 0) + d.shipped[t]; delete d.shipped; }
@@ -1167,7 +1187,7 @@ function buildHotbar() {
   hb.style.display = v.length ? '' : 'none';
   v.forEach((bi, n) => {
     const id = S.bar[bi], d = document.createElement('div'); d.className = 'slot'; d.dataset.bi = bi;
-    d.innerHTML = `<span class="k">${n + 1}</span><img src="${ICONURL[iconOf(id)]}" alt=""><span class="n"></span>` + (id === 'can' ? '<span class="wl"><i></i></span>' : '');
+    d.innerHTML = `<span class="k">${n + 1}</span><img src="${ICONURL[iconOf(id)]}" alt=""><span class="n"></span>` + (id === 'can' ? '<span class="wl"><i></i></span>' : ITEM[id].dura ? '<span class="wl du"><i></i></span>' : '');
     d.addEventListener('pointerdown', e => { e.preventDefault(); setSel(bi); });
     hb.appendChild(d);
   });
@@ -1187,13 +1207,13 @@ function updateHUD() {
   const sd = (S.day - 1) % 28 + 1, season = SEASONS[Math.floor((S.day - 1) / 28) % 4];
   if (!S.bar[S.sel]) { const v = visSlots(); if (v.length) S.sel = v[0]; }
   if (S.bar.join(',') !== hbKey) buildHotbar();
-  const sig = [S.day, Math.floor(S.time / 10), S.gold, Math.round(S.energy), S.water, S.sel, S.rain, JSON.stringify(S.items), S.canCap].join('|');
+  const sig = [S.day, Math.floor(S.time / 10), S.gold, Math.round(S.energy), S.water, S.sel, S.rain, JSON.stringify(S.items), JSON.stringify(S.dura || {}), S.canCap].join('|');
   if (sig !== hudCache) {
     hudCache = sig;
     $('date').textContent = `${WDAYS[(S.day - 1) % 7]}. ${sd}. ${season}`;
     $('time').textContent = fmtTime(S.time);
     $('weather').src = ICONURL[S.rain ? 'w_rain' : S.time >= 1140 ? 'w_moon' : 'w_sun'];
-    $('gold').innerHTML = `<img src="${ICONURL.coin}" alt="">${S.gold.toLocaleString('de-DE')}g`;
+    $('gold').innerHTML = `<img src="${ICONURL.coin}" alt="">${S.gold.toLocaleString('de-DE')}`;
     const p = S.energy / S.maxEnergy;
     $('efill').style.setProperty('--e', (p * 100) + '%');
     $('efill').style.background = p > .5 ? '#ff7fae' : p > .25 ? '#ffb84d' : '#e0503a';
@@ -1205,6 +1225,7 @@ function updateHUD() {
       n.style.display = ITEM[id].tool ? 'none' : '';
       d.title = itemName(id);
       if (id === 'can') d.querySelector('.wl i').style.width = (S.water / S.canCap * 100) + '%';
+      else if (ITEM[id].dura) { const f = duraOf(id) / ITEM[id].dura, i = d.querySelector('.wl i'); i.style.width = (f * 100) + '%'; i.style.background = f > .5 ? '#7cc85a' : f > .2 ? '#ffb84d' : '#e0503a'; }
     });
   }
   // interaction hint
@@ -1256,7 +1277,7 @@ function slotHTML(c, i) {
   return `<div class="slot${sel ? ' sel' : ''}" data-act="slot:${c}:${i}" title="${itemName(id)}"><img src="${ICONURL[iconOf(id)]}" alt="">${ITEM[id].tool ? '' : `<span class="n">${cnt(id)}</span>`}</div>`;
 }
 function invHTML() {
-  let h = T('bag', 'Rucksack') + `<div class="sinfo"><span>Geld: <b>${S.gold.toLocaleString('de-DE')}g</b></span><span>Energie: <b>${Math.round(S.energy)}/${S.maxEnergy}</b></span></div>`;
+  let h = T('bag', 'Rucksack') + `<div class="sinfo"><span>Geld: <b>${S.gold.toLocaleString('de-DE')} Taler</b></span><span>Energie: <b>${Math.round(S.energy)}/${S.maxEnergy}</b></span></div>`;
   h += `<div class="ssec"><div class="ssech"><span>Werkzeugleiste</span></div><div class="inv">${S.bar.map((_, i) => slotHTML('bar', i)).join('')}</div></div>`;
   h += `<div class="ssec"><div class="ssech"><span>Rucksack</span></div><div class="inv">${S.bag.map((_, i) => slotHTML('bag', i)).join('')}</div></div>`;
   const id = invSel ? S[invSel[0]][invSel[1]] : null;
@@ -1264,6 +1285,7 @@ function invHTML() {
     const it = ITEM[id], other = invSel[0] === 'bar' ? 'bag' : 'bar', free = S[other].includes(null);
     let d = it.desc;
     if (id === 'can') d += ` Füllstand ${S.water}/${S.canCap}.`;
+    if (it.dura) d += ` Haltbarkeit: ${duraOf(id)}/${it.dura}.`;
     h += `<div class="ssec detail"><img src="${ICONURL[iconOf(id)]}" alt=""><div class="t"><b>${itemName(id)}</b>${it.tool ? '' : ` <small>×${cnt(id)}</small>`}<br><small>${d}</small>${it.eat ? `<br><small>Essen: +${it.eat} Energie</small>` : ''}<div class="acts">`;
     h += `<button class="btn" data-act="mv" ${free ? '' : 'disabled'}>${other === 'bar' ? 'In die Leiste' : 'In den Rucksack'}</button>`;
     if (it.eat) h += `<button class="btn" data-act="eat" ${S.energy >= S.maxEnergy ? 'disabled' : ''}>Essen</button>`;
@@ -1307,10 +1329,10 @@ function neededForOrders(id) { return S.orders.reduce((a, o) => a + Math.max(0, 
 function standHTML() {
   const bag = SELLABLE.filter(t => cnt(t) > 0), on = SELLABLE.filter(t => S.stand[t] > 0);
   const onVal = on.reduce((a, t) => a + S.stand[t] * sellOf(t), 0);
-  let h = `${T('stand', 'Verkaufsstand')}<div class="sinfo"><span>Kundschaft kommt von 8 bis 18 Uhr</span><span>Heute verkauft: <b>${S.soldGold.toLocaleString('de-DE')}g</b></span></div>`;
+  let h = `${T('stand', 'Verkaufsstand')}<div class="sinfo"><span>Geöffnet von 7 bis 17 Uhr · ${STAFF} verkauft für ${WAGE} Taler am Tag (nur wenn Ware ausliegt)</span><span>Heute verkauft: <b>${S.soldGold.toLocaleString('de-DE')} Taler</b></span></div>`;
   // Abschnitt 1: Am Stand
-  h += `<div class="ssec"><div class="ssech"><span>Am Stand ausgelegt</span>${on.length ? `<b>${onVal.toLocaleString('de-DE')}g</b>` : ''}</div>`;
-  if (on.length) for (const t of on) h += `<div class="srow"><img src="${ICONURL[iconOf(t)]}" alt=""><div class="sname"><b>${ITEM[t].name}</b><small>${S.stand[t]} Stück · ${(S.stand[t] * sellOf(t)).toLocaleString('de-DE')}g</small></div><span></span><button class="btn" data-act="back:${t}">Zurücknehmen</button></div>`;
+  h += `<div class="ssec"><div class="ssech"><span>Am Stand ausgelegt</span>${on.length ? `<b>${onVal.toLocaleString('de-DE')} Taler</b>` : ''}</div>`;
+  if (on.length) for (const t of on) h += `<div class="srow"><div class="ibox"><img src="${ICONURL[iconOf(t)]}" alt=""></div><div class="sname"><b>${ITEM[t].name}</b><small>${S.stand[t]} am Stand · ${(S.stand[t] * sellOf(t)).toLocaleString('de-DE')} Taler</small></div><button class="btn" data-act="back1:${t}">1 zurück</button><button class="btn" data-act="back:${t}">Alle</button></div>`;
   else h += '<div class="sempty">Noch nichts ausgelegt.</div>';
   h += '</div>';
   // Abschnitt 2: Aus dem Rucksack
@@ -1318,13 +1340,13 @@ function standHTML() {
   h += `<div class="ssec"><div class="ssech"><span>Aus dem Rucksack auslegen</span></div>`;
   if (bag.length) for (const t of bag) {
     const q = qOf(t), need = neededForOrders(t); n += q; sum += q * sellOf(t);
-    h += `<div class="srow${q ? ' on' : ''}"><img src="${ICONURL[iconOf(t)]}" alt=""><div class="sname"><b>${ITEM[t].name}</b><small>Du hast ${cnt(t)} · ${sellOf(t)}g/Stück</small>${need ? `<small class="sneed">${need} für Lieferung reserviert</small>` : ''}</div>
+    h += `<div class="srow${q ? ' on' : ''}"><div class="ibox"><img src="${ICONURL[iconOf(t)]}" alt=""></div><div class="sname"><b>${ITEM[t].name}</b><span class="have" title="Im Rucksack"><img src="${ICONURL.bag}" alt="">${cnt(t)}</span><small>${sellOf(t)} Taler/Stück</small>${need ? `<small class="sneed">${need} für Lieferung reserviert</small>` : ''}</div>
       <div class="qty"><button class="btn sq" data-act="q:${t}:-1" ${q ? '' : 'disabled'}>−</button><span class="qv">${q}</span><button class="btn sq" data-act="q:${t}:1" ${q < cnt(t) ? '' : 'disabled'}>+</button></div>
       <button class="btn sall" data-act="qa:${t}">${q < cnt(t) ? 'Alle' : 'Keine'}</button></div>`;
   }
   else h += '<div class="sempty">Du hast gerade nichts zum Verkaufen dabei.</div>';
   h += '</div>';
-  h += `<div class="sfoot"><div class="ssum">${n ? `Auslegen: <b>${n} Stück</b> · ${sum.toLocaleString('de-DE')}g` : 'Wähle oben aus, was du auslegen möchtest.'}</div>
+  h += `<div class="sfoot"><div class="ssum">${n ? `Auslegen: <b>${n} Stück</b> · ${sum.toLocaleString('de-DE')} Taler` : 'Wähle oben aus, was du auslegen möchtest.'}</div>
     <div class="sbtns"><button class="btn" data-act="close">Schließen</button>${bag.length ? `<button class="btn primary" data-act="ship" ${n ? '' : 'disabled'}>Auslegen</button>` : ''}</div></div>`;
   return h;
 }
@@ -1351,14 +1373,14 @@ function ordersHTML() {
     h += `<div class="ssec${r ? ' ready' : ''}"><div class="ssech"><span>${o.who}</span><span class="chip${r ? ' ok' : o.days <= 1 ? ' hot' : ''}">${r ? 'Bereit zur Abholung' : `noch ${o.days} Tag${o.days > 1 ? 'e' : ''}`}</span></div>`;
     for (const t in o.items) {
       const need = o.items[t], have = o.packed[t] || 0, inv = cnt(t), pct = Math.round(have / need * 100), miss = need - have;
-      h += `<div class="orow"><img src="${ICONURL[iconOf(t)]}" alt=""><div class="sname"><div class="otop"><b>${ITEM[t].name}</b><span>${have}/${need}</span></div>
+      h += `<div class="orow"><div class="ibox"><img src="${ICONURL[iconOf(t)]}" alt=""></div><div class="sname"><div class="otop"><b>${ITEM[t].name}</b><span>${have}/${need}</span></div>
         <div class="obar"><i style="width:${pct}%"></i></div>
-        <small class="${!r && miss > 0 && inv < miss ? 'short' : ''}">Im Rucksack: <b>${inv}</b>${miss > 0 ? ` · es fehlen noch ${miss}` : ''}</small></div>` +
+        <div class="hrow"><span class="have${!r && miss > 0 && inv < miss ? ' short' : ''}" title="Im Rucksack"><img src="${ICONURL.bag}" alt="">${inv}</span>${miss > 0 ? `<small>fehlen noch ${miss}</small>` : ''}</div></div>` +
         (miss > 0 ? `<button class="btn" data-act="pack:${o.id}:${t}" ${inv ? '' : 'disabled'}>${inv ? `${Math.min(inv, miss)} einpacken` : 'Fehlt'}</button>` : '<span class="okmark">✓ Fertig</span>') + '</div>';
     }
-    h += `<div class="oreward"><span>Belohnung</span><b>${o.reward.toLocaleString('de-DE')}g</b></div></div>`;
+    h += `<div class="oreward"><span>Belohnung</span><b>${o.reward.toLocaleString('de-DE')} Taler</b></div></div>`;
   }
-  h += `<div class="sfoot"><div class="ssum">${readySum ? `Heute Nacht: <b>+${readySum.toLocaleString('de-DE')}g</b>` : `${S.orders.length} offene Bestellung${S.orders.length === 1 ? '' : 'en'}`}</div><div class="sbtns"><button class="btn" data-act="close">Schließen</button></div></div>`;
+  h += `<div class="sfoot"><div class="ssum">${readySum ? `Heute Nacht: <b>+${readySum.toLocaleString('de-DE')} Taler</b>` : `${S.orders.length} offene Bestellung${S.orders.length === 1 ? '' : 'en'}`}</div><div class="sbtns"><button class="btn" data-act="close">Schließen</button></div></div>`;
   return h;
 }
 function packOrder(id, t) {
@@ -1371,6 +1393,8 @@ function packOrder(id, t) {
 
 /* ---------- Kundschaft am Stand ---------- */
 const custs = [];
+const WAGE = 30, STAFF = 'Lotte';
+const PAL_STAFF = { skin: '#ffe0cc', hair: '#5a3a2a', hairL: '#7a5440', dress: '#b8e0a0', dressD: '#8fc878', apron: '#ffffff', shoe: '#5a6a4a', bow: '#ff8fb8', tails: 1, hat: 0 };
 const CUST_PATH = [[312, 78], [312, 108], [152, 108], [152, 92]];
 function standStock() { return SELLABLE.reduce((a, t) => a + (S.stand[t] || 0), 0); }
 function spawnCustomer() {
@@ -1386,10 +1410,12 @@ function customerBuys(c) {
   for (const t in got) S.sold[t] = (S.sold[t] || 0) + got[t];
   S.gold += gold; S.soldGold += gold; S.earned += gold; snd('coin');
   parts.push({ x: c.x, y: c.y - 22, vx: 0, vy: -14, life: 1.2, col: '#ff5f8f', h: 1 });
-  toast(`Verkauft: ${Object.entries(got).map(([t, n]) => `${n}× ${ITEM[t].name}`).join(', ')} · +${gold}g`);
+  toast(`Verkauft: ${Object.entries(got).map(([t, n]) => `${n}× ${ITEM[t].name}`).join(', ')} · +${gold} Taler`);
 }
 function updateCustomers(dt) {
-  if (S.time >= 480 && S.time < 1080 && standStock() > 0 && custs.length < 2 && Math.random() < dt * (S.rain ? .025 : .06)) spawnCustomer();
+  const open = S.time >= 420 && S.time < 1020;
+  if (open && standStock() > 0) S.staffed = 1;
+  if (open && standStock() > 0 && custs.length < 2 && Math.random() < dt * (S.rain ? .025 : .06)) spawnCustomer();
   for (let i = custs.length - 1; i >= 0; i--) {
     const c = custs[i];
     c.a = Math.min(1, c.a + dt * 2.5);
@@ -1410,7 +1436,13 @@ function drawCustomer(c) {
   if (flip) { X.save(); X.translate(ox + 16, oy); X.scale(-1, 1); X.drawImage(PC, 0, 0); X.restore(); } else X.drawImage(PC, ox, oy);
   X.globalAlpha = 1;
 }
+function drawStaff() {
+  if (!(S.time >= 420 && S.time < 1020 && standStock() > 0)) return;
+  drawPlayerSprite(pg, 'down', 0, PAL_STAFF);
+  X.save(); X.beginPath(); X.rect(128, 40, 32, 24); X.clip(); X.drawImage(PC, 136, 47); X.restore();
+}
 function drawStandGoods(t) {
+  drawStaff();
   const x0 = 128, y0 = 48; let i = 0;
   for (const id of SELLABLE) {
     if (!(S.stand[id] > 0) || i > 3) continue;
@@ -1429,14 +1461,19 @@ function drawStandGoods(t) {
   if (S.orders.some(orderReady) && Math.floor(t * 2) % 2) heart(X, 181, 63, '#ff5f8f');
 }
 function shopRow(img, name, info, price, id, single) {
-  const d1 = S.gold < price ? 'disabled' : '', d5 = S.gold < price * 5 ? 'disabled' : '';
+  const d1 = S.gold < price || id === 'own' ? 'disabled' : '', d5 = S.gold < price * 5 ? 'disabled' : '';
   return `<div class="shrow"><img src="${img}" alt=""><div class="sname"><b>${name}</b><small>${info}</small></div><span class="price"><span class="p-coin"></span>${price}</span>
     <div class="shbtns"><button class="btn" data-act="buy:${id}:1" ${d1}>Kaufen</button>${single ? '' : `<button class="btn" data-act="buy:${id}:5" ${d5}>×5</button>`}</div></div>`;
 }
 function shopHTML() {
-  let h = T('shopi', 'Dorfladen') + `<div class="sinfo"><span>Willkommen! Schau dich ruhig um.</span><span>Dein Geld: <b>${S.gold.toLocaleString('de-DE')}g</b></span></div>`;
+  let h = T('shopi', 'Dorfladen') + `<div class="sinfo"><span>Willkommen! Schau dich ruhig um.</span><span>Dein Geld: <b>${S.gold.toLocaleString('de-DE')} Taler</b></span></div>`;
   h += '<div class="ssec"><div class="ssech"><span>Samen</span></div>';
-  for (const t in CROPS) { const c = CROPS[t]; h += shopRow(ICONURL['seed_' + t], c.seed, `Reif nach ${c.days} Tagen · ${c.name} bringt ${c.sell}g`, c.buy, 'seed-' + t); }
+  for (const t in CROPS) { const c = CROPS[t]; h += shopRow(ICONURL['seed_' + t], c.seed, `Reif nach ${c.days} Tagen · ${c.name} bringt ${c.sell} Taler`, c.buy, 'seed-' + t); }
+  h += '</div><div class="ssec"><div class="ssech"><span>Werkzeuge</span></div>';
+  for (const id of TOOLS) {
+    const own = cnt(id) > 0;
+    h += shopRow(ICONURL[id], ITEM[id].name, own ? `Vorhanden · Haltbarkeit ${duraOf(id)}/${ITEM[id].dura}` : `Kaputt oder verloren – hält ${ITEM[id].dura} Einsätze`, ITEM[id].price, own ? 'own' : 'tool-' + id, true);
+  }
   h += '</div><div class="ssec"><div class="ssech"><span>Setzlinge</span></div>';
   h += shopRow(ICONURL.sap_green, 'Baumsetzling', 'Wird in 4 Tagen zu einem Baum', 40, 'sap-green');
   h += shopRow(ICONURL.sap_cherry, 'Kirschbaum-Setzling', 'Wird in 4 Tagen zu einem Kirschbaum', 60, 'sap-cherry');
@@ -1447,6 +1484,13 @@ function shopHTML() {
 }
 function buy(id, n) {
   let price;
+  if (id === 'own') return;
+  if (id.startsWith('tool-')) {
+    const t = id.slice(5), pr = ITEM[t].price;
+    if (S.gold < pr || cnt(t) > 0) { snd('err'); return; }
+    if (!addItem(t, 1)) return;
+    S.gold -= pr; if (!S.dura) S.dura = {}; S.dura[t] = ITEM[t].dura; snd('coin'); $('dlg').innerHTML = shopHTML(); return;
+  }
   price = id.startsWith('seed-') ? CROPS[id.slice(5)].buy : { snack: 30, can: 400, 'sap-green': 40, 'sap-cherry': 60 }[id];
   if (S.gold < price * n) { snd('err'); return; }
   if (id === 'can') { S.canCap = 40; S.water = 40; }
@@ -1479,6 +1523,7 @@ $('dlg').addEventListener('click', e => {
     for (const t of SELLABLE) { const q = qOf(t); if (q) { S.stand[t] = (S.stand[t] || 0) + q; useItem(t, q); n += q; } }
     shipQ = {}; snd('ship'); toast(`${n} Stück am Stand ausgelegt`); rerenderShip();
   }
+  else if (a.startsWith('back1:')) { const t = a.slice(6); if (S.stand[t] > 0 && addItem(t, 1)) { S.stand[t]--; snd('plant'); } rerenderShip(); }
   else if (a.startsWith('back:')) { const t = a.slice(5), m = S.stand[t]; if (m && addItem(t, m)) { S.stand[t] = 0; snd('plant'); toast(`${m}× ${ITEM[t].name} zurückgenommen`); } rerenderShip(); }
   else if (a === 'eat') eatItem();
   else if (a === 'hold') { const bi = invSel[1]; closeDlg(); setSel(bi); }
@@ -1520,7 +1565,7 @@ function act(tx, ty) {
   if (!id) { toast('Du hast nichts in der Hand.'); return; }
   if (kind === 'sickle') {
     actTool = 'sickle';
-    const d = DIRS[S.dir], side = [[0, 0], [d[1], d[0]], [-d[1], -d[0]]], got = {};
+    const side = [[0, 0]], got = {};
     let n = 0;
     for (const [ox, oy] of side) {
       const cs = S.soil[(tx + ox) + ',' + (ty + oy)];
@@ -1530,7 +1575,7 @@ function act(tx, ty) {
         burst(tx + ox, ty + oy, ['#ffe066', '#fff6c0', '#ffc2dc'], 6, 70); hearts(tx + ox, ty + oy, 3);
       }
     }
-    if (n) { snd('harvest'); toast(Object.entries(got).map(([c, v]) => `+${v} ${CROPS[c].name}`).join('  ')); return; }
+    if (n) { snd('harvest'); toast(Object.entries(got).map(([c, v]) => `+${v} ${CROPS[c].name}`).join('  ')); wear('sickle'); return; }
     snd('sel'); burst(tx, ty, ['#7bbf55', '#a6de80'], 4, 30);
     if (s && s.c) toast(`${CROPS[s.c.t].name} ist noch nicht reif.`);
     return;
@@ -1541,7 +1586,7 @@ function act(tx, ty) {
     if (t !== 'T' && t !== 'X') { toast('Hier gibt es nichts zu fällen.'); return; }
     if (!needEnergy(t === 'T' ? 3 : 2)) return;
     const cherry = isCherry(tx, ty);
-    snd('chop'); burst(tx, ty, ['#c48a5e', '#e8c094'], 5, 50);
+    snd('chop'); burst(tx, ty, ['#c48a5e', '#e8c094'], 5, 50); wear('axe');
     if (t === 'T') {
       const st = TREES[key] || (TREES[key] = { s: 'tree' });
       if (st.hp === undefined) st.hp = 3;
@@ -1579,6 +1624,7 @@ function act(tx, ty) {
     burst(tx, ty, ['#7a4d2c', '#93613a', '#7bbf55'], 8);
     if (s.c) { s.c = null; snd('till'); toast('Pflanze ausgegraben'); }
     else { delete S.soil[k]; snd('till'); toast('Feld entfernt'); }
+    wear('shovel');
     return;
   }
   if (kind === 'hoe') {
@@ -1586,14 +1632,14 @@ function act(tx, ty) {
     if (t !== 'G' || wetCount(tx, ty, 2) > 0) { toast('Hier kann man nicht hacken.'); snd('err'); return; }
     if (s) { if (s.c) toast('Hier wächst schon etwas.'); return; }
     if (!needEnergy(2)) return;
-    S.soil[k] = { w: S.rain, c: null }; burst(tx, ty, ['#7a4d2c', '#93613a', '#5e3b22'], 8); snd('till');
+    S.soil[k] = { w: S.rain, c: null }; burst(tx, ty, ['#7a4d2c', '#93613a', '#5e3b22'], 8); snd('till'); wear('hoe');
   } else if (kind === 'can') {
     actTool = 'can';
     if (isWater(tx, ty)) { S.water = S.canCap; burst(tx, ty, ['#8fd0ff', '#d4f0ff'], 8, 60); snd('water'); toast('Gießkanne aufgefüllt'); return; }
     if (!s) { toast('Gieß den aufgelockerten Boden.'); return; }
     if (S.water <= 0) { toast('Die Gießkanne ist leer – füll sie am Teich auf.'); snd('err'); return; }
     if (!needEnergy(1)) return;
-    S.water--; s.w = true; burst(tx, ty, ['#4fb3ff', '#8fd0ff'], 8, 30); snd('water');
+    S.water--; s.w = true; burst(tx, ty, ['#4fb3ff', '#8fd0ff'], 8, 30); snd('water'); wear('can');
   } else if (kind === 'sapling') {
     const [px, py] = playerTile();
     if (t !== 'G' || s || wetCount(tx, ty, 2) > 0 || (tx === px && ty === py)) { toast('Hier kann kein Baum wachsen.'); snd('err'); return; }
@@ -1619,13 +1665,14 @@ function endDay(passedOut) {
     let lines = '';
     for (const t of SELLABLE) {
       const n = S.sold[t]; if (!n) continue;
-      lines += `<div class="kv"><img src="${ICONURL[iconOf(t)]}" alt=""><span>${n}× ${ITEM[t].name}</span><b>${(n * sellOf(t)).toLocaleString('de-DE')}g</b></div>`;
+      lines += `<div class="kv"><img src="${ICONURL[iconOf(t)]}" alt=""><span>${n}× ${ITEM[t].name}</span><b>${(n * sellOf(t)).toLocaleString('de-DE')} Taler</b></div>`;
     }
     const income = S.soldGold; S.sold = {}; S.soldGold = 0; custs.length = 0;
+    const wage = S.staffed ? Math.min(WAGE, S.gold) : 0; S.gold -= wage; S.staffed = 0;
     // Lieferungen
     let dl = '';
     for (const o of S.orders.slice()) {
-      if (orderReady(o)) { S.gold += o.reward; S.earned += o.reward; dl += `<div class="kv"><img src="${ICONURL.board}" alt=""><span>Lieferung an ${o.who}</span><b>+${o.reward.toLocaleString('de-DE')}g</b></div>`; S.orders.splice(S.orders.indexOf(o), 1); continue; }
+      if (orderReady(o)) { S.gold += o.reward; S.earned += o.reward; dl += `<div class="kv"><img src="${ICONURL.board}" alt=""><span>Lieferung an ${o.who}</span><b>+${o.reward.toLocaleString('de-DE')} Taler</b></div>`; S.orders.splice(S.orders.indexOf(o), 1); continue; }
       o.days--;
       if (o.days <= 0) {
         for (const t in o.packed) if (o.packed[t]) addItem(t, o.packed[t]);
@@ -1661,9 +1708,10 @@ function endDay(passedOut) {
     const ready = Object.values(S.soil).filter(s => s.c && s.c.d >= CROPS[s.c.t].days).length;
     const sd = (S.day - 1) % 28 + 1, season = SEASONS[Math.floor((S.day - 1) / 28) % 4];
     let html = T(passedOut ? 'w_moon' : 'w_sun', passedOut ? 'Umgekippt …' : 'Ein neuer Morgen');
-    html += `<div class="sinfo"><span>${WDAYS[(S.day - 1) % 7]}. ${sd}. ${season} · Tag ${S.day}</span><span>Kasse: <b>${S.gold.toLocaleString('de-DE')}g</b></span></div>`;
-    if (passedOut) html += `<div class="ssec warn"><p class="lead">Ein Nachbar hat dich nach Hause gebracht. Für die Hilfe fehlen dir <b>${lost}g</b>, und du bist nicht ganz ausgeruht.</p></div>`;
-    html += `<div class="ssec"><div class="ssech"><span>Gestern am Stand verkauft</span>${income ? `<b>+${income.toLocaleString('de-DE')}g</b>` : ''}</div>${lines || '<div class="sempty">Gestern wurde am Stand nichts verkauft.</div>'}</div>`;
+    html += `<div class="sinfo"><span>${WDAYS[(S.day - 1) % 7]}. ${sd}. ${season} · Tag ${S.day}</span><span>Kasse: <b>${S.gold.toLocaleString('de-DE')} Taler</b></span></div>`;
+    if (passedOut) html += `<div class="ssec warn"><p class="lead">Ein Nachbar hat dich nach Hause gebracht. Für die Hilfe fehlen dir <b>${lost} Taler</b>, und du bist nicht ganz ausgeruht.</p></div>`;
+    html += `<div class="ssec"><div class="ssech"><span>Gestern am Stand verkauft</span>${income ? `<b>+${income.toLocaleString('de-DE')} Taler</b>` : ''}</div>${lines || '<div class="sempty">Gestern wurde am Stand nichts verkauft.</div>'}</div>`;
+    if (wage) html += `<div class="ssec"><div class="kv"><img src="${ICONURL.stand}" alt=""><span>Lohn für ${STAFF} am Verkaufsstand</span><b>−${wage} Taler</b></div></div>`;
     if (dl) html += `<div class="ssec"><div class="ssech"><span>Lieferungen</span></div>${dl}</div>`;
     let farm = '';
     if (S.rain) farm += `<div class="kv"><img src="${ICONURL.w_rain}" alt=""><span>Heute regnet es – deine Felder sind schon gegossen.</span></div>`;
