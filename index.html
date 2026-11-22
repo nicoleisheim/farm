@@ -1673,7 +1673,7 @@ function helpHTML(intro) {
   if (!intro) h += `<div class="ssec"><div class="ssech"><span>Anzeige</span></div>${[['bar', 'Werkzeugleiste'], ['top', 'Datum und Hilfe-Knopf'], ['dlg', 'Fenster']].map(([k, n]) => `<div class="lrow"><span></span><div class="ln"><b>${n}</b><small>Größe anpassen</small></div><div class="qty"><button class="btn sq" data-act="ui:${k}:-1" ${UIS[k] > .5 ? '' : 'disabled'}>−</button><span class="qv">${Math.round(UIS[k] * 100)}%</span><button class="btn sq" data-act="ui:${k}:1" ${UIS[k] < 1.5 ? '' : 'disabled'}>+</button></div><span></span></div>`).join('')}</div>`;
   h += `<div class="ssec"><div class="ssech"><span>So geht's</span></div><div class="steps">${steps.map(([ic, t]) => `<div class="step"><img src="${ICONURL[ic]}" alt=""><span>${t}</span></div>`).join('')}</div></div>`;
   h += `<div class="ssec"><div class="ssech"><span>Gut zu wissen</span></div><div class="kv"><img src="${ICONURL.w_moon}" alt=""><span>Geh vor 2 Uhr nachts durch die Haustür ins Bett – sonst kippst du um. Gespeichert wird beim Schlafen.</span></div></div>`;
-  return h + `<div class="foot">${intro ? '' : '<button class="btn red" data-act="new">Neues Spiel</button><button class="btn" data-act="save">Speichern</button>'}<button class="btn primary" data-act="close">${intro ? "Los geht's!" : 'Weiter'}</button></div>`;
+  return h + `<div class="foot">${intro ? '' : '<button class="btn red" data-act="new">Neues Spiel</button><button class="btn" data-act="save">Speichern</button>'}<button class="btn${intro ? ' primary' : ''}" data-act="close">${intro ? "Los geht's!" : 'Schließen'}</button></div>`;
 }
 const T = (ic, txt) => `<h2>${ic ? `<img src="${ICONURL[ic]}" alt="">` : ''}<span>${txt}</span></h2>`;
 let invSel = null;
@@ -1741,8 +1741,8 @@ function standHTML() {
   const bag = SELLABLE.filter(t => cnt(t) > 0), on = SELLABLE.filter(t => S.stand[t] > 0);
   const onVal = on.reduce((a, t) => a + S.stand[t] * priceOf(t), 0), hrs = Math.round((S.staffMin || 0) / 60 * 10) / 10;
   let h = T('stand', 'Verkaufsstand') + `<div class="chips"><span class="chip">Offen 8–18 Uhr</span></div><div class="ssec"><div class="lrow"><img src="${lotteIcon}" alt=""><div class="ln"><b>Lohn für ${STAFF}</b><small>${standOpen() ? 'Ab 18 Uhr änderbar' : `Tempo: ${paceOf(wageOf())}`}</small></div><div class="qty"><button class="btn sq" data-act="wage:-1" ${wageOf() > 4 && !standOpen() ? '' : 'disabled'}>−</button><span class="qv">${wageOf()}</span><button class="btn sq" data-act="wage:1" ${wageOf() < 16 && !standOpen() ? '' : 'disabled'}>+</button></div><small>Taler/Std.</small></div></div>`;
-  h += `<div class="ssec"><div class="ssech"><span>Am Stand</span>${on.length ? `<b>${onVal.toLocaleString('de-DE')} Taler</b>` : ''}</div>`;
-  if (on.length) for (const t of on) h += `<div class="lrow"><img src="${ICONURL[iconOf(t)]}" alt=""><div class="ln"><b>${ITEM[t].name}</b><small>${priceOf(t)} Taler/Stück</small></div><span class="cntb">${S.stand[t]}×</span><div class="lbtns"><button class="btn sq" data-act="back1:${t}" title="1 zurücknehmen">−1</button><button class="btn" data-act="back:${t}">Alle</button></div></div>`;
+  h += `<div class="ssec"><div class="ssech"><span>Am Stand</span>${on.length ? `<b><span class="p-coin"></span>${onVal.toLocaleString('de-DE')} Taler</b>` : ''}</div>`;
+  if (on.length) for (const t of on) h += `<div class="lrow"><img src="${ICONURL[iconOf(t)]}" alt=""><div class="ln"><b>${ITEM[t].name}</b><small>${priceOf(t)} Taler/Stück</small></div><span class="cntb">${S.stand[t]}×</span><div class="lbtns"><button class="btn sq" data-act="back1:${t}" title="1 zurücknehmen">−</button><button class="btn" data-act="back:${t}">Alle</button></div></div>`;
   else h += '<div class="sempty">Noch nichts ausgelegt.</div>';
   h += '</div>';
   const pl = SELLABLE.filter(t => cnt(t) > 0 || S.stand[t] > 0);
@@ -1794,8 +1794,8 @@ function ordersHTML() {
       const need = o.items[t], have = o.packed[t] || 0, inv = cnt(t), miss = need - have;
       h += `<div class="lrow o"><img src="${ICONURL[iconOf(t)]}" alt=""><div class="ln"><div class="otop"><b>${ITEM[t].name}</b><span>${have}/${need}</span></div><div class="obar"><i style="width:${Math.round(have / need * 100)}%"></i></div>
         ${miss > 0 ? `<small class="${inv < miss ? 'short' : 'okc'}">${inv >= miss ? `Genug dabei (${inv})` : inv ? `Nur ${inv} dabei, ${miss - inv} fehlen` : 'Nichts davon dabei'}</small>` : ''}</div>` +
-        `<div class="lbtns"><button class="btn sq" data-act="up1:${o.id}:${t}" ${have ? '' : 'disabled'} title="1 zurücknehmen">−1</button><button class="btn sq" data-act="pk1:${o.id}:${t}" ${inv && miss > 0 ? '' : 'disabled'} title="1 einpacken">+1</button>` +
-        (miss > 0 ? `<button class="btn${inv ? ' primary' : ''}" data-act="pack:${o.id}:${t}" ${inv ? '' : 'disabled'}>Alle</button>` : '<span class="okmark">✓</span>') + '</div></div>';
+        `<div class="lbtns"><button class="btn sq" data-act="up1:${o.id}:${t}" ${have ? '' : 'disabled'} title="1 zurücknehmen">−</button><button class="btn sq" data-act="pk1:${o.id}:${t}" ${inv && miss > 0 ? '' : 'disabled'} title="1 einpacken">+</button>` +
+        (miss > 0 ? `<button class="btn" data-act="pack:${o.id}:${t}" ${inv ? '' : 'disabled'}>Alle</button>` : '<span class="okmark">✓</span>') + '</div></div>';
     }
     h += '</div>';
   }
@@ -1898,7 +1898,7 @@ function drawStandGoods(t) {
 function shopRow(img, name, info, price, id, single) {
   const d1 = S.gold < price || id === 'own' ? 'disabled' : '', d5 = S.gold < price * 5 ? 'disabled' : '';
   return `<div class="shrow"><img src="${img}" alt=""><div class="sname"><b>${name}</b><small>${info}</small></div><span class="price"><span class="p-coin"></span>${price}</span>
-    <div class="shbtns"><button class="btn" data-act="buy:${id}:1" ${d1}>Kaufen</button>${single ? '' : `<button class="btn" data-act="buy:${id}:5" ${d5}>×5</button>`}</div></div>`;
+    <div class="shbtns"><button class="btn" data-act="buy:${id}:1" ${d1}>Kaufen</button>${single ? '' : `<button class="btn" data-act="buy:${id}:5" ${d5}>5×</button>`}</div></div>`;
 }
 function shopHTML() {
   let h = T('shopi', 'Dorfladen') + `<div class="sinfo"><span>Willkommen! Schau dich ruhig um.</span><span><span class="money"><span class="p-coin"></span>${S.gold.toLocaleString('de-DE')}</span></span></div>`;
@@ -1916,7 +1916,7 @@ function shopHTML() {
   h += '</div><div class="ssec"><div class="ssech"><span>Sonstiges</span></div>';
   h += shopRow(ICONURL.snack, 'Gartensalat', '+40 Energie', 30, 'snack');
   if (S.canCap < 40) h += shopRow(ICONURL.can, 'Kupfer-Gießkanne', '40 statt 20 Füllungen', 400, 'can', true);
-  return h + `</div><div class="sfoot"><div class="ssum"><span class="money"><span class="p-coin"></span>${S.gold.toLocaleString('de-DE')}</span></div><div class="sbtns"><button class="btn primary" data-act="close">Tschüss!</button></div></div>`;
+  return h + `</div><div class="sfoot"><div class="ssum"><span class="money"><span class="p-coin"></span>${S.gold.toLocaleString('de-DE')}</span></div><div class="sbtns"><button class="btn" data-act="close">Schließen</button></div></div>`;
 }
 function buy(id, n) {
   let price;
