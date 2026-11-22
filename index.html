@@ -82,6 +82,30 @@ body{background:radial-gradient(circle at 50% 30%,#6a3d5e,#26121f 75%);font-fami
 .row{flex-wrap:wrap}
 .row small{opacity:.75}
 .qty{display:flex;align-items:center;gap:.25em}
+#dlg.standdlg{padding-top:0}
+.stall{margin:0 -1.2em .7em;position:relative}
+.awning{height:2.2em;background:repeating-linear-gradient(90deg,#ff8fb8 0 2em,#fff 2em 4em);border-top:.35em solid #a86d48;position:relative;z-index:1;box-shadow:inset 0 -.25em 0 rgba(0,0,0,.06)}
+.awning:after{content:'';position:absolute;left:0;right:0;bottom:-1em;height:1em;background:radial-gradient(circle at 50% 0,#ff8fb8 .97em,transparent 1em) 0 0/4em 1em repeat-x,radial-gradient(circle at 50% 0,#fff .97em,transparent 1em) 2em 0/4em 1em repeat-x;filter:drop-shadow(0 .15em 0 rgba(120,40,70,.18))}
+.stallsign{position:absolute;top:.55em;left:50%;transform:translateX(-50%);z-index:2;background:#c98a5a;color:#fff7ec;border:.15em solid #7a4a2a;border-radius:.45em;padding:.1em .9em;font-weight:600;white-space:nowrap;box-shadow:0 .2em 0 #7a4a2a}
+.stallbody{position:relative;padding:0 1.25em}
+.stallbody:before,.stallbody:after{content:'';position:absolute;top:-.5em;bottom:0;width:.75em;background:linear-gradient(90deg,#a86d48,#d39a64 45%,#a86d48);z-index:0}
+.stallbody:before{left:.3em}.stallbody:after{right:.3em}
+.wall{background:repeating-linear-gradient(180deg,#f2d3ae 0 1.5em,#e3bb8c 1.5em 1.62em);padding:1.6em .6em .1em;position:relative;min-height:9em;display:flex;flex-direction:column;align-items:flex-start}
+.chalk{background:#41604e;color:#f3f7ef;border:.25em solid #a86d48;border-radius:.3em;padding:.3em .6em;font-size:.74em;line-height:1.35;display:inline-block;box-shadow:0 .15em 0 rgba(0,0,0,.15);margin-bottom:.4em}
+.goods{display:flex;flex-wrap:wrap;align-items:flex-end;gap:.4em .55em;min-height:3.6em;margin-top:auto;align-self:stretch;padding:0 .2em}
+.emptychalk{font-size:.8em;opacity:.65;padding:.6em 0;flex:1;text-align:center}
+.crate{position:relative;width:3.6em;text-align:center;cursor:pointer}
+.crate img{width:2.3em;height:2.3em;image-rendering:pixelated;display:block;margin:0 auto -.55em;position:relative;z-index:1}
+.crate .cbox{background:repeating-linear-gradient(180deg,#c98a5a 0 .55em,#a86d48 .55em .65em);border:.12em solid #7a4a2a;border-radius:.2em;height:1.5em;display:flex;align-items:flex-end;justify-content:center}
+.crate .cbox span{font-size:.7em;font-weight:600;color:#fff7ec;line-height:1.5}
+.crate .ptag{position:absolute;top:0;right:-.3em;z-index:2;background:#fff;border:.1em solid #e8c9a0;border-radius:.25em;font-size:.62em;font-weight:600;padding:0 .3em;transform:rotate(8deg);color:#5a2a35}
+.crate.sel .cbox{border-color:#ff4f8b;box-shadow:0 0 0 .15em #ffb3cf}
+.crate.sel img{filter:drop-shadow(0 0 .15em #ff4f8b)}
+.counter{background:repeating-linear-gradient(90deg,#d39a64 0 3.2em,#bb8155 3.2em 3.3em);border-top:.45em solid #f2c79a;border-bottom:.35em solid #8a5a40;padding:.35em .5em;text-align:center;position:relative;z-index:1;box-shadow:0 .25em 0 rgba(0,0,0,.12)}
+.counter span{font-size:.7em;color:#fff7ec;opacity:.9}
+.basket{position:relative;background:repeating-linear-gradient(45deg,#ecc791 0 .45em,#dcae72 .45em .9em);border:.18em solid #a86d48;border-radius:.7em .7em 1.6em 1.6em;padding:1.1em .6em .7em;margin:.9em 0 .6em}
+.baskettag{position:absolute;top:-.8em;left:.8em;background:#fff7ec;border:.14em solid #a86d48;border-radius:1em;padding:.05em .7em;font-size:.8em;font-weight:600;color:#7a4a2a}
+.basket .card{border-color:#e8c9a0}
 .standinfo{display:flex;justify-content:space-between;gap:.5em;flex-wrap:wrap;font-size:.8em;opacity:.85;margin-bottom:.2em}
 .shelves{display:grid;grid-template-columns:1fr 1fr;gap:.55em;margin:.5em 0}
 .shelf{background:#fff0f6;border-radius:.8em;padding:.45em;border:.12em solid #f5c0d4;min-height:8.5em}
@@ -866,7 +890,7 @@ function toast(m) {
   clearTimeout(toastTimer); toastTimer = setTimeout(() => e.classList.remove('show'), 2300);
 }
 let paused = false;
-function openDlg(html) { delete $('dlg').dataset.inv; delete $('dlg').dataset.orders; $('dlg').innerHTML = html; $('dlg').scrollTop = 0; $('shade').style.display = 'flex'; paused = true; keys.clear(); joyReset(); }
+function openDlg(html) { delete $('dlg').dataset.inv; delete $('dlg').dataset.orders; $('dlg').classList.remove('standdlg'); $('dlg').innerHTML = html; $('dlg').scrollTop = 0; $('shade').style.display = 'flex'; paused = true; keys.clear(); joyReset(); }
 function closeDlg() { $('shade').style.display = 'none'; paused = false; }
 
 const cnt = id => (id && S.items[id]) || 0;
@@ -1032,25 +1056,26 @@ let standSel = null, standQ = 1;
 function neededForOrders(id) { return S.orders.reduce((a, o) => a + Math.max(0, (o.items[id] || 0) - (o.packed[id] || 0)), 0); }
 function standCard(side, id) {
   const n = side === 'bag' ? cnt(id) : S.stand[id], sel = standSel && standSel[0] === side && standSel[1] === id;
-  const tag = side === 'bag' && neededForOrders(id) > 0 ? '<span class="tag">Bestellt</span>' : '';
-  return `<div class="card${sel ? ' sel' : ''}" data-act="ss:${side}:${id}">${tag}<span class="cc">${n}</span><img src="${ICONURL[iconOf(id)]}" alt=""><div class="cn">${ITEM[id].name}</div><div class="cp">${sellOf(id)}g</div></div>`;
+  if (side === 'stand') return `<div class="crate${sel ? ' sel' : ''}" data-act="ss:stand:${id}"><span class="ptag">${sellOf(id)}g</span><img src="${ICONURL[iconOf(id)]}" alt=""><div class="cbox"><span>${n}×</span></div></div>`;
+  const tag = neededForOrders(id) > 0 ? '<span class="tag">Bestellt</span>' : '';
+  return `<div class="card${sel ? ' sel' : ''}" data-act="ss:bag:${id}">${tag}<span class="cc">${n}</span><img src="${ICONURL[iconOf(id)]}" alt=""><div class="cn">${ITEM[id].name}</div><div class="cp">${sellOf(id)}g</div></div>`;
 }
 function standHTML() {
   if (standSel) { const m = standSel[0] === 'bag' ? cnt(standSel[1]) : (S.stand[standSel[1]] || 0); if (!m) standSel = null; else standQ = Math.max(1, Math.min(m, standQ)); }
   const bag = SELLABLE.filter(t => cnt(t) > 0), on = SELLABLE.filter(t => S.stand[t] > 0);
   const onVal = on.reduce((a, t) => a + S.stand[t] * sellOf(t), 0);
-  let h = `<h2>Verkaufsstand</h2><div class="standinfo"><span>Kundschaft kommt von 8 bis 18 Uhr</span><span>Heute verkauft: <b>${S.soldGold.toLocaleString('de-DE')}g</b></span></div>`;
-  h += '<div class="shelves">';
-  h += `<div class="shelf"><div class="shelfh"><span>Im Rucksack</span></div>${bag.length ? `<div class="cards">${bag.map(t => standCard('bag', t)).join('')}</div>` : '<div class="emptytxt">Nichts zum Verkaufen dabei</div>'}</div>`;
-  h += `<div class="shelf st"><div class="shelfh"><span>Am Stand</span>${on.length ? `<small>Wert ${onVal.toLocaleString('de-DE')}g</small>` : ''}</div>${on.length ? `<div class="cards">${on.map(t => standCard('stand', t)).join('')}</div>` : '<div class="emptytxt">Noch nichts ausgelegt</div>'}</div>`;
-  h += '</div>';
+  let h = `<div class="stall"><div class="awning"></div><div class="stallsign">Sonnenhof-Stand</div>
+    <div class="stallbody"><div class="wall"><div class="chalk"><div>Geöffnet 8–18 Uhr</div><div>Heute verkauft: ${S.soldGold.toLocaleString('de-DE')}g</div>${on.length ? `<div>Auf dem Tresen: ${onVal.toLocaleString('de-DE')}g</div>` : ''}</div>
+    <div class="goods">${on.length ? on.map(t => standCard('stand', t)).join('') : '<div class="emptychalk">Der Tresen ist noch leer – leg Ware aus deinem Korb aus.</div>'}</div></div>
+    <div class="counter"><span>Ware antippen zum Zurücknehmen</span></div></div></div>`;
+  h += `<div class="basket"><div class="baskettag">Dein Korb</div>${bag.length ? `<div class="cards">${bag.map(t => standCard('bag', t)).join('')}</div>` : '<div class="emptytxt">Nichts zum Verkaufen dabei</div>'}</div>`;
   if (standSel) {
     const [side, id] = standSel, m = side === 'bag' ? cnt(id) : S.stand[id];
-    h += `<div class="abar"><img src="${ICONURL[iconOf(id)]}" alt=""><div class="an"><b>${ITEM[id].name}</b><small>${side === 'bag' ? `Du hast ${m}` : `${m} am Stand`} · ${(standQ * sellOf(id)).toLocaleString('de-DE')}g</small></div>
+    h += `<div class="abar"><img src="${ICONURL[iconOf(id)]}" alt=""><div class="an"><b>${ITEM[id].name}</b><small>${side === 'bag' ? `Im Korb: ${m}` : `Auf dem Tresen: ${m}`} · ${(standQ * sellOf(id)).toLocaleString('de-DE')}g</small></div>
       <div class="qty"><button class="btn sq" data-act="sq:-1" ${standQ > 1 ? '' : 'disabled'}>−</button><span class="qv">${standQ}</span><button class="btn sq" data-act="sq:1" ${standQ < m ? '' : 'disabled'}>+</button><button class="btn sq wide" data-act="sqa" ${standQ < m ? '' : 'disabled'}>Alle</button></div>
-      <button class="btn primary" data-act="sgo">${side === 'bag' ? 'Auslegen →' : '← Zurücknehmen'}</button></div>`;
+      <button class="btn primary" data-act="sgo">${side === 'bag' ? 'Auf den Tresen ↑' : 'In den Korb ↓'}</button></div>`;
     if (side === 'bag' && neededForOrders(id) > 0) h += `<p class="sub warn">Achtung: ${neededForOrders(id)}× ${ITEM[id].name} werden noch für eine Lieferung gebraucht.</p>`;
-  } else h += '<div class="abar empty"><small>Tippe eine Ware an – links zum Auslegen, rechts zum Zurücknehmen.</small></div>';
+  } else h += '<div class="abar empty"><small>Tippe Ware in deinem Korb an, um sie auszulegen.</small></div>';
   return h + '<div class="foot"><button class="btn" data-act="close">Schließen</button></div>';
 }
 function rerenderShip() { const sc = $('dlg').scrollTop; $('dlg').innerHTML = $('dlg').dataset.orders ? ordersHTML() : standHTML(); $('dlg').scrollTop = sc; }
@@ -1223,7 +1248,7 @@ function act(tx, ty) {
   }
   if (t === 'H') { toast('Die Haustür ist in der Mitte.'); return; }
   if (t === 'S') { openDlg(shopHTML()); return; }
-  if (t === 'B') { standSel = null; standQ = 1; openDlg(standHTML()); return; }
+  if (t === 'B') { standSel = null; standQ = 1; openDlg(standHTML()); $('dlg').classList.add('standdlg'); return; }
   if (t === 'L') { openDlg(ordersHTML()); $('dlg').dataset.orders = 1; return; }
   if (!id) { toast('Du hast nichts in der Hand.'); return; }
   if (kind === 'sickle') {
