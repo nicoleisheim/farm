@@ -2498,7 +2498,14 @@ const EDGE_H = 96;
 function buildEdge() {
   const mkE = (ty0, ty1, oy) => {
     const [c, g] = mk(W, EDGE_H);
-    g.fillStyle = '#6fb84e'; g.fillRect(0, 0, W, EDGE_H);
+    // Wiese aus echten Gras-Feldern der Farm, damit die Farbe passt
+    const GT = []; for (let y = 1; y < ROWS - 1; y++) for (let x = 1; x < COLS - 1; x++) {
+      let ok = true;
+      for (let dy = -1; dy <= 1 && ok; dy++) for (let dx = -1; dx <= 1 && ok; dx++) if (MAP[y + dy][x + dx] !== 'G') ok = false;
+      for (let py = 0; py < 16 && ok; py += 3) for (let px = 0; px < 16 && ok; px += 3) if (wetAt(x * 16 + px, y * 16 + py) || wetAt(x * 16 + px, y * 16 + py + 12) || wetAt(x * 16 + px + 12, y * 16 + py) || wetAt(x * 16 + px - 12, y * 16 + py) || wetAt(x * 16 + px, y * 16 + py - 12)) ok = false;
+      if (ok) GT.push([x, y]);
+    }
+    for (let y = 0; y < EDGE_H; y += 16) for (let x = 0; x < W; x += 16) { const [sx, sy] = GT[Math.floor(hash(x, y + oy, 77) * GT.length)]; g.drawImage(BG, sx * 16, sy * 16, 16, 16, x, y, 16, 16); }
     for (let ty = ty0; ty <= ty1; ty++) for (let tx = 0; tx < COLS; tx++) {
       g.save(); g.translate(0, oy); drawTree(g, tx, ty); g.restore();
     }
