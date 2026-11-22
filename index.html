@@ -605,6 +605,11 @@ const connT = (a, b) => { const t = tileAt(a, b); return t === 'P' || t === 'H' 
 function pathPix(x, y) {
   const tx = Math.floor(x / 16), ty = Math.floor(y / 16), lx = x - tx * 16, ly = y - ty * 16;
   const hx = lx < 8 ? -1 : 1, hy = ly < 8 ? -1 : 1, cx = lx < 8 ? lx : 15 - lx, cy = ly < 8 ? ly : 15 - ly;
+  const tt = tileAt(tx, ty);
+  if ((tt === 'B' || tt === 'L' || tt === 'H' || tt === 'S') && isPT(tx, ty + 1) && ly >= 9) {
+    const l = isPT(tx - 1, ty + 1) || tileAt(tx - 1, ty) === tt, r = isPT(tx + 1, ty + 1) || tileAt(tx + 1, ty) === tt;
+    return (l || lx >= 1) && (r || lx <= 14);
+  }
   if (isPT(tx, ty)) return !(!connT(tx + hx, ty) && !connT(tx, ty + hy) && cy < 4 && cx < [4, 2, 1, 1][cy]);
   return isPT(tx + hx, ty) && isPT(tx, ty + hy) && isPT(tx + hx, ty + hy) && cy < 4 && cx < [4, 2, 1, 1][cy];
 }
