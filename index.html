@@ -82,7 +82,74 @@ body{background:radial-gradient(circle at 50% 30%,#6a3d5e,#26121f 75%);font-fami
 .row{flex-wrap:wrap}
 .row small{opacity:.75}
 .qty{display:flex;align-items:center;gap:.25em}
-#dlg.standdlg{padding-top:0}
+#dlg.pixdlg{background:none;border:0;box-shadow:none;padding:0;width:min(96%,30em);border-radius:0}
+.pwin{border:.75em solid transparent;border-image:var(--t-win) 4 / .75em stretch;image-rendering:pixelated;position:relative}
+.pwin *{image-rendering:pixelated}
+.p-awn{height:2.2em;margin:0 -.01em;background:var(--t-awn) repeat-x 0 0/3.2em 2.2em}
+.p-sign{position:absolute;top:.45em;left:50%;transform:translateX(-50%);z-index:3;border:.5em solid transparent;border-image:var(--t-sign) 4 fill / .5em stretch;color:#fff7ec;font-weight:600;padding:0 .5em;white-space:nowrap;text-shadow:0 .1em 0 #7a4a2a;filter:drop-shadow(0 .2em 0 rgba(61,34,12,.35))}
+.pstall{background:#f7e6cf}
+.p-back{position:relative;background:var(--t-plank) repeat 0 0/3em 3em;padding:1.6em 1.3em .1em;min-height:9.5em;display:flex;flex-direction:column;align-items:flex-start;margin-top:-.6em}
+.p-back:before,.p-back:after{content:'';position:absolute;top:0;bottom:0;width:.9em;background:var(--t-post) repeat-y 0 0/.9em 1.2em}
+.p-back:before{left:0}.p-back:after{right:0}
+.p-chalk{border:.6em solid transparent;border-image:var(--t-chalk) 4 fill / .6em stretch;color:#f3f7ef;font-size:.78em;line-height:1.4;padding:0 .3em;margin-left:.4em}
+.p-goods{display:flex;flex-wrap:wrap;align-items:flex-end;gap:.3em .7em;margin-top:auto;align-self:stretch;min-height:3.6em;padding:0 .6em}
+.p-crate{position:relative;width:3em;text-align:center;cursor:pointer}
+.p-crate img{width:2.4em;height:2.4em;display:block;margin:0 auto -.7em;position:relative;z-index:1}
+.p-cbox{height:1.7em;background:var(--t-crate) no-repeat 0 0/100% 100%;color:#fff7ec;font-size:.72em;font-weight:600;line-height:2.6em;text-shadow:0 .1em 0 #7a4a2a}
+.p-tag{position:absolute;top:-.2em;right:-.7em;z-index:2;border:.25em solid transparent;border-image:var(--t-tag) 4 fill / .25em stretch;font-size:.62em;font-weight:600;color:#5a2a35;padding:0 .15em;transform:rotate(8deg)}
+.p-crate.sel img{filter:drop-shadow(0 0 .12em #ff4f8b) drop-shadow(0 0 .12em #ff4f8b)}
+.p-crate.sel .p-cbox{outline:.18em solid #ff4f8b}
+.p-counter{height:2.25em;background:var(--t-counter) repeat-x 0 0/3em 2.25em;text-align:center;color:#fff7ec;font-size:.7em;line-height:3.9em;text-shadow:0 .1em 0 #8a5a40;position:relative;z-index:1}
+.p-lower{padding:.9em .7em .2em;background:#f7e6cf}
+.p-basket{position:relative;border:.6em solid transparent;border-image:var(--t-rim) 4 / .6em stretch;background:var(--t-weave) repeat 0 0/1.5em 1.5em;background-clip:padding-box;padding:1em .4em .5em;margin-top:.4em}
+.p-label{position:absolute;top:-1.15em;left:.4em;border:.4em solid transparent;border-image:var(--t-sign) 4 fill / .4em stretch;color:#fff7ec;font-size:.8em;font-weight:600;padding:0 .3em}
+.p-slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(4em,1fr));gap:.4em}
+.p-slot{position:relative;border:.5em solid transparent;border-image:var(--t-slot) 4 fill / .5em stretch;text-align:center;cursor:pointer;padding:.1em 0 0}
+.p-slot.sel{border-image-source:var(--t-slotsel)}
+.p-slot img{width:2.2em;height:2.2em;display:block;margin:0 auto}
+.p-n{position:absolute;top:-.55em;right:-.55em;border:.25em solid transparent;border-image:var(--t-slotsel) 4 fill / .25em stretch;font-size:.66em;font-weight:600;color:#c4527e;min-width:1.2em;text-align:center;line-height:1.1}
+.p-sn{font-size:.68em;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.p-flag{position:absolute;top:-.95em;left:-.6em;z-index:1;background:#ffe066;color:#7a4a1e;font-size:.55em;font-weight:600;padding:.05em .35em;box-shadow:0 0 0 .15em #c99a2a}
+.p-empty{font-size:.8em;opacity:.7;text-align:center;flex:1;align-self:center;color:#7a4a2a;padding:.8em 0}
+.p-empty.dark{color:#5a2a35}
+.p-paper{border:.5em solid transparent;border-image:var(--t-paper) 4 fill / .5em stretch}
+.p-abar{display:flex;align-items:center;gap:.4em .5em;flex-wrap:wrap;margin-top:.7em;padding:.1em .2em}
+.p-abar.empty{justify-content:center;text-align:center;font-size:.8em;opacity:.8;padding:.5em}
+.p-abar img{width:2em;height:2em}
+.p-abar .an{flex:1;min-width:5.5em;display:flex;flex-direction:column;line-height:1.2}
+.p-abar .an small{opacity:.75}
+.p-qty{display:flex;align-items:center;gap:.25em}
+.p-warn{font-size:.76em;color:#c4527e;margin:.35em .2em 0}
+.p-foot{display:flex;justify-content:flex-end;padding:.7em .1em .2em}
+.p-foot.wood{background:#e8c69e;margin:0;padding:.55em .5em}
+.pbtn{font:inherit;font-weight:600;color:#fff;text-shadow:0 .1em 0 #a0365e;background:none;border:.45em solid transparent;border-image:var(--t-btn) 4 fill / .45em stretch;padding:0 .4em;cursor:pointer;line-height:1.5;touch-action:manipulation;image-rendering:pixelated}
+.pbtn:active:not(:disabled){transform:translateY(.1em)}
+.pbtn.sec{color:#5a2a1a;text-shadow:none;border-image-source:var(--t-btn2)}
+.pbtn:disabled{border-image-source:var(--t-btnoff);color:#b7909f;text-shadow:none;cursor:default}
+.pbtn.sq{min-width:2.2em;padding:0}
+.pbtn.sm{font-size:.82em;min-width:3.2em}
+.qv{min-width:1.6em;text-align:center;font-weight:600}
+.pboard{background:#d6a06a}
+.p-cork{background:var(--t-cork) repeat 0 0/3em 3em;padding:2.6em .8em .8em;display:flex;flex-direction:column;gap:1em;min-height:9em}
+.p-note{position:relative;border:.55em solid transparent;border-image:var(--t-paper) 4 fill / .55em stretch;padding:.25em .35em .1em;filter:drop-shadow(.15em .25em 0 rgba(90,52,22,.35))}
+.p-note.done{border-image-source:var(--t-green)}
+.p-pin{position:absolute;top:-1em;left:50%;width:1.3em;height:1.3em;margin-left:-.65em;background:var(--t-pin) no-repeat 0 0/100% 100%}
+.nh{display:flex;justify-content:space-between;align-items:center;gap:.5em;margin-bottom:.3em}
+.p-stamp{font-size:.7em;font-weight:600;color:#c4527e;border:.18em solid #f5a3c3;padding:0 .4em;transform:rotate(-3deg);white-space:nowrap;background:#fff}
+.p-stamp.hot{color:#d94a3a;border-color:#f0a090}
+.p-stamp.ok{color:#3f8a37;border-color:#8fd16a;font-size:.8em;text-transform:uppercase;letter-spacing:.06em}
+.nl{display:flex;align-items:center;gap:.45em;padding:.2em 0}
+.nl img{width:2em;height:2em;flex:none}
+.nm{flex:1;min-width:0}
+.nt{display:flex;justify-content:space-between;font-size:.86em}
+.p-bar{height:.55em;background:#efe2cc;box-shadow:0 0 0 .14em #c9a87e;margin:.25em .1em .1em;position:relative}
+.p-bar i{position:absolute;left:0;top:0;bottom:0;background:#7cc85a;box-shadow:inset 0 .14em 0 #a6e08a}
+.p-check{color:#3f8a37;font-weight:600;min-width:3.2em;text-align:center}
+.nf{display:flex;justify-content:space-between;align-items:center;border-top:.14em dashed #e0cfb4;margin-top:.3em;padding-top:.25em;font-size:.9em}
+.nf b{display:flex;align-items:center;gap:.25em}
+.p-coin{display:inline-block;width:1em;height:1em;background:var(--t-coin) no-repeat 0 0/100% 100%}
+.p-cratebar{display:flex;align-items:center;gap:.6em;background:#c98a5a;color:#fff7ec;font-size:.76em;padding:.5em .7em;text-shadow:0 .1em 0 #7a4a2a;border-top:.25em solid #8a5a40}
+.p-cicon{flex:none;width:2.6em;height:1.5em;background:var(--t-crate) no-repeat 0 0/100% 100%}
 .stall{margin:0 -1.2em .7em;position:relative}
 .awning{height:2.2em;background:repeating-linear-gradient(90deg,#ff8fb8 0 2em,#fff 2em 4em);border-top:.35em solid #a86d48;position:relative;z-index:1;box-shadow:inset 0 -.25em 0 rgba(0,0,0,.06)}
 .awning:after{content:'';position:absolute;left:0;right:0;bottom:-1em;height:1em;background:radial-gradient(circle at 50% 0,#ff8fb8 .97em,transparent 1em) 0 0/4em 1em repeat-x,radial-gradient(circle at 50% 0,#fff .97em,transparent 1em) 2em 0/4em 1em repeat-x;filter:drop-shadow(0 .15em 0 rgba(120,40,70,.18))}
@@ -247,6 +314,8 @@ const ITEM = {
   axe: { name: 'Axt', kind: 'axe', tool: 1, desc: 'Fällt Bäume (3 Schläge) und entfernt Baumstümpfe. Gibt Holz.' },
   shovel: { name: 'Schaufel', kind: 'shovel', tool: 1, desc: 'Gräbt Pflanzen aus und macht Felder wieder zu Wiese.' },
   wood: { name: 'Holz', kind: 'mat', sell: 8, desc: 'Frisch gehacktes Holz. Bringt 8g am Verkaufsstand.' },
+  'sap-green': { name: 'Baumsetzling', kind: 'sapling', k: 'green', desc: 'Auf freier Wiese pflanzen. Wird in 4 Tagen zu einem Baum.' },
+  'sap-cherry': { name: 'Kirschbaum-Setzling', kind: 'sapling', k: 'cherry', desc: 'Auf freier Wiese pflanzen. Wird in 4 Tagen zu einem blühenden Kirschbaum.' },
   snack: { name: 'Gartensalat', kind: 'food', eat: 40, desc: 'Ein knackiger Salat aus dem Dorfladen.' },
 };
 for (const t in CROPS) {
@@ -260,7 +329,7 @@ const SELLABLE = [...Object.keys(CROPS), 'wood'];
 const sellOf = id => ITEM[id].sell || 0;
 const SEASONS = ['Frühling', 'Sommer', 'Herbst', 'Winter'];
 const WDAYS = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
-const SOLID = new Set(['T', 'H', 'S', 'B', 'U', 'W', 'L', 'X']);
+const SOLID = new Set(['T', 'H', 'S', 'B', 'U', 'W', 'L', 'X', 'Y']);
 const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
 const DOOR = [4, 4];
 
@@ -281,7 +350,8 @@ let TREES = {};
 const tileAt = (x, y) => {
   if (x < 0 || y < 0 || x >= COLS || y >= ROWS) return 'T';
   const t = MAP[y][x];
-  if (t === 'T') { const st = TREES[x + ',' + y]; if (st && st.s !== 'tree') return st.s === 'stump' ? 'X' : 'G'; }
+  const st = TREES[x + ',' + y];
+  if (st) return st.s === 'tree' ? 'T' : st.s === 'stump' ? 'X' : st.s === 'sap' ? 'Y' : 'G';
   return t;
 };
 
@@ -357,8 +427,15 @@ function drawPaths(g) {
     else if (!P[y * W + x + 1]) R(g, x - 1, y, 2, 1, '#6aae4a');
   }
 }
+const isCherry = (tx, ty) => { const st = TREES[tx + ',' + ty]; return st && st.k ? st.k === 'cherry' : hash(tx, ty, 21) < .4; };
+function drawSapling(g, tx, ty, big, cherry) {
+  const x0 = tx * 16, y0 = ty * 16, L = cherry ? ['#f7a6c8', '#ffcfe2'] : ['#58ae55', '#7dcb6c'];
+  R(g, x0 + 4, y0 + 13, 8, 2, 'rgba(60,20,40,.18)'); R(g, x0 + 5, y0 + 12, 6, 2, '#8a5a3a');
+  if (!big) { R(g, x0 + 7, y0 + 6, 2, 7, '#8a5a40'); disc(g, x0 + 6, y0 + 6, 2, L[0]); disc(g, x0 + 10, y0 + 5, 2, L[0]); R(g, x0 + 5, y0 + 5, 1, 1, L[1]); R(g, x0 + 9, y0 + 4, 1, 1, L[1]); }
+  else { R(g, x0 + 7, y0 + 7, 2, 6, '#8a5a40'); disc(g, x0 + 8, y0 + 6, 4, L[0]); disc(g, x0 + 7, y0 + 5, 2, L[1]); R(g, x0 + 10, y0 + 7, 1, 1, L[1]); }
+}
 function drawTree(g, tx, ty) {
-  const x0 = tx * 16, y0 = ty * 16, s = Math.floor(hash(tx, ty, 3) * 3) - 1, cherry = hash(tx, ty, 21) < .4;
+  const x0 = tx * 16, y0 = ty * 16, s = Math.floor(hash(tx, ty, 3) * 3) - 1, cherry = isCherry(tx, ty);
   const P = cherry ? ['#e47fa8', '#f7a6c8', '#ffcfe2', '#ffffff'] : ['#3f8f45', '#58ae55', '#7dcb6c', '#a5e08a'];
   R(g, x0 + 3, y0 + 14, 10, 2, 'rgba(60,20,40,.18)');
   R(g, x0 + 6, y0 + 10, 4, 5, '#8a5a40'); R(g, x0 + 6, y0 + 10, 1, 5, '#a8735a');
@@ -718,6 +795,8 @@ icon('wood', g => {
   disc(g, 3, 10, 2, '#e8c094'); R(g, 3, 10, 1, 1, '#c49060'); disc(g, 14, 6, 2, '#e8c094'); R(g, 14, 6, 1, 1, '#c49060');
   R(g, 6, 12, 7, 1, '#8a5a40');
 });
+icon('sap_green', g => { drawSapling(g, 0, 0, false, false); R(g, 4, 13, 8, 3, '#c98a5a'); R(g, 4, 13, 8, 1, '#e0a874'); });
+icon('sap_cherry', g => { drawSapling(g, 0, 0, false, true); R(g, 4, 13, 8, 3, '#c98a5a'); R(g, 4, 13, 8, 1, '#e0a874'); });
 icon('bag', g => {
   R(g, 5, 1, 6, 1, '#c4527e'); R(g, 4, 2, 1, 3, '#c4527e'); R(g, 11, 2, 1, 3, '#c4527e');
   R(g, 2, 4, 12, 11, '#ff8fb8'); R(g, 3, 3, 10, 1, '#ff8fb8'); R(g, 2, 14, 12, 1, '#e0578c');
@@ -734,6 +813,59 @@ icon('w_rain', g => { disc(g, 6, 7, 3, '#cfd9ea'); disc(g, 10, 6, 4, '#e3ebf6');
   R(g, 4, 12, 1, 2, '#4fb3ff'); R(g, 8, 13, 1, 2, '#4fb3ff'); R(g, 12, 12, 1, 2, '#4fb3ff'); });
 icon('heart', g => { R(g, 2, 3, 4, 2, '#ff4f8b'); R(g, 10, 3, 4, 2, '#ff4f8b'); R(g, 1, 4, 14, 4, '#ff4f8b'); R(g, 2, 8, 12, 2, '#ff4f8b');
   R(g, 4, 10, 8, 2, '#ff4f8b'); R(g, 6, 12, 4, 1, '#ff4f8b'); R(g, 7, 13, 2, 1, '#ff4f8b'); R(g, 3, 4, 2, 2, '#ffc2dc'); });
+/* Pixel-Texturen & 9-Slice-Rahmen für die Fenster */
+const TEX = {};
+function tex(name, w, h, fn) { const [c, g] = mk(w, h); fn(g); TEX[name] = c.toDataURL(); }
+function frame(name, o, f, hi, sh, ring) {
+  tex(name, 12, 12, g => {
+    R(g, 1, 0, 10, 1, o); R(g, 1, 11, 10, 1, o); R(g, 0, 1, 1, 10, o); R(g, 11, 1, 1, 10, o);
+    if (ring) { R(g, 1, 1, 10, 10, ring[0]); R(g, 1, 1, 10, 1, ring[1]); R(g, 1, 1, 1, 10, ring[1]); R(g, 1, 10, 10, 1, ring[2]); R(g, 10, 1, 1, 10, ring[2]); R(g, 3, 3, 6, 6, o); R(g, 4, 4, 4, 4, f); if (hi) R(g, 4, 4, 4, 1, hi); }
+    else { R(g, 1, 1, 10, 10, f); if (hi) R(g, 1, 1, 10, 1, hi); if (sh) R(g, 1, 10, 10, 1, sh); }
+  });
+}
+frame('win', '#3d220c', 'rgba(0,0,0,0)', null, null, ['#c98a5a', '#e0a874', '#a86d48']);
+frame('sign', '#5a3416', '#c98a5a', '#e8b07a', '#a86d48');
+frame('chalk', '#3d220c', '#41604e', '#4c6e5a', null, ['#a86d48', '#c98a5a', '#8a5a40']);
+frame('paper', '#d9c2a0', '#fffaf0', '#ffffff', '#efe2cc');
+frame('slot', '#e8a8c0', '#fff6fa', '#ffffff', '#f7dbe6');
+frame('slotsel', '#ff4f8b', '#ffe9f1', '#ffffff', '#ffc2dc');
+frame('btn', '#a0365e', '#ff8fb8', '#ffc2dc', '#e0578c');
+frame('btn2', '#7a4a2a', '#f6dcc0', '#fff0dc', '#d9b085');
+frame('btnoff', '#c9a0b0', '#f3dbe3', '#fbeef3', '#e8ccd6');
+frame('tag', '#c9a87e', '#ffffff', null, '#efe2cc');
+frame('rim', '#7a4a2a', 'rgba(0,0,0,0)', null, null, ['#c98a5a', '#e0a874', '#a86d48']);
+frame('green', '#3f8a37', '#d8f5c8', '#effbe8', '#b8e0a0');
+tex('awn', 16, 11, g => {
+  R(g, 0, 0, 16, 2, '#a86d48'); R(g, 0, 0, 16, 1, '#e0a874');
+  R(g, 0, 2, 8, 6, '#ff8fb8'); R(g, 8, 2, 8, 6, '#ffffff'); R(g, 0, 2, 8, 1, '#ffb3cf'); R(g, 7, 2, 1, 6, '#f07ca6'); R(g, 15, 2, 1, 6, '#f0e4ea');
+  R(g, 1, 8, 6, 1, '#ff8fb8'); R(g, 2, 9, 4, 1, '#ff8fb8'); R(g, 3, 10, 2, 1, '#e0578c'); R(g, 1, 9, 1, 1, '#e0578c'); R(g, 6, 9, 1, 1, '#e0578c');
+  R(g, 9, 8, 6, 1, '#ffffff'); R(g, 10, 9, 4, 1, '#ffffff'); R(g, 11, 10, 2, 1, '#e8d0dc'); R(g, 9, 9, 1, 1, '#e8d0dc'); R(g, 14, 9, 1, 1, '#e8d0dc');
+});
+tex('plank', 16, 16, g => {
+  R(g, 0, 0, 16, 16, '#f0cfa6'); R(g, 0, 7, 16, 1, '#d9b085'); R(g, 0, 15, 16, 1, '#d9b085'); R(g, 5, 0, 1, 7, '#e0b98c'); R(g, 11, 8, 1, 7, '#e0b98c');
+  R(g, 1, 3, 3, 1, '#e6c296'); R(g, 8, 11, 4, 1, '#e6c296'); R(g, 12, 3, 2, 1, '#f7dcb8'); R(g, 2, 12, 2, 1, '#f7dcb8');
+});
+tex('counter', 16, 12, g => {
+  R(g, 0, 0, 16, 3, '#f2c79a'); R(g, 0, 0, 16, 1, '#ffe0b8'); R(g, 0, 3, 16, 1, '#8a5a40');
+  R(g, 0, 4, 16, 8, '#d39a64'); R(g, 15, 4, 1, 8, '#b07a50'); R(g, 0, 11, 16, 1, '#8a5a40'); R(g, 3, 6, 3, 1, '#c48a5a'); R(g, 9, 9, 4, 1, '#c48a5a');
+});
+tex('post', 6, 8, g => { R(g, 0, 0, 6, 8, '#c98a5a'); R(g, 0, 0, 1, 8, '#8a5a40'); R(g, 5, 0, 1, 8, '#8a5a40'); R(g, 1, 0, 1, 8, '#e0a874'); R(g, 3, 2, 1, 2, '#b07a50'); });
+tex('crate', 16, 9, g => {
+  R(g, 0, 0, 16, 9, '#7a4a2a'); R(g, 1, 1, 14, 7, '#c98a5a'); R(g, 1, 1, 14, 1, '#e8b07a'); R(g, 1, 4, 14, 1, '#a86d48');
+  R(g, 3, 1, 1, 7, '#b07a50'); R(g, 12, 1, 1, 7, '#b07a50');
+});
+tex('weave', 8, 8, g => {
+  for (let y = 0; y < 8; y++) for (let x = 0; x < 8; x++) {
+    const hz = ((x >> 2) + (y >> 2)) % 2 === 0, k = hz ? y % 4 : x % 4;
+    R(g, x, y, 1, 1, k === 0 ? '#b88450' : k === 3 ? '#d4a46a' : '#e8c08a');
+  }
+});
+tex('cork', 16, 16, g => {
+  R(g, 0, 0, 16, 16, '#d6a06a');
+  for (let i = 0; i < 26; i++) R(g, Math.floor(hash(i, 1, 70) * 16), Math.floor(hash(i, 2, 70) * 16), 1, 1, i % 3 ? '#c48a55' : '#e6b880');
+});
+tex('pin', 7, 7, g => { disc(g, 3, 3, 3, '#ff4f8b'); R(g, 2, 1, 2, 1, '#ffc2dc'); R(g, 1, 2, 1, 1, '#ffc2dc'); R(g, 3, 6, 1, 1, '#8a8a8a'); });
+tex('coin', 8, 8, g => { disc(g, 4, 4, 3, '#9c6b12'); disc(g, 4, 4, 2, '#f2c13a'); R(g, 3, 2, 1, 1, '#fff0a8'); });
 function seedBag(g, a, b) {
   R(g, 4, 3, 8, 11, '#d9b27a'); R(g, 4, 3, 8, 2, '#b98f55'); R(g, 5, 2, 6, 1, '#b98f55');
   R(g, 3, 5, 1, 8, '#c79f66'); R(g, 12, 5, 1, 8, '#c79f66'); R(g, 4, 14, 8, 1, '#9c7444');
@@ -757,9 +889,11 @@ const [TL, tl] = mk(W, H);
 function rebuildTrees() {
   tl.clearRect(0, 0, W, H); CHERRY.length = 0;
   for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
-    if (MAP[y][x] !== 'T') continue;
     const st = TREES[x + ',' + y];
-    if (!st || st.s === 'tree') drawTree(tl, x, y); else if (st.s === 'stump') drawStump(tl, x, y);
+    if (!st) { if (MAP[y][x] === 'T') drawTree(tl, x, y); continue; }
+    if (st.s === 'tree') drawTree(tl, x, y);
+    else if (st.s === 'stump') drawStump(tl, x, y);
+    else if (st.s === 'sap') drawSapling(tl, x, y, st.d >= 2, st.k === 'cherry');
   }
 }
 const [BG, bg] = mk(W, H);
@@ -890,7 +1024,7 @@ function toast(m) {
   clearTimeout(toastTimer); toastTimer = setTimeout(() => e.classList.remove('show'), 2300);
 }
 let paused = false;
-function openDlg(html) { delete $('dlg').dataset.inv; delete $('dlg').dataset.orders; $('dlg').classList.remove('standdlg'); $('dlg').innerHTML = html; $('dlg').scrollTop = 0; $('shade').style.display = 'flex'; paused = true; keys.clear(); joyReset(); }
+function openDlg(html) { delete $('dlg').dataset.inv; delete $('dlg').dataset.orders; $('dlg').classList.remove('standdlg', 'pixdlg'); $('dlg').innerHTML = html; $('dlg').scrollTop = 0; $('shade').style.display = 'flex'; paused = true; keys.clear(); joyReset(); }
 function closeDlg() { $('shade').style.display = 'none'; paused = false; }
 
 const cnt = id => (id && S.items[id]) || 0;
@@ -968,6 +1102,8 @@ function updateHUD() {
     else if (t === 'L') h = S.orders.length ? `Lieferungen (${S.orders.length})` : 'Lieferungen';
     else if (t === 'T' && tool.kind === 'axe') h = 'Baum fällen';
     else if (t === 'X' && tool.kind === 'axe') h = 'Stumpf entfernen';
+    else if (t === 'Y' && tool.kind === 'shovel') h = 'Setzling ausgraben';
+    else if (t === 'G' && !s && tool.kind === 'sapling') h = 'Baum pflanzen';
     else if (s && tool.kind === 'shovel') h = s.c ? 'Pflanze ausgraben' : 'Feld entfernen';
     else if (isWater(tx, ty) && tool.kind === 'can') h = 'Gießkanne füllen';
   }
@@ -1056,27 +1192,27 @@ let standSel = null, standQ = 1;
 function neededForOrders(id) { return S.orders.reduce((a, o) => a + Math.max(0, (o.items[id] || 0) - (o.packed[id] || 0)), 0); }
 function standCard(side, id) {
   const n = side === 'bag' ? cnt(id) : S.stand[id], sel = standSel && standSel[0] === side && standSel[1] === id;
-  if (side === 'stand') return `<div class="crate${sel ? ' sel' : ''}" data-act="ss:stand:${id}"><span class="ptag">${sellOf(id)}g</span><img src="${ICONURL[iconOf(id)]}" alt=""><div class="cbox"><span>${n}×</span></div></div>`;
-  const tag = neededForOrders(id) > 0 ? '<span class="tag">Bestellt</span>' : '';
-  return `<div class="card${sel ? ' sel' : ''}" data-act="ss:bag:${id}">${tag}<span class="cc">${n}</span><img src="${ICONURL[iconOf(id)]}" alt=""><div class="cn">${ITEM[id].name}</div><div class="cp">${sellOf(id)}g</div></div>`;
+  if (side === 'stand') return `<div class="p-crate${sel ? ' sel' : ''}" data-act="ss:stand:${id}"><span class="p-tag">${sellOf(id)}g</span><img src="${ICONURL[iconOf(id)]}" alt=""><div class="p-cbox">${n}×</div></div>`;
+  const tag = neededForOrders(id) > 0 ? '<span class="p-flag">Bestellt</span>' : '';
+  return `<div class="p-slot${sel ? ' sel' : ''}" data-act="ss:bag:${id}">${tag}<img src="${ICONURL[iconOf(id)]}" alt=""><span class="p-n">${n}</span><div class="p-sn">${ITEM[id].name}</div></div>`;
 }
 function standHTML() {
   if (standSel) { const m = standSel[0] === 'bag' ? cnt(standSel[1]) : (S.stand[standSel[1]] || 0); if (!m) standSel = null; else standQ = Math.max(1, Math.min(m, standQ)); }
   const bag = SELLABLE.filter(t => cnt(t) > 0), on = SELLABLE.filter(t => S.stand[t] > 0);
   const onVal = on.reduce((a, t) => a + S.stand[t] * sellOf(t), 0);
-  let h = `<div class="stall"><div class="awning"></div><div class="stallsign">Sonnenhof-Stand</div>
-    <div class="stallbody"><div class="wall"><div class="chalk"><div>Geöffnet 8–18 Uhr</div><div>Heute verkauft: ${S.soldGold.toLocaleString('de-DE')}g</div>${on.length ? `<div>Auf dem Tresen: ${onVal.toLocaleString('de-DE')}g</div>` : ''}</div>
-    <div class="goods">${on.length ? on.map(t => standCard('stand', t)).join('') : '<div class="emptychalk">Der Tresen ist noch leer – leg Ware aus deinem Korb aus.</div>'}</div></div>
-    <div class="counter"><span>Ware antippen zum Zurücknehmen</span></div></div></div>`;
-  h += `<div class="basket"><div class="baskettag">Dein Korb</div>${bag.length ? `<div class="cards">${bag.map(t => standCard('bag', t)).join('')}</div>` : '<div class="emptytxt">Nichts zum Verkaufen dabei</div>'}</div>`;
+  let h = `<div class="pwin pstall"><div class="p-awn"></div><div class="p-sign">Sonnenhof-Stand</div>
+    <div class="p-back"><div class="p-chalk"><div>Geöffnet 8 – 18 Uhr</div><div>Heute verkauft: ${S.soldGold.toLocaleString('de-DE')}g</div>${on.length ? `<div>Auf dem Tresen: ${onVal.toLocaleString('de-DE')}g</div>` : ''}</div>
+    <div class="p-goods">${on.length ? on.map(t => standCard('stand', t)).join('') : '<div class="p-empty">Der Tresen ist leer</div>'}</div></div>
+    <div class="p-counter">${on.length ? 'Kiste antippen = zurücknehmen' : ''}</div>
+    <div class="p-lower"><div class="p-basket"><div class="p-label">Dein Korb</div>${bag.length ? `<div class="p-slots">${bag.map(t => standCard('bag', t)).join('')}</div>` : '<div class="p-empty dark">Nichts zum Verkaufen dabei</div>'}</div>`;
   if (standSel) {
     const [side, id] = standSel, m = side === 'bag' ? cnt(id) : S.stand[id];
-    h += `<div class="abar"><img src="${ICONURL[iconOf(id)]}" alt=""><div class="an"><b>${ITEM[id].name}</b><small>${side === 'bag' ? `Im Korb: ${m}` : `Auf dem Tresen: ${m}`} · ${(standQ * sellOf(id)).toLocaleString('de-DE')}g</small></div>
-      <div class="qty"><button class="btn sq" data-act="sq:-1" ${standQ > 1 ? '' : 'disabled'}>−</button><span class="qv">${standQ}</span><button class="btn sq" data-act="sq:1" ${standQ < m ? '' : 'disabled'}>+</button><button class="btn sq wide" data-act="sqa" ${standQ < m ? '' : 'disabled'}>Alle</button></div>
-      <button class="btn primary" data-act="sgo">${side === 'bag' ? 'Auf den Tresen ↑' : 'In den Korb ↓'}</button></div>`;
-    if (side === 'bag' && neededForOrders(id) > 0) h += `<p class="sub warn">Achtung: ${neededForOrders(id)}× ${ITEM[id].name} werden noch für eine Lieferung gebraucht.</p>`;
-  } else h += '<div class="abar empty"><small>Tippe Ware in deinem Korb an, um sie auszulegen.</small></div>';
-  return h + '<div class="foot"><button class="btn" data-act="close">Schließen</button></div>';
+    h += `<div class="p-paper p-abar"><img src="${ICONURL[iconOf(id)]}" alt=""><div class="an"><b>${ITEM[id].name}</b><small>${side === 'bag' ? `Im Korb: ${m}` : `Auf dem Tresen: ${m}`} · ${(standQ * sellOf(id)).toLocaleString('de-DE')}g</small></div>
+      <div class="p-qty"><button class="pbtn sec sq" data-act="sq:-1" ${standQ > 1 ? '' : 'disabled'}>−</button><span class="qv">${standQ}</span><button class="pbtn sec sq" data-act="sq:1" ${standQ < m ? '' : 'disabled'}>+</button><button class="pbtn sec" data-act="sqa" ${standQ < m ? '' : 'disabled'}>Alle</button></div>
+      <button class="pbtn" data-act="sgo">${side === 'bag' ? 'Auf den Tresen' : 'In den Korb'}</button></div>`;
+    if (side === 'bag' && neededForOrders(id) > 0) h += `<div class="p-warn">${neededForOrders(id)}× ${ITEM[id].name} werden noch für eine Lieferung gebraucht.</div>`;
+  } else h += '<div class="p-paper p-abar empty">Tippe Ware in deinem Korb an, um sie auszulegen.</div>';
+  return h + '<div class="p-foot"><button class="pbtn sec" data-act="close">Schließen</button></div></div></div>';
 }
 function rerenderShip() { const sc = $('dlg').scrollTop; $('dlg').innerHTML = $('dlg').dataset.orders ? ordersHTML() : standHTML(); $('dlg').scrollTop = sc; }
 
@@ -1093,19 +1229,21 @@ function genOrder() {
 }
 const orderReady = o => Object.keys(o.items).every(t => (o.packed[t] || 0) >= o.items[t]);
 function ordersHTML() {
-  let h = '<h2>Lieferungen</h2><p class="sub">Pack die Bestellungen in die Lieferkiste. Fertige Lieferungen werden nachts abgeholt und bezahlt – mit ordentlich Aufschlag.</p>';
-  if (!S.orders.length) h += '<p>Gerade gibt es keine Bestellungen. Schau morgen wieder vorbei!</p>';
-  for (const o of S.orders) {
+  let h = '<div class="pwin pboard"><div class="p-sign">Auftragsbrett</div><div class="p-cork">';
+  if (!S.orders.length) h += '<div class="p-note"><span class="p-pin"></span><div class="p-empty dark">Gerade keine Bestellungen. Schau morgen wieder vorbei!</div></div>';
+  S.orders.forEach((o, i) => {
     const r = orderReady(o);
-    h += `<div class="order${r ? ' done' : ''}"><div class="ohead"><b>${o.who}</b><span class="badge">${r ? 'Bereit zur Abholung' : `noch ${o.days} Tag${o.days > 1 ? 'e' : ''}`}</span></div>`;
+    h += `<div class="p-note${r ? ' done' : ''}" style="transform:rotate(${i % 2 ? .8 : -.8}deg)"><span class="p-pin"></span>
+      <div class="nh"><b>${o.who}</b><span class="p-stamp${r ? ' ok' : o.days <= 1 ? ' hot' : ''}">${r ? 'Bereit' : `noch ${o.days} Tag${o.days > 1 ? 'e' : ''}`}</span></div>`;
     for (const t in o.items) {
-      const need = o.items[t], have = o.packed[t] || 0, inv = cnt(t);
-      h += `<div class="oline"><img src="${ICONURL[iconOf(t)]}" alt=""><span class="on">${ITEM[t].name}</span><span class="op">${have}/${need}</span>` +
-        (have < need ? `<button class="btn" data-act="pack:${o.id}:${t}" ${inv ? '' : 'disabled'}>${inv ? `${Math.min(inv, need - have)} einpacken` : 'Fehlt'}</button>` : '<span class="ok">✓</span>') + '</div>';
+      const need = o.items[t], have = o.packed[t] || 0, inv = cnt(t), pct = Math.round(have / need * 100);
+      h += `<div class="nl"><img src="${ICONURL[iconOf(t)]}" alt=""><div class="nm"><div class="nt"><span>${ITEM[t].name}</span><b>${have}/${need}</b></div><div class="p-bar"><i style="width:${pct}%"></i></div></div>` +
+        (have < need ? `<button class="pbtn sm" data-act="pack:${o.id}:${t}" ${inv ? '' : 'disabled'}>${inv ? `+${Math.min(inv, need - have)}` : 'fehlt'}</button>` : '<span class="p-check">✓</span>') + '</div>';
     }
-    h += `<div class="ofoot"><span>Belohnung</span><b>${o.reward.toLocaleString('de-DE')}g</b></div></div>`;
-  }
-  return h + '<div class="foot"><button class="btn" data-act="close">Schließen</button></div>';
+    h += `<div class="nf"><span>Belohnung</span><b><span class="p-coin"></span>${o.reward.toLocaleString('de-DE')}g</b></div></div>`;
+  });
+  h += '</div><div class="p-cratebar"><span class="p-cicon"></span><span>Fertig gepackte Lieferungen werden heute Nacht aus der Lieferkiste abgeholt und bezahlt.</span></div>';
+  return h + '<div class="p-foot wood"><button class="pbtn sec" data-act="close">Schließen</button></div></div>';
 }
 function packOrder(id, t) {
   const o = S.orders.find(x => x.id === id); if (!o) return;
@@ -1183,12 +1321,14 @@ function shopHTML() {
   let h = `<h2>Dorfladen</h2><p class="sub">Dein Geld: <b>${S.gold.toLocaleString('de-DE')}g</b></p>`;
   for (const t in CROPS) { const c = CROPS[t]; h += shopRow(ICONURL['seed_' + t], c.seed, `Reif nach ${c.days} Tagen · ${c.name} bringt ${c.sell}g`, c.buy, 'seed-' + t); }
   h += shopRow(ICONURL.snack, 'Gartensalat', 'Füllt 40 Energie auf', 30, 'snack');
+  h += shopRow(ICONURL.sap_green, 'Baumsetzling', 'Wird in 4 Tagen zu einem Baum', 40, 'sap-green');
+  h += shopRow(ICONURL.sap_cherry, 'Kirschbaum-Setzling', 'Wird in 4 Tagen zu einem Kirschbaum', 60, 'sap-cherry');
   if (S.canCap < 40) h += shopRow(ICONURL.can, 'Kupfer-Gießkanne', 'Fasst 40 statt 20 Füllungen', 400, 'can', true);
   return h + '<div class="foot"><button class="btn" data-act="close">Tschüss!</button></div>';
 }
 function buy(id, n) {
   let price;
-  if (id.startsWith('seed-')) price = CROPS[id.slice(5)].buy; else if (id === 'snack') price = 30; else price = 400;
+  price = id.startsWith('seed-') ? CROPS[id.slice(5)].buy : { snack: 30, can: 400, 'sap-green': 40, 'sap-cherry': 60 }[id];
   if (S.gold < price * n) { snd('err'); return; }
   if (id === 'can') { S.canCap = 40; S.water = 40; }
   else if (!addItem(id, n)) return;
@@ -1248,8 +1388,8 @@ function act(tx, ty) {
   }
   if (t === 'H') { toast('Die Haustür ist in der Mitte.'); return; }
   if (t === 'S') { openDlg(shopHTML()); return; }
-  if (t === 'B') { standSel = null; standQ = 1; openDlg(standHTML()); $('dlg').classList.add('standdlg'); return; }
-  if (t === 'L') { openDlg(ordersHTML()); $('dlg').dataset.orders = 1; return; }
+  if (t === 'B') { standSel = null; standQ = 1; openDlg(standHTML()); $('dlg').classList.add('pixdlg'); return; }
+  if (t === 'L') { openDlg(ordersHTML()); $('dlg').dataset.orders = 1; $('dlg').classList.add('pixdlg'); return; }
   if (!id) { toast('Du hast nichts in der Hand.'); return; }
   if (kind === 'sickle') {
     actTool = 'sickle';
@@ -1273,17 +1413,20 @@ function act(tx, ty) {
     const key = tx + ',' + ty;
     if (t !== 'T' && t !== 'X') { toast('Hier gibt es nichts zu fällen.'); return; }
     if (!needEnergy(t === 'T' ? 3 : 2)) return;
-    const cherry = hash(tx, ty, 21) < .4;
+    const cherry = isCherry(tx, ty);
     snd('chop'); burst(tx, ty, ['#c48a5e', '#e8c094'], 5, 50);
     if (t === 'T') {
-      const st = TREES[key] || (TREES[key] = { s: 'tree', hp: 3 });
+      const st = TREES[key] || (TREES[key] = { s: 'tree' });
+      if (st.hp === undefined) st.hp = 3;
       st.hp--;
       burst(tx, ty, cherry ? ['#ffb6d3', '#ffcfe2'] : ['#58ae55', '#7dcb6c'], 6, 40);
       if (st.hp <= 0) {
         const n = 4 + Math.floor(Math.random() * 3);
-        TREES[key] = { s: 'stump', hp: 2, d: 0 }; rebuildTrees();
+        TREES[key] = { s: 'stump', hp: 2 }; rebuildTrees();
         burst(tx, ty, cherry ? ['#ffb6d3', '#ffcfe2', '#fff'] : ['#58ae55', '#7dcb6c', '#a5e08a'], 22, 90);
-        if (addItem('wood', n)) toast(`Baum gefällt! +${n} Holz`);
+        let msg = `Baum gefällt! +${n} Holz`;
+        if (Math.random() < .3) { const sp = cherry ? 'sap-cherry' : 'sap-green'; if (addItem(sp, 1)) msg += ` · +1 ${ITEM[sp].name}`; }
+        if (addItem('wood', n)) toast(msg);
         snd('harvest');
       }
     } else {
@@ -1299,6 +1442,11 @@ function act(tx, ty) {
   }
   if (kind === 'shovel') {
     actTool = 'shovel';
+    const st = TREES[tx + ',' + ty];
+    if (st && st.s === 'sap') {
+      if (!addItem(st.k === 'cherry' ? 'sap-cherry' : 'sap-green', 1)) return;
+      delete TREES[tx + ',' + ty]; rebuildTrees(); snd('till'); burst(tx, ty, ['#7a4d2c', '#93613a'], 6); toast('Setzling ausgegraben'); return;
+    }
     if (!s) { toast('Hier ist kein Feld zum Entfernen.'); return; }
     if (!needEnergy(1)) return;
     burst(tx, ty, ['#7a4d2c', '#93613a', '#7bbf55'], 8);
@@ -1319,6 +1467,11 @@ function act(tx, ty) {
     if (S.water <= 0) { toast('Die Gießkanne ist leer – füll sie am Teich auf.'); snd('err'); return; }
     if (!needEnergy(1)) return;
     S.water--; s.w = true; burst(tx, ty, ['#4fb3ff', '#8fd0ff'], 8, 30); snd('water');
+  } else if (kind === 'sapling') {
+    const [px, py] = playerTile();
+    if (t !== 'G' || s || wetCount(tx, ty, 2) > 0 || (tx === px && ty === py)) { toast('Hier kann kein Baum wachsen.'); snd('err'); return; }
+    useItem(id); TREES[tx + ',' + ty] = { s: 'sap', d: 0, k: ITEM[id].k }; rebuildTrees();
+    snd('plant'); burst(tx, ty, ['#7a4d2c', '#6cc04f'], 6, 30); toast(`${ITEM[id].name} gepflanzt`);
   } else if (kind === 'seed') {
     const crop = ITEM[id].crop;
     if (!s) { toast('Erst den Boden mit der Hacke auflockern.'); snd('err'); return; }
@@ -1358,7 +1511,12 @@ function endDay(passedOut) {
     while (S.orders.length < 3 && Math.random() < .55) { const o = genOrder(); S.orders.push(o); fresh.push(o.who); }
     // Bäume
     let regrow = false;
-    for (const k in TREES) { const st = TREES[k]; if (st.s === 'tree') delete TREES[k]; else if (st.s === 'stump' && ++st.d >= 4) { delete TREES[k]; regrow = true; } }
+    for (const k in TREES) {
+      const st = TREES[k];
+      if (st.s === 'tree') { if (st.k) delete st.hp; else delete TREES[k]; }
+      else if (st.s === 'stump') delete st.d;
+      else if (st.s === 'sap' && ++st.d >= 4) { st.s = 'tree'; delete st.d; regrow = true; }
+    }
     rebuildTrees();
     let lost = 0;
     if (passedOut) { lost = Math.min(Math.floor(S.gold * .1), 500); S.gold -= lost; }
@@ -1379,7 +1537,7 @@ function endDay(passedOut) {
     html += lines ? `<p><b>Gestern am Stand verkauft:</b></p>${lines}<div class="sumline total"><span>Einnahmen</span><span>${income.toLocaleString('de-DE')}g</span></div>` : '<p>Gestern wurde am Stand nichts verkauft.</p>';
     if (dl) html += `<p><b>Lieferungen:</b></p>${dl}`;
     if (fresh.length) html += `<p>Neue Bestellung${fresh.length > 1 ? 'en' : ''} von ${fresh.join(', ')} am Auftragsbrett.</p>`;
-    if (regrow) html += '<p>Ein Baumstumpf ist wieder zu einem Baum herangewachsen.</p>';
+    if (regrow) html += '<p>Ein Setzling ist zu einem Baum herangewachsen.</p>';
     if (grown) html += `<p>${grown} Pflanze${grown > 1 ? 'n sind' : ' ist'} über Nacht gewachsen.</p>`;
     if (ready) html += `<p>${ready} Pflanze${ready > 1 ? 'n sind' : ' ist'} erntereif!</p>`;
     if (S.rain) html += '<p>Heute regnet es – deine Felder sind schon gegossen.</p>';
@@ -1417,6 +1575,7 @@ C.addEventListener('pointerdown', e => {
   act(tx, ty);
 });
 $('helpBtn').addEventListener('pointerup', () => { if (!fading && !paused) openDlg(helpHTML(false)); });
+for (const k in TEX) document.documentElement.style.setProperty('--t-' + k, `url(${TEX[k]})`);
 $('invIcon').src = ICONURL.bag; $('heartIcon').src = ICONURL.heart;
 $('invBtn').addEventListener('pointerup', openInv);
 // Joystick
