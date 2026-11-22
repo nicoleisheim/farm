@@ -344,7 +344,7 @@ body.port #toast{bottom:2.7em}
 #dlg .have{white-space:nowrap;display:inline-flex;align-items:center;gap:.3em;align-self:flex-start;margin:.15em 0 .05em;font-size:.8em;font-weight:600;color:#7a2a4a;border:.3em solid transparent;border-image:var(--t-dchip) 4 fill / .3em stretch;padding:0 .2em;line-height:1.3}
 #dlg .have img{width:1.2em;height:1.2em}
 #dlg .have.short{border-image-source:var(--t-dchiphot);color:#c4402e}
-.slot .wl.du{bottom:.22em;height:.22em}
+.slot .wl.du{bottom:.25em;height:.32em;box-shadow:0 0 0 .08em #6a3a4a}
 #dlg .hrow{display:flex;align-items:center;gap:.5em;flex-wrap:wrap}
 #dlg .chips{display:flex;flex-wrap:wrap;justify-content:center;gap:.35em;margin:-.1em 0 .45em}
 #dlg .chips .chip{font-size:.75em}
@@ -369,6 +369,13 @@ body.port #toast{bottom:2.7em}
 @media (max-width:420px){#dlg .lrow{gap:.35em}#dlg .lrow small{flex-wrap:wrap}}
 #dlg .money{display:inline-flex;align-items:center;gap:.3em;font-weight:600;font-size:1.05em}
 #dlg .money .p-coin{width:1.15em;height:1.15em}
+#dlg .money img{width:1.15em;height:1.15em}
+#dlg .inv .slot{position:relative}
+#dlg .dbar{position:absolute;left:.1em;right:.1em;bottom:-.05em;height:.3em;background:#6a3a4a}
+#dlg .dbar i{display:block;height:100%}
+#dlg .dura{display:flex;align-items:center;gap:.5em;margin-top:.4em;font-size:.85em}
+#dlg .dura .obar{flex:1;margin:0;height:.6em;position:relative}
+#dlg .dura .obar i{display:block;height:100%}
 </style>
 </head>
 <body>
@@ -452,6 +459,8 @@ function wear(id) {
   if (S.dura[id] === 10) toast(`${itemName(id)} ist fast kaputt – bald im Laden eine neue kaufen!`);
   if (S.dura[id] <= 0) { delete S.dura[id]; useItem(id); snd('err'); const spare = cnt(id) > 0; if (spare) S.dura[id] = ITEM[id].dura; setTimeout(() => toast(spare ? `${itemName(id)} ist kaputtgegangen – du nimmst die Ersatz-${itemName(id)}.` : `${itemName(id)} ist kaputtgegangen! Im Laden gibt es Ersatz.`), 400); }
 }
+const duraCol = f => f > .5 ? '#7cc85a' : f > .2 ? '#ffb84d' : '#e0503a';
+function duraBar(id, cls) { const f = duraOf(id) / ITEM[id].dura; return `<span class="${cls}"><i style="width:${Math.max(4, f * 100)}%;background:${duraCol(f)}"></i></span>`; }
 const duraOf = id => (S.dura && S.dura[id] !== undefined) ? S.dura[id] : ITEM[id].dura;
 const iconOf = id => id.replace('-', '_');
 const SELLABLE = [...Object.keys(CROPS), 'wood'];
@@ -1249,7 +1258,7 @@ function updateHUD() {
       n.style.display = showN ? '' : 'none';
       d.title = itemName(id);
       if (id === 'can') d.querySelector('.wl i').style.width = (S.water / S.canCap * 100) + '%';
-      else if (ITEM[id].dura) { const f = duraOf(id) / ITEM[id].dura, i = d.querySelector('.wl i'); i.style.width = (f * 100) + '%'; i.style.background = f > .5 ? '#7cc85a' : f > .2 ? '#ffb84d' : '#e0503a'; }
+      else if (ITEM[id].dura) { const f = duraOf(id) / ITEM[id].dura, i = d.querySelector('.wl i'); i.style.width = Math.max(4, f * 100) + '%'; i.style.background = duraCol(f); }
     });
   }
   // interaction hint
@@ -1298,10 +1307,10 @@ let invSel = null;
 function slotHTML(c, i) {
   const id = S[c][i], sel = invSel && invSel[0] === c && invSel[1] === i;
   if (!id) return `<div class="slot empty${sel ? ' sel' : ''}" data-act="slot:${c}:${i}"></div>`;
-  return `<div class="slot${sel ? ' sel' : ''}" data-act="slot:${c}:${i}" title="${itemName(id)}"><img src="${ICONURL[iconOf(id)]}" alt="">${ITEM[id].tool && cnt(id) < 2 ? '' : `<span class="n">${cnt(id)}</span>`}</div>`;
+  return `<div class="slot${sel ? ' sel' : ''}" data-act="slot:${c}:${i}" title="${itemName(id)}"><img src="${ICONURL[iconOf(id)]}" alt="">${ITEM[id].dura ? duraBar(id, 'dbar') : ''}${ITEM[id].tool && cnt(id) < 2 ? '' : `<span class="n">${cnt(id)}</span>`}</div>`;
 }
 function invHTML() {
-  let h = T('bag', 'Rucksack') + `<div class="sinfo"><span>Geld: <b>${S.gold.toLocaleString('de-DE')} Taler</b></span><span>Energie: <b>${Math.round(S.energy)}/${S.maxEnergy}</b></span></div>`;
+  let h = T('bag', 'Rucksack') + `<div class="sinfo"><span class="money" title="Geld"><span class="p-coin"></span>${S.gold.toLocaleString('de-DE')}</span><span class="money" title="Energie"><img src="${ICONURL.heart}" alt="">${Math.round(S.energy)}/${S.maxEnergy}</span></div>`;
   h += `<div class="ssec"><div class="ssech"><span>Werkzeugleiste</span></div><div class="inv">${S.bar.map((_, i) => slotHTML('bar', i)).join('')}</div></div>`;
   h += `<div class="ssec"><div class="ssech"><span>Rucksack</span></div><div class="inv">${S.bag.map((_, i) => slotHTML('bag', i)).join('')}</div></div>`;
   const id = invSel ? S[invSel[0]][invSel[1]] : null;
@@ -1309,8 +1318,7 @@ function invHTML() {
     const it = ITEM[id], other = invSel[0] === 'bar' ? 'bag' : 'bar', free = S[other].includes(null);
     let d = it.desc;
     if (id === 'can') d += ` Füllstand ${S.water}/${S.canCap}.`;
-    if (it.dura) d += ` Haltbarkeit: ${duraOf(id)}/${it.dura}.`;
-    h += `<div class="ssec detail"><img src="${ICONURL[iconOf(id)]}" alt=""><div class="t"><b>${itemName(id)}</b>${it.tool ? '' : ` <small>×${cnt(id)}</small>`}<br><small>${d}</small>${it.eat ? `<br><small>Essen: +${it.eat} Energie</small>` : ''}<div class="acts">`;
+    h += `<div class="ssec detail"><img src="${ICONURL[iconOf(id)]}" alt=""><div class="t"><b>${itemName(id)}</b>${it.tool ? '' : ` <small>×${cnt(id)}</small>`}<br><small>${d}</small>${it.eat ? `<br><small>Essen: +${it.eat} Energie</small>` : ''}${it.dura ? `<div class="dura"><span>Haltbarkeit</span>${duraBar(id, 'obar')}<b>${duraOf(id)}/${it.dura}</b></div>` : ''}<div class="acts">`;
     h += `<button class="btn" data-act="mv" ${free ? '' : 'disabled'}>${other === 'bar' ? 'In die Leiste' : 'In den Rucksack'}</button>`;
     if (it.eat) h += `<button class="btn" data-act="eat" ${S.energy >= S.maxEnergy ? 'disabled' : ''}>Essen</button>`;
     h += `</div><small class="tip">Tipp: Danach ein freies Feld antippen, um es dorthin zu legen.</small></div></div>`;
