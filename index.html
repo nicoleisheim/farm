@@ -404,6 +404,7 @@ body.touch .slot .n{font-size:.5em;min-width:0;padding:.05em .25em;right:-.55em;
 .slot .wf i{display:block;width:100%;background:rgba(79,179,255,.9);box-shadow:inset 0 .1em 0 #bfe6ff}
 .slot .n{z-index:2;top:-.45em;bottom:auto}
 body.touch .slot .n{top:-.55em;bottom:auto}
+#hotbar .slot img{width:92%;height:92%}
 </style>
 </head>
 <body>
@@ -908,10 +909,10 @@ function drawCrop(g, t, v, x0, y0) {
     }
     if (t === 'kohl') {
       if (v === 0) { for (const [a, b] of [[5, 9], [9, 8], [7, 11]]) { R(g, x0 + a, y0 + b + 1, 2, 1, '#3a2415'); R(g, x0 + a, y0 + b, 2, 1, '#8fd08a'); R(g, x0 + a, y0 + b, 1, 1, '#d4f5cc'); } return; }
-      if (v === 1) { R(g, x0 + 7, y0 + 9, 2, 3, '#5a9a5a'); disc(g, x0 + 6, y0 + 8, 2, '#7fb88a'); disc(g, x0 + 10, y0 + 8, 2, '#7fb88a'); R(g, x0 + 5, y0 + 7, 1, 1, '#c4e8cc'); R(g, x0 + 9, y0 + 7, 1, 1, '#c4e8cc'); return; }
-      disc(g, x0 + 8, y0 + 9, 4, '#5f9e6a'); disc(g, x0 + 5, y0 + 8, 2, '#7fb88a'); disc(g, x0 + 11, y0 + 8, 2, '#7fb88a'); disc(g, x0 + 8, y0 + 7, 2, '#9fd0a8'); R(g, x0 + 8, y0 + 6, 1, 5, '#c4e8cc'); return;
+      if (v === 1) { R(g, x0 + 7, y0 + 9, 2, 3, '#3f8a3a'); disc(g, x0 + 6, y0 + 8, 2, '#5cc070'); disc(g, x0 + 10, y0 + 8, 2, '#5cc070'); R(g, x0 + 5, y0 + 7, 1, 1, '#b8f0c4'); R(g, x0 + 9, y0 + 7, 1, 1, '#b8f0c4'); R(g, x0 + 6, y0 + 9, 1, 1, '#3f9a50'); R(g, x0 + 10, y0 + 9, 1, 1, '#3f9a50'); return; }
+      disc(g, x0 + 8, y0 + 9, 4, '#3f9a50'); disc(g, x0 + 5, y0 + 8, 2, '#5cc070'); disc(g, x0 + 11, y0 + 8, 2, '#5cc070'); disc(g, x0 + 8, y0 + 7, 2, '#8fdc9c'); R(g, x0 + 8, y0 + 6, 1, 5, '#c4e8cc'); return;
     }
-    if (v === 0) { for (const [a, b] of [[4, 9], [8, 8], [9, 11]]) { R(g, x0 + a, y0 + b + 1, 3, 1, '#3a2415'); R(g, x0 + a, y0 + b, 3, 1, '#ffd9a0'); R(g, x0 + a, y0 + b, 1, 1, '#fff4e0'); } return; }
+    if (v === 0) { for (const [a, b] of [[4, 8], [9, 7], [7, 11]]) { R(g, x0 + a, y0 + b, 2, 1, '#c9a060'); R(g, x0 + a - 1, y0 + b + 1, 4, 1, '#f6dca4'); R(g, x0 + a, y0 + b + 2, 2, 1, '#c9a060'); R(g, x0 + a, y0 + b + 1, 1, 1, '#fff6e0'); } return; }
     if (v === 1) { R(g, x0 + 7, y0 + 9, 1, 3, '#4f9a3a'); R(g, x0 + 3, y0 + 8, 4, 3, '#4f9a3a'); R(g, x0 + 8, y0 + 7, 5, 3, '#6cc04f'); R(g, x0 + 4, y0 + 8, 1, 1, '#8fd86a'); R(g, x0 + 9, y0 + 7, 1, 1, '#a5e08a'); return; }
     R(g, x0 + 2, y0 + 11, 12, 1, '#4f9a3a'); R(g, x0 + 12, y0 + 9, 1, 2, '#4f9a3a'); R(g, x0 + 13, y0 + 8, 1, 1, '#4f9a3a');
     R(g, x0 + 2, y0 + 7, 5, 4, '#4f9a3a'); R(g, x0 + 8, y0 + 6, 5, 4, '#6cc04f'); R(g, x0 + 3, y0 + 7, 1, 1, '#8fd86a'); R(g, x0 + 9, y0 + 6, 1, 1, '#a5e08a'); return;
