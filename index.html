@@ -1036,10 +1036,15 @@ function drawStand(g) {
   for (const wx of [x0 + 3, x0 + 21]) px(wx, y0 + 24, ['..ooooo..', '.oLLLLLo.', 'oL..s..Lo', 'oL..s..Lo', 'oLsshssLo', 'oD..s..Do', 'oD..s..Do', '.oDDDDDo.', '..ooooo..'], { o: '#6a3a2a', L: '#e0a874', D: '#c08a64', s: '#a86d48', h: '#ff8fb8' });
 }
 function drawSign(g) {
+  // Wegweiser zur Stadt: Holzpfosten, cremefarbenes Pfeilschild mit Herz
   const x0 = 352, y0 = 72;
-  R(g, x0 + 7, y0 + 6, 2, 10, '#8a5a40');
-  R(g, x0 + 1, y0 + 1, 13, 6, '#6a3a2a'); R(g, x0 + 2, y0 + 2, 11, 4, '#e0a874');
-  R(g, x0 + 4, y0 + 3, 6, 2, '#f08a3a'); R(g, x0 + 10, y0 + 2, 1, 4, '#f08a3a'); R(g, x0 + 11, y0 + 3, 1, 2, '#f08a3a');
+  R(g, x0 + 3, y0 + 18, 8, 2, 'rgba(60,20,40,.18)');
+  R(g, x0 + 6, y0 + 8, 2, 11, '#c08a64'); R(g, x0 + 6, y0 + 8, 1, 11, '#e0a874');
+  const B = ['ooooooooooooo', 'owwwwwwwwwwwwo', 'occccccccccccco', 'occcccccccccccco', 'occcccccccccccco', 'ossssssssssssso', 'osssssssssssso', 'ooooooooooooo'];
+  B.forEach((r, j) => [...r].forEach((ch, i) => { const c = { o: '#a86d48', w: '#fffaf2', c: '#f6e6cf', s: '#ead2b4' }[ch]; if (c) R(g, x0 + i, y0 + 1 + j, 1, 1, c); }));
+  heart(g, x0 + 3, y0 + 3, '#ff8fb8'); R(g, x0 + 3, y0 + 3, 1, 1, '#ffc4da');
+  R(g, x0 + 10, y0 + 4, 3, 1, '#d9608c'); R(g, x0 + 11, y0 + 3, 1, 1, '#d9608c'); R(g, x0 + 11, y0 + 5, 1, 1, '#d9608c');
+  R(g, x0 + 4, y0 + 18, 1, 1, '#6cc04f'); R(g, x0 + 9, y0 + 18, 1, 1, '#6cc04f'); R(g, x0 + 3, y0 + 17, 1, 1, '#ff8fb8');
 }
 let BG_T = null, LIT_T = null;
 // Nachtfenster: Glas wird warm gelb, Rahmen, Sprossen und Gardinen bleiben sichtbar
@@ -1051,7 +1056,7 @@ function makeLit(src, rects) {
     const d = g.getImageData(x, y, w, h), a = d.data;
     for (let i = 0; i < a.length; i += 4) {
       const k = ((a[i] << 16) | (a[i + 1] << 8) | a[i + 2]).toString(16).padStart(6, '0'), v = GL[k];
-      if (v) { a[i] = v[0]; a[i + 1] = v[1]; a[i + 2] = v[2]; }
+      if (v) { a[i] = v[0]; a[i + 1] = v[1]; a[i + 2] = v[2]; } else a[i + 3] = 0;
     }
     g.putImageData(d, x, y);
   }
@@ -2583,8 +2588,8 @@ function render(t) {
     for (const [wx, wy, w, h] of (farm ? WINDOWS : TWIN)) {
       const x = wx - camX, y = wy - camY;
       X.globalAlpha = Math.min(1, dark * 2.2); X.drawImage(farm ? LIT : LIT_T, wx, wy, w, h, x, y, w, h); X.globalAlpha = 1;
-      if (h >= 8) { X.fillStyle = `rgba(255,190,80,${dark * .35})`; X.fillRect(x - 3, y + h, w + 6, 6); }
-      else { X.fillStyle = `rgba(255,200,100,${dark * .22})`; X.beginPath(); X.arc(x + w / 2, y + h / 2, 7, 0, 7); X.fill(); } // Laterne: runder Schein
+      if (h === 10) { X.fillStyle = `rgba(255,190,80,${dark * .35})`; X.fillRect(x - 3, y + h, w + 6, 6); }
+      else { X.fillStyle = `rgba(255,200,100,${dark * .22})`; X.beginPath(); X.arc(x + w / 2, y + h / 2, Math.max(7, w), 0, 7); X.fill(); } // Laterne, Rundfenster: runder Schein
     }
     if (farm && S.time > 1200 && !S.rain) drawFireflies();
   }
