@@ -1642,7 +1642,7 @@ function fmtTime(t) {
 /* ---------- dialogs ---------- */
 function helpHTML(intro) {
   const ctl = padMode ? [
-    ['Steuerkreuz', 'laufen'], ['A', 'Werkzeug benutzen, mit Dingen reden'], ['L / R', 'Gegenstand wechseln'], ['X / Y', 'Rucksack öffnen'], ['B', 'Fenster schließen'], ['Steuerkreuz + A', 'in Fenstern Knöpfe wählen und drücken']
+    ['Steuerkreuz', 'laufen'], ['A', 'Werkzeug benutzen, mit Dingen reden'], ['L / R', 'Gegenstand wechseln'], ['X / Y', 'Rucksack öffnen'], ['B', 'Fenster schließen'], ['Steuerkreuz + A', 'in Fenstern Knöpfe wählen und drücken'], ['Rechter Stick / L / R', 'in Fenstern scrollen']
   ] : touchMode ? [
     ['Joystick', 'laufen'], ['A-Knopf', 'Werkzeug benutzen, mit Dingen reden'], ['Leiste antippen', 'Gegenstand wählen'], ['Rucksack-Knopf', 'Inventar öffnen'], ['Feld antippen', 'direkt daneben handeln']
   ] : [
@@ -2191,6 +2191,11 @@ function dlgNav(dir) {
   const els = dlgEls(); if (!els.length) return;
   const cur = $('dlg').querySelector('.padfocus');
   if (!cur || !els.includes(cur)) { dlgFocus(els.find(e => !e.closest('.sfoot,.foot')) || els[0]); return; }
+  const dr = $('dlg').getBoundingClientRect(), cr = cur.getBoundingClientRect();
+  if (cr.bottom < dr.top || cr.top > dr.bottom) {
+    const vis = els.filter(e => { const q = e.getBoundingClientRect(); return !e.closest('.sfoot,.foot') && q.top >= dr.top && q.bottom <= dr.bottom; });
+    if (vis.length) { dlgFocus(dir === 'u' ? vis[vis.length - 1] : vis[0]); return; }
+  }
   if (dir === 'l' || dir === 'r') { const n = els[els.indexOf(cur) + (dir === 'r' ? 1 : -1)]; if (n) { dlgFocus(n); snd('sel'); } return; }
   const mid = e => { const q = e.getBoundingClientRect(); return [q.left + q.width / 2, q.top + q.height / 2]; };
   const [cx, cy] = mid(cur);
@@ -2224,7 +2229,9 @@ addEventListener('keydown', e => {
     const nav = { ArrowLeft: 'l', ArrowRight: 'r', ArrowUp: 'u', ArrowDown: 'd' }[e.key];
     if (nav) { e.preventDefault(); dlgNav(nav); return; }
     if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); if (!e.repeat) dlgPress(); return; }
+    if (e.key === 'PageUp' || e.key === 'PageDown') { e.preventDefault(); $('dlg').scrollBy({ top: (e.key === 'PageDown' ? 1 : -1) * $('dlg').clientHeight * .6, behavior: 'smooth' }); return; }
   }
+  if (e.key === 'ScrollDown' || e.key === 'ScrollUp') { padScroll = e.key === 'ScrollDown' ? 1 : -1; return; }
   if (e.key === 'Escape') { if (paused && !fading) closeDlg(); return; }
   if (KMAP[e.key]) { keys.add(KMAP[e.key]); e.preventDefault(); return; }
   if (e.key === 'i' || e.key === 'I' || e.key === 'Tab') { e.preventDefault(); openInv(); return; }
@@ -2234,7 +2241,7 @@ addEventListener('keydown', e => {
   if (e.key === ' ' || e.key === 'e' || e.key === 'E' || e.key === 'Enter') { e.preventDefault(); if (!e.repeat) act(...targetTile()); return; }
   if (/^[1-8]$/.test(e.key)) selectSlot(+e.key - 1);
 });
-addEventListener('keyup', e => { if (KMAP[e.key]) keys.delete(KMAP[e.key]); });
+addEventListener('keyup', e => { if (e.key === 'ScrollDown' || e.key === 'ScrollUp') padScroll = 0; if (KMAP[e.key]) keys.delete(KMAP[e.key]); });
 addEventListener('blur', () => keys.clear());
 C.addEventListener('wheel', e => { e.preventDefault(); if (!paused && !e.ctrlKey) cycleSlot(e.deltaY > 0 ? 1 : -1); }, { passive: false });
 let mouseTile = null;
@@ -2586,6 +2593,7 @@ if (firstRun) openDlg(helpHTML(true));
 let last = performance.now();
 /* ---------- Gamepad (z. B. Retroid Pocket) ---------- */
 const padPrev = [], padKeys = new Set();
+let padScroll = 0;
 function pollPad() {
   if (navigator.userAgent.includes('SonnenhofApp')) return;
   const gp = navigator.getGamepads ? [...navigator.getGamepads()].find(g => g) : null;
@@ -2617,6 +2625,7 @@ function pollPad() {
 }
 function loop(now) {
   pollPad();
+  if (padScroll && paused) $('dlg').scrollTop += padScroll * 9;
   const dt = Math.min(.05, (now - last) / 1000); last = now;
   update(dt); render(now / 1000); updateHUD();
   requestAnimationFrame(loop);

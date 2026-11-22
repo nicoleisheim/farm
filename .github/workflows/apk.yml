@@ -115,7 +115,7 @@ jobs:
 
           public class MainActivity extends Activity {
             private WebView web;
-            private boolean hl, hr, hu, hd;
+            private boolean hl, hr, hu, hd, hsu, hsd;
 
             @Override protected void onCreate(Bundle b) {
               super.onCreate(b);
@@ -182,6 +182,11 @@ jobs:
               boolean l = x < -0.45f, r = x > 0.45f, u = y < -0.45f, d = y > 0.45f;
               stick(l, hl, "ArrowLeft"); stick(r, hr, "ArrowRight"); stick(u, hu, "ArrowUp"); stick(d, hd, "ArrowDown");
               hl = l; hr = r; hu = u; hd = d;
+              float ry = e.getAxisValue(MotionEvent.AXIS_RZ), ry2 = e.getAxisValue(MotionEvent.AXIS_RY);
+              if (Math.abs(ry2) > Math.abs(ry)) ry = ry2;
+              boolean sd = ry > 0.4f, su = ry < -0.4f;
+              stick(sd, hsd, "ScrollDown"); stick(su, hsu, "ScrollUp");
+              hsd = sd; hsu = su;
               return true;
             }
           }
