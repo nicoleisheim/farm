@@ -871,7 +871,7 @@ function drawPondAnim(t) {
     P(-3, 0, 6, 1, '#c8ecfc'); P(-2, -2, 4, 2, '#ffe066'); P(1, -4, 2, 2, '#ffe066'); P(3, -3, 1, 1, '#ff9a3a'); P(2, -4, 1, 1, '#3a2030');
   }
 }
-const WINDOWS = [[43, 55, 10, 10], [91, 55, 10, 10], [68, 29, 9, 7], [208, 55, 3, 4]];
+const WINDOWS = [[43, 55, 10, 10], [91, 55, 10, 10], [67, 35, 10, 10], [208, 55, 3, 4]];
 function drawFarmHouse(g) {
   const x0 = 32, y0 = 16;
   const TH = '#ecc878', TL = '#f6dc9a', TD = '#d4a654', TS = '#e0b864', TO = '#b8863a';
@@ -901,14 +901,28 @@ function drawFarmHouse(g) {
   // saubere Traufkante mit gleichmäßigen Zipfeln
   R(g, x0 - 3, y0 + 30, 86, 1, TD); R(g, x0 - 3, y0 + 31, 86, 1, TO);
   R(g, x0 + 4, y0 + 32, 72, 1, '#e8c0cf');
-  // Gaube: runder Bogen mit Fenster
-  const cx = x0 + 40, ARC = [3, 5, 6, 7, 7, 8, 8, 8, 8, 8, 8, 8, 8, 8];
-  ARC.forEach((hw, i) => { const y = y0 + 9 + i; R(g, cx - hw, y, hw * 2 + 1, 1, i === 0 ? TO : i < 3 ? TL : TH); R(g, cx - hw, y, 1, 1, TO); R(g, cx + hw, y, 1, 1, TO); });
-  R(g, cx - 7, y0 + 23, 15, 1, TD);
-  const WA = [2, 3, 4, 4, 4, 4, 4, 4, 4];
-  WA.forEach((hw, i) => { R(g, cx - hw, y0 + 12 + i, hw * 2 + 1, 1, '#ffffff'); if (i > 0 && i < 8) R(g, cx - hw + 1, y0 + 12 + i, hw * 2 - 1, 1, i < 3 ? '#e0f6ff' : '#c4ecff'); });
-  R(g, cx, y0 + 13, 1, 7, '#ffffff'); R(g, cx - 3, y0 + 16, 7, 1, '#ffffff'); R(g, cx - 2, y0 + 14, 1, 1, '#ffffff');
-  R(g, cx - 5, y0 + 21, 11, 2, '#e59ab5'); R(g, cx - 5, y0 + 21, 11, 1, '#ffc2d8');
+  // Ziegelgiebel mit Fenster (Ziegel im selben Raster wie die Fassade)
+  const cx = x0 + 40;
+  const brick = (x, y) => { const k = Math.floor((y - y0 - 33) / 4), ry = ((y - y0 - 33) % 4 + 4) % 4, bx = ((x - x0 - 4 + (k & 1 ? 4 : 0)) % 8 + 8) % 8; return ry === 3 || bx === 7 ? '#e8b4c6' : ry === 0 ? '#fde8ef' : '#f8d6e2'; };
+  for (let y = y0 + 3; y < y0 + 34; y++) {
+    const half = Math.min(16, y - y0 - 2), xl = cx - half + (y < y0 + 18 ? 2 : y < y0 + 32 ? 1 : 0), xr = cx + half - (y < y0 + 18 ? 2 : y < y0 + 32 ? 1 : 0);
+    for (let x = xl; x <= xr; x++) R(g, x, y, 1, 1, brick(x, y));
+  }
+  for (let r = 0; r <= 16; r++) { const y = y0 + 2 + r; R(g, cx - r, y, 1, 1, TO); R(g, cx + r, y, 1, 1, TO); if (r > 0) { R(g, cx - r + 1, y, 1, 1, TD); R(g, cx + r - 1, y, 1, 1, TD); } }
+  R(g, cx - 1, y0 + 1, 3, 1, TO);
+  R(g, cx - 16, y0 + 18, 1, 14, TO); R(g, cx + 16, y0 + 18, 1, 14, TO);
+  // kleines Rundfenster oben
+  R(g, cx - 2, y0 + 8, 5, 5, '#ffffff'); R(g, cx - 1, y0 + 9, 3, 3, '#c4ecff'); R(g, cx, y0 + 9, 1, 3, '#ffffff'); R(g, cx - 1, y0 + 10, 3, 1, '#ffffff');
+  // Giebelfenster wie die Fassadenfenster
+  { const wx = cx - 6, y = y0 + 18;
+    R(g, wx, y, 12, 12, '#ffffff'); R(g, wx + 1, y + 1, 10, 10, '#c4ecff'); R(g, wx + 1, y + 1, 10, 3, '#e0f6ff');
+    R(g, wx + 6, y + 1, 1, 10, '#ffffff'); R(g, wx + 1, y + 6, 10, 1, '#ffffff'); R(g, wx + 2, y + 2, 2, 1, '#ffffff'); R(g, wx + 2, y + 3, 1, 1, '#ffffff');
+    for (const [sx, L] of [[wx - 4, true], [wx + 12, false]]) {
+      R(g, sx, y, 4, 12, '#ff8fb8'); R(g, sx, y, 4, 1, '#ffb3cf'); R(g, sx, y + 1, 4, 1, '#e86f9c'); R(g, sx, y + 10, 4, 1, '#e86f9c');
+      for (let i = 0; i < 8; i++) R(g, L ? sx + 3 - Math.floor(i / 2.4) : sx + Math.floor(i / 2.4), y + 2 + i, 1, 1, '#e86f9c');
+    }
+    R(g, wx - 1, y + 12, 14, 2, '#eadde2'); R(g, wx - 1, y + 13, 14, 1, '#c9b2bc');
+  }
   // Rundbogentür mit symmetrischem Rosenbogen
   const DF = [3, 5, 6, 7, 7, 8], DI = [1, 3, 4, 5, 5, 6];
   DF.forEach((hw, i) => R(g, cx - hw, y0 + 38 + i, hw * 2 + 1, 1, '#c8a8b6'));
