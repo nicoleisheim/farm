@@ -2182,7 +2182,7 @@ function dlgFocus(el) {
   d.querySelectorAll('.padfocus').forEach(e => e.classList.remove('padfocus'));
   el.classList.add('padfocus'); el.tabIndex = -1; el.focus({ preventScroll: true });
   // sichtbar halten, auch hinter der festen Fußleiste
-  const foot = d.querySelector('.sfoot'), dr = d.getBoundingClientRect(), er = el.getBoundingClientRect();
+  const foot = d.querySelector('.sfoot,.foot'), dr = d.getBoundingClientRect(), er = el.getBoundingClientRect();
   const bottom = dr.bottom - (foot && !foot.contains(el) ? foot.offsetHeight : 0) - 10;
   if (er.bottom > bottom) d.scrollTop += er.bottom - bottom;
   else if (er.top < dr.top + 10) d.scrollTop -= dr.top + 10 - er.top;
@@ -2194,7 +2194,7 @@ function dlgNav(dir) {
   if (dir === 'l' || dir === 'r') { const n = els[els.indexOf(cur) + (dir === 'r' ? 1 : -1)]; if (n) { dlgFocus(n); snd('sel'); } return; }
   const mid = e => { const q = e.getBoundingClientRect(); return [q.left + q.width / 2, q.top + q.height / 2]; };
   const [cx, cy] = mid(cur);
-  const inFoot = e => !!e.closest('.sfoot'), body = els.filter(e => !inFoot(e)), foot = els.filter(inFoot);
+  const inFoot = e => !!e.closest('.sfoot,.foot'), body = els.filter(e => !inFoot(e)), foot = els.filter(inFoot);
   let cand;
   if (inFoot(cur)) cand = dir === 'u' ? body.filter(e => mid(e)[1] < cy - 4) : [];
   else { cand = body.filter(e => { const y = mid(e)[1]; return dir === 'd' ? y > cy + 4 : y < cy - 4; }); if (!cand.length && dir === 'd') cand = foot; }
@@ -2207,8 +2207,17 @@ function dlgNav(dir) {
 function dlgPress() {
   const cur = $('dlg').querySelector('.padfocus');
   if (!cur || !cur.isConnected) { dlgNav('d'); return; }
-  const act = cur.dataset.act; cur.click();
-  setTimeout(() => { if (!paused || !act) return; const n = $('dlg').querySelector(`[data-act="${act}"]:not([disabled])`); dlgFocus(n || $('dlg').querySelector('.btn.primary:not([disabled])') || dlgEls()[0]); }, 0);
+  const act = cur.dataset.act, r = cur.getBoundingClientRect(), ox = r.left + r.width / 2, oy = r.top + r.height / 2;
+  cur.click();
+  setTimeout(() => {
+    if (!paused) return;
+    const same = act && $('dlg').querySelector(`[data-act="${act}"]:not([disabled])`);
+    if (same) { dlgFocus(same); return; }
+    // sonst den Knopf wählen, der am nächsten an der alten Stelle liegt
+    const els = dlgEls(); if (!els.length) return;
+    const dist = e => { const q = e.getBoundingClientRect(); return Math.hypot(q.left + q.width / 2 - ox, q.top + q.height / 2 - oy); };
+    dlgFocus(els.reduce((a, e) => dist(e) < dist(a) ? e : a));
+  }, 0);
 }
 addEventListener('keydown', e => {
   if (paused && !fading && $('shade').style.display === 'flex') {
@@ -2563,7 +2572,7 @@ function fit() {
     // Breitbild (z. B. Retroid 16:9): ganze Breite nutzen, die Kamera scrollt senkrecht
     if ((padMode || tmode()) && iw / ih > W / H) { s = iw / W; VH = Math.min(H, Math.max(160, Math.round(ih / s))); }
     app.style.fontSize = (tmode() ? Math.max(10, Math.min(15, s * 4.3)) : Math.max(9, Math.min(18, s * 4.6))) + 'px';
-    if (padMode) app.style.fontSize = Math.round(ih / 18) + 'px';
+    if (padMode) app.style.fontSize = Math.round(ih / 22) + 'px';
     stage.style.width = W * s + 'px'; stage.style.height = VH * s + 'px';
   }
   HUDB = port ? 0 : Math.ceil(($('bottom').offsetHeight + 6) / s);
