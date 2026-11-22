@@ -857,7 +857,7 @@ function drawPondAnim(t) {
     P(-3, 0, 6, 1, '#c8ecfc'); P(-2, -2, 4, 2, '#ffe066'); P(1, -4, 2, 2, '#ffe066'); P(3, -3, 1, 1, '#ff9a3a'); P(2, -4, 1, 1, '#3a2030');
   }
 }
-const WINDOWS = [[42, 57, 12, 10], [90, 57, 12, 10], [68, 30, 9, 6], [208, 55, 3, 4]];
+const WINDOWS = [[42, 57, 12, 10], [90, 57, 12, 10], [68, 29, 9, 7], [208, 55, 3, 4]];
 function drawFarmHouse(g) {
   const x0 = 32, y0 = 16;
   const TH = '#ecc878', TL = '#f6dc9a', TD = '#d4a654', TS = '#e0b864', TO = '#b8863a';
@@ -879,23 +879,30 @@ function drawFarmHouse(g) {
     R(g, xa, y0 + r, 1, 1, TO); R(g, xa + w - 1, y0 + r, 1, 1, TO);
   }
   R(g, x0 + 13, y0 - 1, 54, 1, TO);
-  // weiche Traufkante
-  for (let x = x0 - 3; x < x0 + 83; x++) { const k = (x - x0 + 3) % 8, d = k === 0 || k === 7 ? 0 : 1; R(g, x, y0 + 30, 1, 1 + d, TD); R(g, x, y0 + 31 + d, 1, 1, TO); }
-  // Gaube mit Augenbrauen-Bogen
-  disc(g, x0 + 40, y0 + 17, 9, TO); disc(g, x0 + 40, y0 + 17, 8, TL); R(g, x0 + 32, y0 + 17, 17, 7, TH);
-  disc(g, x0 + 40, y0 + 18, 5, '#ffffff'); R(g, x0 + 35, y0 + 18, 11, 5, '#ffffff');
-  disc(g, x0 + 40, y0 + 18, 4, '#c4ecff'); R(g, x0 + 36, y0 + 18, 9, 4, '#c4ecff'); R(g, x0 + 40, y0 + 14, 1, 8, '#ffffff'); R(g, x0 + 37, y0 + 15, 2, 1, '#ffffff');
-  R(g, x0 + 34, y0 + 22, 13, 2, '#e59ab5'); R(g, x0 + 34, y0 + 22, 13, 1, '#ffc2d8');
-  // Rundbogentür mit Rosenbogen
-  disc(g, x0 + 40, y0 + 46, 8, '#c8a8b6'); R(g, x0 + 32, y0 + 46, 17, 16, '#c8a8b6');
-  disc(g, x0 + 40, y0 + 46, 6, '#e86f9c'); R(g, x0 + 34, y0 + 46, 13, 16, '#e86f9c');
-  R(g, x0 + 37, y0 + 41, 1, 21, '#d9578c'); R(g, x0 + 40, y0 + 40, 1, 22, '#d9578c'); R(g, x0 + 43, y0 + 41, 1, 21, '#d9578c');
-  R(g, x0 + 44, y0 + 52, 2, 2, '#ffd84a'); R(g, x0 + 31, y0 + 62, 19, 2, '#eadbe0');
-  for (let a = 0; a <= 12; a++) { const an = Math.PI * a / 12, x = Math.round(x0 + 40 - Math.cos(an) * 10), y = Math.round(y0 + 46 - Math.sin(an) * 10); R(g, x, y, 1, 1, '#5aa040'); }
-  R(g, x0 + 30, y0 + 46, 1, 16, '#5aa040'); R(g, x0 + 50, y0 + 46, 1, 16, '#5aa040');
-  [[30, 58], [30, 51], [31, 43], [34, 38], [40, 36], [46, 38], [49, 43], [50, 51], [50, 58]].forEach(([a, b], i) => {
-    R(g, x0 + a - 1, y0 + b - 1, 3, 3, i % 2 ? '#ff8fb8' : '#ff5f8f'); R(g, x0 + a, y0 + b - 1, 1, 1, '#ffd6e5');
-    if (i % 2 === 0) R(g, x0 + a + (a < 40 ? -2 : 2), y0 + b + 1, 1, 1, '#7cc25e');
+  // saubere Traufkante mit gleichmäßigen Zipfeln
+  R(g, x0 - 3, y0 + 30, 86, 1, TD); R(g, x0 - 3, y0 + 31, 86, 1, TO);
+  for (let x = x0 + 1; x < x0 + 80; x += 6) { R(g, x, y0 + 32, 2, 1, TD); R(g, x, y0 + 33, 2, 1, TO); }
+  // Gaube: runder Bogen mit Fenster
+  const cx = x0 + 40, ARC = [3, 5, 6, 7, 7, 8, 8, 8, 8, 8, 8, 8, 8, 8];
+  ARC.forEach((hw, i) => { const y = y0 + 9 + i; R(g, cx - hw, y, hw * 2 + 1, 1, i === 0 ? TO : i < 3 ? TL : TH); R(g, cx - hw, y, 1, 1, TO); R(g, cx + hw, y, 1, 1, TO); });
+  R(g, cx - 7, y0 + 23, 15, 1, TD);
+  const WA = [2, 3, 4, 4, 4, 4, 4, 4, 4];
+  WA.forEach((hw, i) => { R(g, cx - hw, y0 + 12 + i, hw * 2 + 1, 1, '#ffffff'); if (i > 0 && i < 8) R(g, cx - hw + 1, y0 + 12 + i, hw * 2 - 1, 1, i < 3 ? '#e0f6ff' : '#c4ecff'); });
+  R(g, cx, y0 + 13, 1, 7, '#ffffff'); R(g, cx - 3, y0 + 16, 7, 1, '#ffffff'); R(g, cx - 2, y0 + 14, 1, 1, '#ffffff');
+  R(g, cx - 5, y0 + 21, 11, 2, '#e59ab5'); R(g, cx - 5, y0 + 21, 11, 1, '#ffc2d8');
+  // Rundbogentür mit symmetrischem Rosenbogen
+  const DF = [3, 5, 6, 7, 7, 8], DI = [1, 3, 4, 5, 5, 6];
+  DF.forEach((hw, i) => R(g, cx - hw, y0 + 38 + i, hw * 2 + 1, 1, '#c8a8b6'));
+  R(g, cx - 8, y0 + 44, 17, 18, '#c8a8b6');
+  DI.forEach((hw, i) => R(g, cx - hw, y0 + 40 + i, hw * 2 + 1, 1, '#e86f9c'));
+  R(g, cx - 6, y0 + 46, 13, 16, '#e86f9c');
+  R(g, cx - 3, y0 + 42, 1, 20, '#d9578c'); R(g, cx, y0 + 40, 1, 22, '#d9578c'); R(g, cx + 3, y0 + 42, 1, 20, '#d9578c');
+  R(g, cx + 4, y0 + 52, 2, 2, '#ffd84a'); R(g, cx - 9, y0 + 62, 19, 2, '#eadbe0');
+  const VA = [[-10, 46], [-10, 43], [-9, 40], [-8, 38], [-6, 36], [-4, 35], [-2, 34], [0, 34]];
+  for (const [dx, y] of VA) { R(g, cx + dx, y0 + y, 1, 1, '#5aa040'); R(g, cx - dx, y0 + y, 1, 1, '#5aa040'); }
+  R(g, cx - 10, y0 + 46, 1, 16, '#5aa040'); R(g, cx + 10, y0 + 46, 1, 16, '#5aa040');
+  [[-10, 58, 0], [-10, 51, 1], [-9, 43, 0], [-6, 37, 1], [0, 34, 0]].forEach(([dx, y, k]) => {
+    for (const sx of dx ? [-1, 1] : [1]) { const x = cx + dx * sx; R(g, x - 1, y0 + y - 1, 3, 3, k ? '#ff8fb8' : '#ff5f8f'); R(g, x, y0 + y - 1, 1, 1, '#ffd6e5'); }
   });
   // Sprossenfenster mit Gardinen, Herzläden, Sims und Blumenkasten
   for (const wx of [x0 + 9, x0 + 57]) {
