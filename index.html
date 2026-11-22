@@ -567,10 +567,18 @@ function drawPaths(g) {
 }
 const isCherry = (tx, ty) => { const st = TREES[tx + ',' + ty]; return st && st.k ? st.k === 'cherry' : hash(tx, ty, 21) < .4; };
 function drawSapling(g, tx, ty, big, cherry) {
-  const x0 = tx * 16, y0 = ty * 16, L = cherry ? ['#f7a6c8', '#ffcfe2'] : ['#58ae55', '#7dcb6c'];
-  R(g, x0 + 4, y0 + 13, 8, 2, 'rgba(60,20,40,.18)'); R(g, x0 + 5, y0 + 12, 6, 2, '#8a5a3a');
-  if (!big) { R(g, x0 + 7, y0 + 6, 2, 7, '#8a5a40'); disc(g, x0 + 6, y0 + 6, 2, L[0]); disc(g, x0 + 10, y0 + 5, 2, L[0]); R(g, x0 + 5, y0 + 5, 1, 1, L[1]); R(g, x0 + 9, y0 + 4, 1, 1, L[1]); }
-  else { R(g, x0 + 7, y0 + 7, 2, 6, '#8a5a40'); disc(g, x0 + 8, y0 + 6, 4, L[0]); disc(g, x0 + 7, y0 + 5, 2, L[1]); R(g, x0 + 10, y0 + 7, 1, 1, L[1]); }
+  const x0 = tx * 16, y0 = ty * 16;
+  R(g, x0 + 3, y0 + 13, 10, 2, 'rgba(60,20,40,.18)'); R(g, x0 + 4, y0 + 12, 8, 2, '#8a5a3a'); R(g, x0 + 5, y0 + 12, 6, 1, '#a8734a');
+  // Stützstab mit Schleife
+  R(g, x0 + 11, y0 + 3, 1, 10, '#e0b880'); R(g, x0 + 10, y0 + 8, 3, 1, cherry ? '#ff5f8f' : '#4fb3ff');
+  R(g, x0 + 7, y0 + (big ? 6 : 8), 2, big ? 7 : 5, '#7a4a2a');
+  if (cherry) {
+    if (!big) { disc(g, x0 + 6, y0 + 7, 2, '#ff8fb8'); disc(g, x0 + 9, y0 + 6, 2, '#ffb3cf'); R(g, x0 + 5, y0 + 6, 1, 1, '#fff'); R(g, x0 + 9, y0 + 5, 1, 1, '#fff'); R(g, x0 + 7, y0 + 7, 1, 1, '#e0578c'); }
+    else { disc(g, x0 + 8, y0 + 5, 4, '#ff8fb8'); disc(g, x0 + 7, y0 + 4, 2, '#ffc2dc'); [[5, 4], [10, 6], [8, 2], [6, 7]].forEach(([a, b]) => R(g, x0 + a, y0 + b, 1, 1, '#fff')); R(g, x0 + 9, y0 + 4, 1, 1, '#e0578c'); }
+  } else {
+    if (!big) { R(g, x0 + 5, y0 + 6, 3, 3, '#3f8f45'); R(g, x0 + 8, y0 + 5, 3, 3, '#58ae55'); R(g, x0 + 6, y0 + 4, 3, 2, '#7dcb6c'); R(g, x0 + 6, y0 + 4, 1, 1, '#a5e08a'); }
+    else { R(g, x0 + 6, y0 + 1, 4, 2, '#7dcb6c'); R(g, x0 + 5, y0 + 3, 6, 2, '#58ae55'); R(g, x0 + 4, y0 + 5, 8, 2, '#3f8f45'); R(g, x0 + 6, y0 + 1, 1, 1, '#a5e08a'); R(g, x0 + 5, y0 + 3, 1, 1, '#7dcb6c'); }
+  }
 }
 function drawTree(g, tx, ty) {
   const x0 = tx * 16, y0 = ty * 16, s = Math.floor(hash(tx, ty, 3) * 3) - 1, cherry = isCherry(tx, ty);
@@ -1361,7 +1369,7 @@ function neededForOrders(id) { return S.orders.reduce((a, o) => a + Math.max(0, 
 function standHTML() {
   const bag = SELLABLE.filter(t => cnt(t) > 0), on = SELLABLE.filter(t => S.stand[t] > 0);
   const onVal = on.reduce((a, t) => a + S.stand[t] * sellOf(t), 0), hrs = Math.round((S.staffMin || 0) / 60 * 10) / 10;
-  let h = T('stand', 'Verkaufsstand') + `<div class="chips"><span class="chip">Offen 7–17 Uhr</span><span class="chip">${STAFF}: ${WAGE} Taler/Std.${hrs ? ` · bisher ${Math.round(hrs * WAGE)}` : ''}</span><span class="chip ok">Heute +${S.soldGold.toLocaleString('de-DE')} Taler</span></div>`;
+  let h = T('stand', 'Verkaufsstand') + `<div class="chips"><span class="chip">Offen 7–17 Uhr</span></div><div class="ssec"><div class="lrow"><img src="${ICONURL.stand}" alt=""><div class="ln"><b>Lohn für ${STAFF}</b><small>Tempo: ${paceOf(wageOf())}${hrs ? ` · heute bisher ${Math.round(hrs * wageOf())} Taler` : ''}</small></div><div class="qty"><button class="btn sq" data-act="wage:-1" ${wageOf() > 4 ? '' : 'disabled'}>−</button><span class="qv">${wageOf()}</span><button class="btn sq" data-act="wage:1" ${wageOf() < 16 ? '' : 'disabled'}>+</button></div><small>Taler/Std.</small></div></div>`;
   h += `<div class="ssec"><div class="ssech"><span>Am Stand</span>${on.length ? `<b>${onVal.toLocaleString('de-DE')} Taler</b>` : ''}</div>`;
   if (on.length) for (const t of on) h += `<div class="lrow"><img src="${ICONURL[iconOf(t)]}" alt=""><div class="ln"><b>${ITEM[t].name}</b><small>${sellOf(t)} Taler/Stück</small></div><span class="cntb">${S.stand[t]}×</span><div class="lbtns"><button class="btn sq" data-act="back1:${t}" title="1 zurücknehmen">−1</button><button class="btn" data-act="back:${t}">Alle</button></div></div>`;
   else h += '<div class="sempty">Noch nichts ausgelegt.</div>';
@@ -1396,7 +1404,7 @@ function genOrder() {
 const orderReady = o => Object.keys(o.items).every(t => (o.packed[t] || 0) >= o.items[t]);
 function ordersHTML() {
   const readySum = S.orders.filter(orderReady).reduce((a, o) => a + o.reward, 0);
-  let h = T('board', 'Auftragsbrett') + `<div class="chips"><span class="chip">${S.orders.length} Bestellung${S.orders.length === 1 ? '' : 'en'}</span><span class="chip ok">Heute Nacht +${readySum.toLocaleString('de-DE')} Taler</span></div>`;
+  let h = T('board', 'Auftragsbrett') + `<div class="chips"><span class="chip">${S.orders.length} Bestellung${S.orders.length === 1 ? '' : 'en'}</span></div>`;
   if (!S.orders.length) h += '<div class="ssec"><div class="sempty">Gerade keine Bestellungen. Schau morgen wieder vorbei!</div></div>';
   for (const o of S.orders) {
     const r = orderReady(o);
@@ -1430,7 +1438,9 @@ function packOrder(id, t) {
 
 /* ---------- Kundschaft am Stand ---------- */
 const custs = [];
-const WAGE = 8, STAFF = 'Lotte';
+const STAFF = 'Lotte';
+const wageOf = () => S.wage || 8;
+const paceOf = w => w <= 5 ? 'gemütlich' : w <= 9 ? 'normal' : w <= 13 ? 'flott' : 'sehr flott';
 const PAL_STAFF = { skin: '#ffe0cc', hair: '#5a3a2a', hairL: '#7a5440', dress: '#b8e0a0', dressD: '#8fc878', apron: '#ffffff', shoe: '#5a6a4a', bow: '#ff8fb8', tails: 1, hat: 0 };
 const CUST_PATH = [[312, 78], [312, 108], [152, 108], [152, 92]];
 function standStock() { return SELLABLE.reduce((a, t) => a + (S.stand[t] || 0), 0); }
@@ -1452,7 +1462,7 @@ function customerBuys(c) {
 function updateCustomers(dt) {
   const open = S.time >= 420 && S.time < 1020;
   if (open && standStock() > 0 && !paused) S.staffMin = (S.staffMin || 0) + dt * 2;
-  if (open && standStock() > 0 && custs.length < 2 && Math.random() < dt * (S.rain ? .025 : .06)) spawnCustomer();
+  if (open && standStock() > 0 && custs.length < (wageOf() >= 12 ? 3 : 2) && Math.random() < dt * (S.rain ? .025 : .06) * wageOf() / 8) spawnCustomer();
   for (let i = custs.length - 1; i >= 0; i--) {
     const c = custs[i];
     c.a = Math.min(1, c.a + dt * 2.5);
@@ -1553,6 +1563,7 @@ $('dlg').addEventListener('click', e => {
     else if (addItem(id, q)) { S.stand[id] -= q; snd('plant'); toast(`${q}× ${ITEM[id].name} zurückgenommen`); }
     standQ = 1; rerenderShip();
   }
+  else if (a.startsWith('wage:')) { S.wage = Math.max(4, Math.min(16, wageOf() + +a.slice(5))); snd('sel'); rerenderShip(); }
   else if (a.startsWith('pk1:') || a.startsWith('up1:')) { const [k, id, t] = a.split(':'); packOne(id, t, k === 'pk1' ? 1 : -1); }
   else if (a.startsWith('pack:')) { const [, id, t] = a.split(':'); packOrder(id, t); }
   else if (a.startsWith('q:')) { const [, t, d] = a.split(':'); shipQ[t] = qOf(t) + +d; snd('sel'); rerenderShip(); }
@@ -1707,7 +1718,7 @@ function endDay(passedOut) {
       lines += `<div class="kv"><img src="${ICONURL[iconOf(t)]}" alt=""><span>${n}× ${ITEM[t].name}</span><b>${(n * sellOf(t)).toLocaleString('de-DE')} Taler</b></div>`;
     }
     const income = S.soldGold; S.sold = {}; S.soldGold = 0; custs.length = 0;
-    const hrs = Math.round((S.staffMin || 0) / 60 * 10) / 10, wage = Math.min(Math.round(hrs * WAGE), S.gold); S.gold -= wage; S.staffMin = 0; delete S.staffed;
+    const hrs = Math.round((S.staffMin || 0) / 60 * 10) / 10, wage = Math.min(Math.round(hrs * wageOf()), S.gold); S.gold -= wage; S.staffMin = 0; delete S.staffed;
     // Lieferungen
     let dl = '';
     for (const o of S.orders.slice()) {
@@ -1750,7 +1761,7 @@ function endDay(passedOut) {
     html += `<div class="sinfo"><span>${WDAYS[(S.day - 1) % 7]}. ${sd}. ${season} · Tag ${S.day}</span><span>Kasse: <b>${S.gold.toLocaleString('de-DE')} Taler</b></span></div>`;
     if (passedOut) html += `<div class="ssec warn"><p class="lead">Ein Nachbar hat dich nach Hause gebracht. Für die Hilfe fehlen dir <b>${lost} Taler</b>, und du bist nicht ganz ausgeruht.</p></div>`;
     html += `<div class="ssec"><div class="ssech"><span>Gestern am Stand verkauft</span>${income ? `<b>+${income.toLocaleString('de-DE')} Taler</b>` : ''}</div>${lines || '<div class="sempty">Gestern wurde am Stand nichts verkauft.</div>'}</div>`;
-    if (wage) html += `<div class="ssec"><div class="kv"><img src="${ICONURL.stand}" alt=""><span>Lohn für ${STAFF} (${hrs.toLocaleString('de-DE')} Std. × ${WAGE} Taler)</span><b>−${wage} Taler</b></div></div>`;
+    if (wage) html += `<div class="ssec"><div class="kv"><img src="${ICONURL.stand}" alt=""><span>Lohn für ${STAFF} (${hrs.toLocaleString('de-DE')} Std. × ${wageOf()} Taler)</span><b>−${wage} Taler</b></div></div>`;
     if (dl) html += `<div class="ssec"><div class="ssech"><span>Lieferungen</span></div>${dl}</div>`;
     let farm = '';
     if (S.rain) farm += `<div class="kv"><img src="${ICONURL.w_rain}" alt=""><span>Heute regnet es – deine Felder sind schon gegossen.</span></div>`;
