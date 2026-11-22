@@ -361,7 +361,7 @@ body.port #toast{bottom:2.7em}
 #dlg .ln small{display:flex;align-items:center;gap:.4em;font-size:.78em;opacity:.85;margin-top:.1em}
 #dlg .cntb{font-weight:600;font-size:1.05em;color:#c4527e}
 #dlg .lbtns{display:flex;gap:.3em}
-#dlg .phint{font-size:.8em;color:#b0788e;font-weight:400}#dlg .padfocus{outline:.22em solid #ff4f8b;outline-offset:.1em;position:relative;z-index:2}#dlg .bagv{grid-template-columns:repeat(5,minmax(0,1fr));max-width:17em;margin:.2em 0 .1em}#dlg .bagv .slot{cursor:default;pointer-events:none}#dlg .bagv .slot.zero img{opacity:.3;filter:grayscale(1)}#dlg .bagv .slot .n{font-size:.78em}#dlg .bagv .slot.zero .n{color:#c9a0b0}#dlg .ssech img.hi{width:1.2em;height:1.2em;image-rendering:pixelated;vertical-align:-.2em;margin-right:.25em}#dlg small.short{color:#d0453a}#dlg small.okc{color:#4a9a5a}
+#dlg .phint{font-size:.8em;color:#b0788e;font-weight:400}body.pad .slot .k{display:none}#dlg .padfocus{outline:.22em solid #ff4f8b;outline-offset:.1em;position:relative;z-index:2}#dlg .bagv{grid-template-columns:repeat(5,minmax(0,1fr));max-width:17em;margin:.2em 0 .1em}#dlg .bagv .slot{cursor:default;pointer-events:none}#dlg .bagv .slot.zero img{opacity:.3;filter:grayscale(1)}#dlg .bagv .slot .n{font-size:.78em}#dlg .bagv .slot.zero .n{color:#c9a0b0}#dlg .ssech img.hi{width:1.2em;height:1.2em;image-rendering:pixelated;vertical-align:-.2em;margin-right:.25em}#dlg small.short{color:#d0453a}#dlg small.okc{color:#4a9a5a}
 #dlg .bagc{display:inline-flex;align-items:center;gap:.2em;font-weight:600;color:#fff;background:#e0578c;padding:0 .35em 0 .15em;box-shadow:0 0 0 .12em #7a2a4a;font-size:1.05em;line-height:1.35}
 #dlg .bagc img{width:1.15em;height:1.15em}
 #dlg .bagc.short{background:#e05a4a;box-shadow:0 0 0 .12em #8a2a2a}
@@ -2514,7 +2514,7 @@ function render(t) {
 function fit() {
   const vv = window.visualViewport;
   const iw = Math.round(vv ? vv.width : innerWidth), ih = Math.round(vv ? vv.height : innerHeight), port = tmode() && ih > iw;
-  document.body.classList.toggle('touch', tmode());
+  document.body.classList.toggle('touch', tmode()); document.body.classList.toggle('pad', padMode);
   document.body.classList.toggle('port', port);
   const app = $('app'), stage = $('stage'), top = $('topbar'), bot = $('bottom'), ctrl = $('ctrl');
   app.style.height = ih + 'px';
@@ -2534,8 +2534,10 @@ function fit() {
     VW = W; VH = H;
     s = Math.min(iw / W, ih / H) * .97;
     if (s >= 2 && !tmode()) s = Math.floor(s);
+    // Breitbild (z. B. Retroid 16:9): ganze Breite nutzen, die Kamera scrollt senkrecht
+    if ((padMode || tmode()) && iw / ih > W / H) { s = iw / W; VH = Math.min(H, Math.max(160, Math.round(ih / s))); }
     app.style.fontSize = (tmode() ? Math.max(10, Math.min(15, s * 4.3)) : Math.max(9, Math.min(18, s * 4.6))) + 'px';
-    stage.style.width = W * s + 'px'; stage.style.height = H * s + 'px';
+    stage.style.width = W * s + 'px'; stage.style.height = VH * s + 'px';
   }
   if (C.width !== VW || C.height !== VH) { C.width = VW; C.height = VH; X.imageSmoothingEnabled = false; }
 }
