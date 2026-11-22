@@ -13,7 +13,8 @@ Ein kleines, gemütliches Farm-Spiel im Pixel-Look – inspiriert von Stardew Va
 |---|---|
 | WASD / Pfeiltasten | Laufen |
 | Leertaste / E | Werkzeug benutzen, interagieren |
-| 1–6 / Mausrad | Gegenstand wählen |
+| 1–7 / Mausrad | Gegenstand wählen |
+| I / Tab | Rucksack öffnen |
 | Klick auf Nachbarfeld | Dort handeln |
 | Esc | Dialog schließen |
 
@@ -23,6 +24,7 @@ Ein kleines, gemütliches Farm-Spiel im Pixel-Look – inspiriert von Stardew Va
 - **A-Knopf** (rechts unten) – Werkzeug benutzen, interagieren
 - Gegenstand in der Leiste antippen – auswählen
 - Feld direkt neben der Figur antippen – dort handeln
+- **Rucksack** (oben links) – Inventar öffnen
 
 Im Hochformat liegen Steuerung und Werkzeugleiste unter dem Spielfeld, und die Kamera folgt der Figur. Im Querformat sitzen Joystick und A-Knopf links und rechts neben dem Spielfeld.
 
@@ -31,9 +33,10 @@ Im Hochformat liegen Steuerung und Werkzeugleiste unter dem Spielfeld, und die K
 1. Gras mit der **Hacke** auflockern
 2. **Samen** säen (Rübe, Kohl, Kürbis)
 3. Täglich mit der **Gießkanne** gießen – am Teich auffüllen
-4. Reife Pflanzen ernten und in die **Versandkiste** legen – bezahlt wird über Nacht
+4. Reife Pflanzen mit der **Sichel** ernten (erntet auch die beiden Nachbarfelder) und in die **Versandkiste** legen – bezahlt wird über Nacht
 5. Im **Dorfladen** neue Samen, Salat (Energie) und eine größere Gießkanne kaufen
-6. Vor 2 Uhr nachts durch die Haustür **schlafen gehen** – dabei wird gespeichert
+6. Im **Rucksack** alle Gegenstände ansehen, Werkzeuge in die Hand nehmen oder Ernte essen
+7. Vor 2 Uhr nachts durch die Haustür **schlafen gehen** – dabei wird gespeichert
 
 | Pflanze | Samenpreis | Wachstum | Verkaufspreis |
 |---|---|---|---|
@@ -47,4 +50,4 @@ Im Hochformat liegen Steuerung und Werkzeugleiste unter dem Spielfeld, und die K
 - Alle Grafiken prozedural im Code gezeichnet – keine Bilddateien
 - Soundeffekte per Web Audio API
 - Spielstand im `localStorage` des Browsers
-- Schrift: [Pixelify Sans](https://fonts.google.com/specimen/Pixelify+Sans) über Google Fonts
+- Schrift: [Fredoka](https://fonts.google.com/specimen/Fredoka) über Google Fonts

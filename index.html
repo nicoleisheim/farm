@@ -8,11 +8,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Sonnenhof – Ein kleines Farmspiel</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%}
-body{background:radial-gradient(circle at 50% 30%,#6a3d5e,#26121f 75%);font-family:'Pixelify Sans',ui-monospace,monospace;overflow:hidden;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:manipulation;overscroll-behavior:none}
+body{background:radial-gradient(circle at 50% 30%,#6a3d5e,#26121f 75%);font-family:'Fredoka',ui-rounded,'Arial Rounded MT Bold','Nunito',system-ui,sans-serif;font-variant-numeric:tabular-nums;overflow:hidden;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:manipulation;overscroll-behavior:none}
 #app{position:fixed;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:14px}
 #stage{position:relative;flex:none}
 #c{display:block;width:100%;height:100%;image-rendering:pixelated;image-rendering:crisp-edges;border-radius:6px;box-shadow:0 10px 40px rgba(0,0,0,.55);cursor:pointer;touch-action:none}
@@ -21,15 +21,21 @@ body{background:radial-gradient(circle at 50% 30%,#6a3d5e,#26121f 75%);font-fami
 #topbar>*{pointer-events:auto}
 #tl{display:flex;gap:.5em;align-items:flex-start}
 #clock{padding:.4em .7em;text-align:right;min-width:8.6em;line-height:1.2}
-#date{font-weight:700}
-#time{font-size:1.45em;font-weight:700;letter-spacing:.03em}
+#date{font-weight:600}
+#time{font-size:1.45em;font-weight:600;letter-spacing:.02em}
 #weather{margin-right:.3em}
 #gold{margin-top:.25em;display:flex;align-items:center;justify-content:flex-end;gap:.3em;font-weight:700;border-top:.12em dashed #ec9dbd;padding-top:.25em}
 #gold img{width:1.2em;height:1.2em;image-rendering:pixelated}
-#basket{padding:.3em .55em;display:flex;gap:.55em;align-items:center;font-weight:700}
-#basket .lbl{font-size:.75em;opacity:.75}
-#basket .it{display:flex;align-items:center;gap:.1em}
-#basket img{width:1.55em;height:1.55em;image-rendering:pixelated}
+#invBtn{font:inherit;font-weight:600;color:#5a2a35;display:flex;align-items:center;gap:.35em;height:2.3em;padding:0 .7em 0 .45em;cursor:pointer}
+#invBtn img{width:1.6em;height:1.6em;image-rendering:pixelated}
+.inv{display:grid;grid-template-columns:repeat(6,1fr);gap:.35em;margin:.5em 0 .6em}
+.inv .slot{width:auto;height:auto;aspect-ratio:1}
+.inv .slot.empty{opacity:.4;cursor:default}
+.detail{display:flex;gap:.7em;align-items:flex-start;background:#fff0f6;border-radius:.7em;padding:.6em .7em;min-height:5.2em}
+.detail img{width:3em;height:3em;image-rendering:pixelated;flex:none}
+.detail .t{flex:1;line-height:1.3}
+.detail .t b{font-size:1.1em;color:#c4527e}
+.detail .acts{display:flex;gap:.4em;margin-top:.45em;flex-wrap:wrap}
 #helpBtn{width:2.3em;height:2.3em;font:inherit;font-weight:700;cursor:pointer;padding:0;flex:none}
 #bottom{position:absolute;left:0;right:0;bottom:.6em;display:flex;justify-content:center;pointer-events:none}
 #bottom>*{pointer-events:auto}
@@ -41,8 +47,8 @@ body{background:radial-gradient(circle at 50% 30%,#6a3d5e,#26121f 75%);font-fami
 .slot{width:2.9em;height:2.9em;background:#fff0f6;border:.16em solid #f5a3c3;border-radius:.9em;position:relative;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .1s;touch-action:manipulation}
 .slot.sel{border-color:#ff4f8b;background:#ffe3ee;box-shadow:0 0 0 .16em #fff,0 .25em .6em rgba(255,79,139,.55);transform:translateY(-.2em)}
 .slot img{width:80%;height:80%;image-rendering:pixelated;pointer-events:none}
-.slot .n{position:absolute;right:.15em;bottom:-.05em;font-weight:700;font-size:.85em;color:#fff;text-shadow:0 .08em 0 #a0365e,.08em 0 0 #a0365e,-.08em 0 0 #a0365e,0 -.08em 0 #a0365e;pointer-events:none}
-.slot .k{position:absolute;left:.45em;top:.1em;font-size:.6em;color:#d9608c;pointer-events:none}
+.slot .n{position:absolute;right:.3em;bottom:.05em;font-weight:700;font-size:.85em;line-height:1;color:#fff;-webkit-text-stroke:.2em #c4527e;paint-order:stroke fill;pointer-events:none}
+.slot .k{position:absolute;left:.5em;top:.2em;font-size:.6em;line-height:1;font-weight:600;color:#e07aa2;pointer-events:none}
 .slot .wl{position:absolute;left:.5em;right:.5em;bottom:.3em;height:.28em;background:#6a3a4a;border-radius:.1em;overflow:hidden;pointer-events:none}
 .slot .wl i{display:block;height:100%;background:#4fb3ff}
 #hint{position:absolute;left:50%;bottom:4.4em;transform:translateX(-50%);padding:.2em .6em;font-size:.85em;font-weight:600;white-space:nowrap;display:none;pointer-events:none}
@@ -51,7 +57,7 @@ body{background:radial-gradient(circle at 50% 30%,#6a3d5e,#26121f 75%);font-fami
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 #shade{position:absolute;inset:0;background:rgba(60,15,40,.5);display:none;align-items:center;justify-content:center;z-index:20}
 #dlg{width:min(94%,31em);max-height:92%;overflow:auto;padding:.9em 1.2em 1em;-webkit-overflow-scrolling:touch}
-#dlg h2{margin:0 0 .35em;font-size:1.35em}
+#dlg h2{margin:0 0 .35em;font-size:1.35em;font-weight:600;color:#c4527e}
 #dlg p{margin:.35em 0;line-height:1.35}
 #dlg .sub{opacity:.8;margin-top:0}
 #dlg ul{margin:.3em 0;padding-left:1.2em;line-height:1.45}
@@ -87,14 +93,14 @@ body.port #date{width:100%;text-align:right;font-size:.85em}
 body.touch #clock{display:flex;align-items:center;gap:.55em;text-align:left;min-width:0;padding:.3em .6em;white-space:nowrap}
 body.touch #time{font-size:1.2em}
 body.touch #gold{margin:0;border:0;padding:0}
-body.touch #basket .lbl{display:none}
 body.touch #topbar{padding:.4em}
 body.port #bottom{position:static;flex:1;min-height:0;flex-direction:column;align-items:center;justify-content:flex-start;gap:.4em;padding:.45em .6em max(.5em,env(safe-area-inset-bottom))}
 body.port #energy{position:static;width:100%;max-width:24em;height:auto;flex-direction:row;padding:.2em .6em;gap:.5em;flex:none}
 body.port #elabel{order:0}
 body.port #ebar{height:.6em}
 body.port #efill{top:0;right:auto;height:100%;width:var(--e,100%)}
-body.port .slot{width:3.1em;height:3.1em}
+body.port .slot{width:2.8em;height:2.8em}
+body.port #hotbar{gap:.22em;padding:.3em}
 body.port #hotbar{flex:none}
 body.port #ctrl{position:static;width:100%;max-width:24em;flex:1;min-height:0;align-items:center;padding:0 .8em}
 body.port #joy{width:7em;height:7em}
@@ -107,7 +113,7 @@ body.port #toast{bottom:2.7em}
   <div id="stage">
     <canvas id="c" width="384" height="256"></canvas>
     <div id="topbar">
-      <div id="tl"><button id="helpBtn" class="panel" title="Hilfe & Steuerung">?</button><div id="basket" class="panel"></div></div>
+      <div id="tl"><button id="helpBtn" class="panel" title="Hilfe & Steuerung">?</button><button id="invBtn" class="panel" title="Rucksack (I)"><img id="invIcon" alt=""><span>Rucksack</span></button></div>
       <div id="clock" class="panel">
         <div id="date"></div>
         <div><span id="weather"></span><span id="time"></span></div>
@@ -154,13 +160,14 @@ function mk(w, h) { const c = document.createElement('canvas'); c.width = w; c.h
 
 /* ---------- game data ---------- */
 const CROPS = {
-  ruebe:   { name: 'Rübe',   seed: 'Rübensamen',  days: 4,  buy: 20,  sell: 35 },
-  kohl:    { name: 'Kohl',   seed: 'Kohlsamen',   days: 7,  buy: 50,  sell: 120 },
-  kuerbis: { name: 'Kürbis', seed: 'Kürbissamen', days: 10, buy: 100, sell: 260 },
+  ruebe:   { name: 'Rübe',   seed: 'Rübensamen',  days: 4,  buy: 20,  sell: 35,  eat: 15 },
+  kohl:    { name: 'Kohl',   seed: 'Kohlsamen',   days: 7,  buy: 50,  sell: 120, eat: 30 },
+  kuerbis: { name: 'Kürbis', seed: 'Kürbissamen', days: 10, buy: 100, sell: 260, eat: 50 },
 };
 const SLOTS = [
   { kind: 'hoe', name: 'Hacke', icon: 'hoe' },
   { kind: 'can', name: 'Gießkanne', icon: 'can' },
+  { kind: 'sickle', name: 'Sichel', icon: 'sickle' },
   { kind: 'seed', crop: 'ruebe', icon: 'seed_ruebe' },
   { kind: 'seed', crop: 'kohl', icon: 'seed_kohl' },
   { kind: 'seed', crop: 'kuerbis', icon: 'seed_kuerbis' },
@@ -168,7 +175,7 @@ const SLOTS = [
 ];
 const SEASONS = ['Frühling', 'Sommer', 'Herbst', 'Winter'];
 const WDAYS = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
-const SOLID = new Set(['T', 'H', 'S', 'B', 'W', 'U']);
+const SOLID = new Set(['T', 'H', 'S', 'B', 'U']);
 const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
 const DOOR = [4, 4];
 
@@ -183,7 +190,6 @@ for (let x = 2; x <= 6; x++) for (let y = 1; y <= 4; y++) set(x, y, 'H');
 for (let x = 18; x <= 20; x++) for (let y = 2; y <= 3; y++) set(x, y, 'S');
 set(8, 4, 'B');
 for (let x = 17; x <= 21; x++) for (let y = 10; y <= 13; y++) set(x, y, 'W');
-set(17, 10, 'G'); set(21, 10, 'G'); set(17, 13, 'G'); set(21, 13, 'G');
 set(4, 5, 'P'); for (let x = 4; x <= 19; x++) set(x, 6, 'P'); set(19, 5, 'P'); set(19, 4, 'P'); set(8, 5, 'P');
 [[11,2],[14,2],[22,6],[22,7],[1,8],[15,14]].forEach(([x,y]) => set(x, y, 'U'));
 const tileAt = (x, y) => (x < 0 || y < 0 || x >= COLS || y >= ROWS) ? 'T' : MAP[y][x];
@@ -243,27 +249,54 @@ function drawBush(g, tx, ty) {
   disc(g, x0 + 8, y0 + 9, 6, '#4d9f4f'); disc(g, x0 + 7, y0 + 8, 5, '#68bb5f'); R(g, x0 + 5, y0 + 6, 2, 1, '#93d982');
   [[10, 7], [4, 10], [9, 11], [6, 6], [12, 10]].forEach(([a, b]) => { R(g, x0 + a, y0 + b, 2, 2, '#ff8fb8'); R(g, x0 + a, y0 + b, 1, 1, '#fff'); });
 }
-function drawWater(g, tx, ty, t) {
-  const x0 = tx * 16, y0 = ty * 16;
-  const isW = (x, y) => tileAt(x, y) === 'W';
-  R(g, x0, y0, 16, 16, '#7cc6ee');
-  for (let i = 0; i < 3; i++) {
-    const ph = (t * .7 + hash(tx, ty, i + 20) * 6) % 6;
-    if (ph < 3) {
-      const px = x0 + 3 + Math.floor(hash(tx, ty, i) * 9) + Math.floor(ph), py = y0 + 3 + Math.floor(hash(tx, ty, i + 5) * 10);
-      R(g, px, py, 3, 1, '#d2f2ff');
+const POND = { cx: 312, cy: 192, rx: 38, ry: 29 };
+function pondR(a) { return 1 + .035 * Math.sin(2 * a + .6) + .02 * Math.cos(3 * a); }
+function pondD(x, y) { const dx = (x - POND.cx) / POND.rx, dy = (y - POND.cy) / POND.ry; return Math.hypot(dx, dy) / pondR(Math.atan2(dy, dx)); }
+function pondPt(a, d) { const r = pondR(a) * d; return [Math.round(POND.cx + Math.cos(a) * POND.rx * r), Math.round(POND.cy + Math.sin(a) * POND.ry * r)]; }
+function drawPond(g) {
+  for (let y = POND.cy - POND.ry - 5; y <= POND.cy + POND.ry + 5; y++)
+    for (let x = POND.cx - POND.rx - 5; x <= POND.cx + POND.rx + 5; x++) {
+      const d = pondD(x + .5, y + .5); let c = null;
+      if (d < 1.03 && d >= .985) c = 'rgba(120,80,60,.18)';
+      else if (d < .985 && d >= .87) c = hash(x, y, 1) < .15 ? '#ead0b4' : '#f6e2cb';
+      else if (d < .87 && d >= .83) c = '#ffffff';
+      else if (d < .83) {
+        const top = y < POND.cy && d > .68;
+        c = top ? '#7cc0e6' : d > .6 ? '#a3dcf5' : d > .35 ? '#8fd2f2' : '#7ec7ee';
+      }
+      if (c) { g.fillStyle = c; g.fillRect(x, y, 1, 1); }
+    }
+  // Ufersteine
+  [0.3, 1.1, 1.9, 3.4, 4.3, 5.2].forEach((a, i) => {
+    const [x, y] = pondPt(a, .93);
+    R(g, x - 2, y - 1, 4, 3, i % 2 ? '#e8d6dc' : '#dcc6cf'); R(g, x - 1, y - 1, 2, 1, '#fff6f8'); R(g, x - 2, y + 2, 4, 1, '#c9aeb9');
+  });
+  // Seerosenblätter
+  [[300, 186, 1], [325, 199, 0], [296, 203, 1], [322, 180, 0]].forEach(([x, y, f]) => {
+    disc(g, x, y, 3, '#6cbf5a'); R(g, x, y - 3, 1, 3, '#a3dcf5'); R(g, x - 2, y - 1, 2, 1, '#8fd67a');
+    if (f) { R(g, x - 1, y - 1, 3, 2, '#ff9ec4'); R(g, x, y - 2, 1, 1, '#ffc2dc'); R(g, x, y - 1, 1, 1, '#ffe066'); }
+  });
+  // Schilf
+  [[2.55, 0], [2.75, 1], [2.95, 0], [5.75, 1], [5.95, 0]].forEach(([a, k]) => {
+    const [x, y] = pondPt(a, .95), h = 9 + k * 3;
+    R(g, x, y - h, 1, h, '#5aa040'); R(g, x + 2, y - h + 3, 1, h - 3, '#6cb54e');
+    R(g, x, y - h - 1, 1, 4, '#a0623a'); R(g, x + 2, y - h + 2, 1, 3, '#a0623a'); R(g, x - 1, y - 4, 1, 3, '#7cc25e');
+  });
+}
+function drawPondAnim(t) {
+  for (let i = 0; i < 6; i++) {
+    const x = POND.cx - 24 + Math.round((t * 5 + i * 19) % 48), y = POND.cy - 14 + i * 6;
+    if (pondD(x, y) < .7 && pondD(x + 3, y) < .7 && Math.sin(t * 1.3 + i) > -.2) R(X, x, y, 3, 1, '#e2f6ff');
+  }
+  for (let i = 0; i < 2; i++) {
+    const cyc = (t + i * 2.2) / 4.4, n = Math.floor(cyc), ph = cyc - n;
+    const cx = POND.cx - 18 + hash(n, i, 9) * 36, cy = POND.cy - 10 + hash(n, i, 10) * 20, r = 1 + ph * 9;
+    X.fillStyle = `rgba(255,255,255,${(1 - ph) * .8})`;
+    for (let k = 0; k < 20; k++) {
+      const a = k / 20 * Math.PI * 2, x = Math.round(cx + Math.cos(a) * r), y = Math.round(cy + Math.sin(a) * r * .55);
+      if (pondD(x, y) < .8) X.fillRect(x, y, 1, 1);
     }
   }
-  if (hash(tx, ty, 77) < .3) { disc(g, x0 + 8, y0 + 9, 3, '#6cbf5a'); R(g, x0 + 8, y0 + 7, 1, 3, '#7cc6ee'); R(g, x0 + 6, y0 + 9, 2, 2, '#ff9ec4'); R(g, x0 + 6, y0 + 9, 1, 1, '#fff'); }
-  const sand = '#f6dfc6', foam = '#ffffff';
-  if (!isW(tx, ty - 1)) R(g, x0, y0 + 2, 16, 1, foam);
-  if (!isW(tx, ty + 1)) R(g, x0, y0 + 13, 16, 1, foam);
-  if (!isW(tx - 1, ty)) R(g, x0 + 2, y0, 1, 16, foam);
-  if (!isW(tx + 1, ty)) R(g, x0 + 13, y0, 1, 16, foam);
-  if (!isW(tx, ty - 1)) R(g, x0, y0, 16, 2, sand);
-  if (!isW(tx, ty + 1)) R(g, x0, y0 + 14, 16, 2, sand);
-  if (!isW(tx - 1, ty)) R(g, x0, y0, 2, 16, sand);
-  if (!isW(tx + 1, ty)) R(g, x0 + 14, y0, 2, 16, sand);
 }
 const WINDOWS = [[42, 55, 12, 10], [90, 55, 12, 10]];
 function drawHouse(g) {
@@ -285,17 +318,14 @@ function drawHouse(g) {
   R(g, x0 + 8, y0, 64, 1, '#ffb8d1');
   R(g, x0, y0 + 29, 80, 2, '#c4527e');
   for (let xx = 0; xx < 80; xx += 4) R(g, x0 + xx + 1, y0 + 31, 2, 1, '#c4527e');
-  // Herz im Giebel
-  R(g, x0 + 35, y0 + 10, 3, 2, '#fff'); R(g, x0 + 42, y0 + 10, 3, 2, '#fff'); R(g, x0 + 34, y0 + 11, 12, 3, '#fff');
-  R(g, x0 + 35, y0 + 14, 10, 2, '#fff'); R(g, x0 + 37, y0 + 16, 6, 2, '#fff'); R(g, x0 + 39, y0 + 18, 2, 1, '#fff');
-  R(g, x0 + 36, y0 + 11, 2, 1, '#ffd6e5');
   // Schornstein
   R(g, x0 + 60, y0 - 3, 8, 9, '#f1d3dc'); R(g, x0 + 59, y0 - 4, 10, 2, '#d9aebd');
   R(g, x0 + 60, y0, 8, 1, '#ddb6c3'); R(g, x0 + 63, y0 - 2, 1, 2, '#ddb6c3'); R(g, x0 + 61, y0 + 1, 1, 3, '#ddb6c3');
   // Tür
   R(g, x0 + 31, y0 + 37, 18, 3, '#c08a64');
   R(g, x0 + 33, y0 + 40, 14, 24, '#a85a74'); R(g, x0 + 35, y0 + 42, 10, 22, '#ff9fc0'); R(g, x0 + 35, y0 + 42, 10, 1, '#ffc6da');
-  heart(g, x0 + 37, y0 + 46, '#fff'); R(g, x0 + 43, y0 + 54, 1, 2, '#ffd84a');
+  R(g, x0 + 37, y0 + 45, 6, 5, '#c4ecff'); R(g, x0 + 39, y0 + 45, 1, 5, '#ffc6da'); R(g, x0 + 37, y0 + 47, 6, 1, '#ffc6da');
+  R(g, x0 + 37, y0 + 53, 6, 1, '#f07ca6'); R(g, x0 + 37, y0 + 58, 6, 1, '#f07ca6'); R(g, x0 + 43, y0 + 54, 1, 2, '#ffd84a');
   R(g, x0 + 32, y0 + 63, 16, 1, '#e8bf94');
   // Fenster mit Gardinen
   for (const wx of [x0 + 9, x0 + 57]) {
@@ -337,7 +367,7 @@ function drawBin(g) {
   R(g, x0 + 1, y0 + 14, 14, 1, '#d97ea2');
   R(g, x0, y0 + 2, 16, 4, '#ffc2d9'); R(g, x0, y0 + 2, 16, 1, '#ffe3ee'); R(g, x0, y0 + 5, 16, 1, '#e58cae');
   R(g, x0 + 2, y0 + 2, 1, 13, '#fff'); R(g, x0 + 13, y0 + 2, 1, 13, '#fff');
-  heart(g, x0 + 6, y0 + 8, '#fff');
+  R(g, x0 + 3, y0 + 9, 10, 1, '#e58cae'); R(g, x0 + 3, y0 + 12, 10, 1, '#e58cae');
 }
 
 /* ---------- crops ---------- */
@@ -388,6 +418,17 @@ icon('can', g => {
   R(g, 5, 2, 5, 1, '#5d6873'); R(g, 4, 3, 1, 3, '#5d6873'); R(g, 10, 3, 1, 3, '#5d6873');
   R(g, 12, 8, 2, 1, '#7d8a96'); R(g, 13, 6, 1, 2, '#7d8a96'); R(g, 13, 5, 2, 1, '#a9b6c2'); R(g, 5, 8, 2, 2, '#4fb3ff');
 });
+icon('sickle', g => {
+  R(g, 3, 10, 2, 5, '#a0582f'); R(g, 3, 10, 1, 5, '#c0763f'); R(g, 2, 14, 4, 1, '#7a4320'); R(g, 3, 11, 2, 1, '#ff8fb8');
+  R(g, 4, 8, 2, 2, '#8f99a3'); R(g, 5, 6, 2, 2, '#8f99a3'); R(g, 6, 4, 2, 2, '#8f99a3'); R(g, 8, 3, 3, 2, '#8f99a3'); R(g, 11, 3, 2, 2, '#8f99a3'); R(g, 13, 4, 1, 3, '#8f99a3');
+  R(g, 6, 6, 1, 1, '#dfe6ee'); R(g, 7, 5, 1, 1, '#dfe6ee'); R(g, 8, 4, 3, 1, '#dfe6ee'); R(g, 12, 4, 1, 1, '#dfe6ee');
+});
+icon('bag', g => {
+  R(g, 5, 1, 6, 1, '#c4527e'); R(g, 4, 2, 1, 3, '#c4527e'); R(g, 11, 2, 1, 3, '#c4527e');
+  R(g, 2, 4, 12, 11, '#ff8fb8'); R(g, 3, 3, 10, 1, '#ff8fb8'); R(g, 2, 14, 12, 1, '#e0578c');
+  R(g, 2, 4, 12, 4, '#f06a9e'); R(g, 2, 8, 12, 1, '#c4527e'); R(g, 7, 7, 2, 3, '#ffe066');
+  R(g, 4, 10, 8, 4, '#ffb3cf'); R(g, 4, 10, 8, 1, '#e0578c'); R(g, 3, 5, 2, 1, '#ffc2dc');
+});
 function seedBag(g, a, b) {
   R(g, 4, 3, 8, 11, '#d9b27a'); R(g, 4, 3, 8, 2, '#b98f55'); R(g, 5, 2, 6, 1, '#b98f55');
   R(g, 3, 5, 1, 8, '#c79f66'); R(g, 12, 5, 1, 8, '#c79f66'); R(g, 4, 14, 8, 1, '#9c7444');
@@ -416,8 +457,7 @@ for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
   if (MAP[y][x] === 'T') drawTree(bg, x, y);
   if (MAP[y][x] === 'U') drawBush(bg, x, y);
 }
-const WATER = [];
-for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) if (MAP[y][x] === 'W') WATER.push([x, y]);
+drawPond(bg);
 
 /* ---------- player sprite ---------- */
 const [PC, pg] = mk(16, 20);
@@ -500,7 +540,7 @@ function toast(m) {
   clearTimeout(toastTimer); toastTimer = setTimeout(() => e.classList.remove('show'), 2300);
 }
 let paused = false;
-function openDlg(html) { $('dlg').innerHTML = html; $('dlg').scrollTop = 0; $('shade').style.display = 'flex'; paused = true; keys.clear(); joyReset(); }
+function openDlg(html) { delete $('dlg').dataset.inv; $('dlg').innerHTML = html; $('dlg').scrollTop = 0; $('shade').style.display = 'flex'; paused = true; keys.clear(); joyReset(); }
 function closeDlg() { $('shade').style.display = 'none'; paused = false; }
 
 function buildHotbar() {
@@ -543,19 +583,16 @@ function updateHUD() {
       d.title = slotName(s);
       if (s.kind === 'can') d.querySelector('.wl i').style.width = (S.water / S.canCap * 100) + '%';
     });
-    let b = '<span class="lbl">Korb</span>';
-    for (const t in CROPS) b += `<span class="it" title="${CROPS[t].name}"><img src="${ICONURL[t]}" alt="">${S.produce[t]}</span>`;
-    $('basket').innerHTML = b;
   }
   // interaction hint
   let h = '';
   if (!paused) {
     const [tx, ty] = targetTile(), t = tileAt(tx, ty), s = S.soil[tx + ',' + ty], tool = SLOTS[S.sel];
-    if (s && s.c && s.c.d >= CROPS[s.c.t].days) h = CROPS[s.c.t].name + ' ernten';
+    if (s && s.c && s.c.d >= CROPS[s.c.t].days) h = tool.kind === 'sickle' ? CROPS[s.c.t].name + ' ernten' : 'Sichel wählen zum Ernten';
     else if (tx === DOOR[0] && ty === DOOR[1]) h = 'Schlafen gehen';
     else if (t === 'S') h = 'Einkaufen';
     else if (t === 'B') h = 'Ernte in die Versandkiste';
-    else if (t === 'W' && tool.kind === 'can') h = 'Gießkanne füllen';
+    else if (isWater(tx, ty) && tool.kind === 'can') h = 'Gießkanne füllen';
   }
   const he = $('hint');
   if (h) { he.innerHTML = `<kbd>${touchMode ? 'A' : 'Leertaste'}</kbd>${h}`; he.style.display = 'block'; }
@@ -574,16 +611,49 @@ function helpHTML(intro) {
     <li><b>Joystick</b> (links) – laufen</li>
     <li><b>A-Knopf</b> (rechts) – Werkzeug benutzen / interagieren</li>
     <li>Gegenstand in der Leiste antippen – auswählen</li>
+    <li><b>Rucksack</b> (oben links) – alle Gegenstände ansehen</li>
     <li>Feld direkt neben dir antippen – dort handeln</li>
   </ul>` : `<ul>
     <li><kbd>WASD</kbd> / Pfeiltasten – laufen</li>
     <li><kbd>Leertaste</kbd> oder <kbd>E</kbd> – Werkzeug benutzen / interagieren</li>
-    <li><kbd>1</kbd>–<kbd>6</kbd> oder Mausrad – Gegenstand wählen</li>
+    <li><kbd>1</kbd>–<kbd>7</kbd> oder Mausrad – Gegenstand wählen</li>
+    <li><kbd>I</kbd> – Rucksack öffnen</li>
     <li>Klick auf ein Feld direkt neben dir – dort handeln</li>
   </ul>`}
-  <p><b>So geht's:</b> Mit der <b>Hacke</b> Gras auflockern, <b>Samen</b> säen, täglich mit der <b>Gießkanne</b> gießen (am Teich auffüllen). Reife Pflanzen erntest du, die Ernte kommt in die <b>Versandkiste</b> neben dem Haus und wird über Nacht bezahlt. Im <b>Laden</b> rechts oben gibt's Samen.</p>
+  <p><b>So geht's:</b> Mit der <b>Hacke</b> Gras auflockern, <b>Samen</b> säen, täglich mit der <b>Gießkanne</b> gießen (am Teich auffüllen). Reife Pflanzen erntest du mit der <b>Sichel</b>, die Ernte kommt in die <b>Versandkiste</b> neben dem Haus und wird über Nacht bezahlt. Im <b>Laden</b> rechts oben gibt's Samen.</p>
   <p>Geh vor 2 Uhr nachts ins Bett (Haustür) – sonst kippst du um. Gespeichert wird beim Schlafen.</p>
   <div class="foot">${intro ? '' : '<button class="btn red" data-act="new">Neues Spiel</button>'}<button class="btn" data-act="close">${intro ? "Los geht's!" : 'Weiter'}</button></div>`;
+}
+function invItems() {
+  const L = [
+    { id: 'hoe', name: 'Hacke', icon: 'hoe', n: 1, slot: 0, desc: 'Lockert Gras zu Ackerboden auf. Kostet 2 Energie.' },
+    { id: 'can', name: S.canCap > 20 ? 'Kupfer-Gießkanne' : 'Gießkanne', icon: 'can', n: 1, slot: 1, desc: `Gießt den Boden. Füllstand ${S.water}/${S.canCap} – am Teich auffüllen.` },
+    { id: 'sickle', name: 'Sichel', icon: 'sickle', n: 1, slot: 2, desc: 'Erntet reife Pflanzen – das Feld vor dir und die beiden daneben.' },
+  ];
+  Object.keys(CROPS).forEach((t, i) => { const c = CROPS[t]; L.push({ id: 'seed-' + t, name: c.seed, icon: 'seed_' + t, n: S.seeds[t], slot: 3 + i, desc: `Reif nach ${c.days} Tagen, wenn du täglich gießt.` }); });
+  Object.keys(CROPS).forEach(t => { const c = CROPS[t]; L.push({ id: t, name: c.name, icon: t, n: S.produce[t], eat: c.eat, desc: `Frisch geerntet. Verkaufswert ${c.sell}g in der Versandkiste.` }); });
+  L.push({ id: 'snack', name: 'Gartensalat', icon: 'snack', n: S.snacks, slot: 6, eat: 40, desc: 'Ein knackiger Salat aus dem Dorfladen.' });
+  return L;
+}
+let invSel = null;
+function invHTML() {
+  const items = invItems().filter(it => it.n > 0);
+  if (!items.find(it => it.id === invSel)) invSel = items[0].id;
+  let h = `<h2>Rucksack</h2><p class="sub">Geld: <b>${S.gold.toLocaleString('de-DE')}g</b> · Energie: <b>${Math.round(S.energy)}/${S.maxEnergy}</b></p><div class="inv">`;
+  for (const it of items) h += `<div class="slot${it.id === invSel ? ' sel' : ''}" data-act="inv:${it.id}" title="${it.name}"><img src="${ICONURL[it.icon]}" alt="">${it.n > 1 || it.slot === undefined || it.slot > 2 ? `<span class="n">${it.n}</span>` : ''}</div>`;
+  for (let i = items.length; i < 18; i++) h += '<div class="slot empty"></div>';
+  const it = items.find(x => x.id === invSel);
+  h += `</div><div class="detail"><img src="${ICONURL[it.icon]}" alt=""><div class="t"><b>${it.name}</b>${it.n > 1 ? ` <small>×${it.n}</small>` : ''}<br><small>${it.desc}</small>${it.eat ? `<br><small>Essen: +${it.eat} Energie</small>` : ''}<div class="acts">`;
+  if (it.slot !== undefined) h += `<button class="btn" data-act="take:${it.slot}">In die Hand nehmen</button>`;
+  if (it.eat) h += `<button class="btn" data-act="eat:${it.id}" ${S.energy >= S.maxEnergy ? 'disabled' : ''}>Essen</button>`;
+  return h + '</div></div></div><div class="foot"><button class="btn" data-act="close">Schließen</button></div>';
+}
+function openInv() { if (fading) return; if (paused) { if ($('dlg').dataset.inv) closeDlg(); return; } invSel = null; const cur = SLOTS[S.sel]; invSel = cur.kind === 'seed' ? 'seed-' + cur.crop : cur.kind; openDlg(invHTML()); $('dlg').dataset.inv = 1; }
+function eatItem(id) {
+  const it = invItems().find(x => x.id === id); if (!it || !it.n || S.energy >= S.maxEnergy) return;
+  if (id === 'snack') S.snacks--; else S.produce[id]--;
+  S.energy = Math.min(S.maxEnergy, S.energy + it.eat); snd('eat'); toast(`Lecker! +${it.eat} Energie`);
+  $('dlg').innerHTML = invHTML();
 }
 function shopRow(img, name, info, price, id, single) {
   const d1 = S.gold < price ? 'disabled' : '', d5 = S.gold < price * 5 ? 'disabled' : '';
@@ -613,6 +683,9 @@ $('dlg').addEventListener('click', e => {
   if (a === 'close') closeDlg();
   else if (a === 'sleep') { closeDlg(); endDay(false); }
   else if (a.startsWith('buy:')) { const [, id, n] = a.split(':'); buy(id, +n); }
+  else if (a.startsWith('inv:')) { invSel = a.slice(4); snd('sel'); $('dlg').innerHTML = invHTML(); }
+  else if (a.startsWith('take:')) { closeDlg(); selectSlot(+a.slice(5)); }
+  else if (a.startsWith('eat:')) eatItem(a.slice(4));
   else if (a === 'new') $('dlg').innerHTML = `<h2>Neues Spiel?</h2><p>Dein ganzer Fortschritt geht verloren.</p><div class="foot"><button class="btn" data-act="close">Abbrechen</button><button class="btn red" data-act="newc">Ja, neu anfangen</button></div>`;
   else if (a === 'newc') { S = newState(); save(); parts.length = 0; closeDlg(); toast('Ein neuer Anfang!'); }
 });
@@ -638,10 +711,8 @@ function act(tx, ty) {
   if (paused || actT > .08) return;
   const k = tx + ',' + ty, s = S.soil[k], t = tileAt(tx, ty), tool = SLOTS[S.sel];
   actT = .25; actTool = null; actTile = [tx, ty];
-  if (s && s.c && s.c.d >= CROPS[s.c.t].days) {
-    const c = CROPS[s.c.t]; S.produce[s.c.t]++; s.c = null;
-    burst(tx, ty, ['#ffe066', '#fff6c0', '#ffc2dc'], 8, 70); hearts(tx, ty, 4); snd('harvest'); toast(`+1 ${c.name}`); return;
-  }
+  const ripe = s && s.c && s.c.d >= CROPS[s.c.t].days;
+  if (ripe && tool.kind !== 'sickle') { toast(touchMode ? 'Zum Ernten die Sichel wählen' : 'Zum Ernten die Sichel nehmen (Taste 3)'); return; }
   if (tx === DOOR[0] && ty === DOOR[1]) {
     openDlg(`<h2>Schlafen gehen?</h2><p>Der Tag endet. Gegossene Pflanzen wachsen über Nacht, und alles in der Versandkiste wird verkauft.</p><div class="foot"><button class="btn" data-act="close">Noch nicht</button><button class="btn" data-act="sleep">Gute Nacht 🌙</button></div>`);
     return;
@@ -653,6 +724,22 @@ function act(tx, ty) {
     if (!n) { toast('Leg hier deine Ernte rein – sie wird über Nacht verkauft.'); return; }
     snd('ship'); toast(`${n} Stück in die Versandkiste gelegt`); return;
   }
+  if (tool.kind === 'sickle') {
+    actTool = 'sickle';
+    const d = DIRS[S.dir], side = [[0, 0], [d[1], d[0]], [-d[1], -d[0]]], got = {};
+    let n = 0;
+    for (const [ox, oy] of side) {
+      const cs = S.soil[(tx + ox) + ',' + (ty + oy)];
+      if (cs && cs.c && cs.c.d >= CROPS[cs.c.t].days) {
+        got[cs.c.t] = (got[cs.c.t] || 0) + 1; S.produce[cs.c.t]++; cs.c = null; n++;
+        burst(tx + ox, ty + oy, ['#ffe066', '#fff6c0', '#ffc2dc'], 6, 70); hearts(tx + ox, ty + oy, 3);
+      }
+    }
+    if (n) { snd('harvest'); toast(Object.entries(got).map(([k, v]) => `+${v} ${CROPS[k].name}`).join('  ')); return; }
+    snd('sel'); burst(tx, ty, ['#7bbf55', '#a6de80'], 4, 30);
+    if (s && s.c) toast(`${CROPS[s.c.t].name} ist noch nicht reif.`);
+    return;
+  }
   if (tool.kind === 'hoe') {
     actTool = 'hoe';
     if (t !== 'G') { toast('Hier kann man nicht hacken.'); snd('err'); return; }
@@ -661,7 +748,7 @@ function act(tx, ty) {
     S.soil[k] = { w: S.rain, c: null }; burst(tx, ty, ['#7a4d2c', '#93613a', '#5e3b22'], 8); snd('till');
   } else if (tool.kind === 'can') {
     actTool = 'can';
-    if (t === 'W') { S.water = S.canCap; burst(tx, ty, ['#8fd0ff', '#d4f0ff'], 8, 60); snd('water'); toast('Gießkanne aufgefüllt'); return; }
+    if (isWater(tx, ty)) { S.water = S.canCap; burst(tx, ty, ['#8fd0ff', '#d4f0ff'], 8, 60); snd('water'); toast('Gießkanne aufgefüllt'); return; }
     if (!s) { toast('Gieß den aufgelockerten Boden.'); return; }
     if (S.water <= 0) { toast('Die Gießkanne ist leer – füll sie am Teich auf.'); snd('err'); return; }
     if (!needEnergy(1)) return;
@@ -728,7 +815,8 @@ addEventListener('keydown', e => {
   if (KMAP[e.key]) { keys.add(KMAP[e.key]); e.preventDefault(); return; }
   if (paused) return;
   if (e.key === ' ' || e.key === 'e' || e.key === 'E' || e.key === 'Enter') { e.preventDefault(); if (!e.repeat) act(...targetTile()); return; }
-  if (/^[1-6]$/.test(e.key)) selectSlot(+e.key - 1);
+  if (/^[1-7]$/.test(e.key)) selectSlot(+e.key - 1);
+  if (e.key === 'i' || e.key === 'I' || e.key === 'Tab') { e.preventDefault(); openInv(); }
 });
 addEventListener('keyup', e => { if (KMAP[e.key]) keys.delete(KMAP[e.key]); });
 addEventListener('blur', () => keys.clear());
@@ -747,6 +835,8 @@ C.addEventListener('click', e => {
   act(tx, ty);
 });
 $('helpBtn').addEventListener('click', () => { if (!fading) openDlg(helpHTML(false)); });
+$('invIcon').src = ICONURL.bag;
+$('invBtn').addEventListener('click', openInv);
 // Joystick
 let joy = null;
 const J = $('joy'), K = $('knob');
@@ -816,7 +906,8 @@ function drawFly(c, glow) {
 
 /* ---------- update ---------- */
 let animT = 0, moving = false;
-function blocked(x, y) { return SOLID.has(tileAt(Math.floor(x / 16), Math.floor(y / 16))); }
+function blocked(x, y) { const t = tileAt(Math.floor(x / 16), Math.floor(y / 16)); return t === 'W' ? pondD(x, y) < .93 : SOLID.has(t); }
+function isWater(tx, ty) { return tileAt(tx, ty) === 'W' && pondD(tx * 16 + 8, ty * 16 + 8) < 1.1; }
 function tryMove(dx, dy) {
   const nx = S.px + dx, ny = S.py + dy;
   if (blocked(nx - 5, ny - 5) || blocked(nx + 5, ny - 5) || blocked(nx - 5, ny - 1) || blocked(nx + 5, ny - 1)) return;
@@ -870,7 +961,7 @@ function render(t) {
   X.fillStyle = '#26121f'; X.fillRect(0, 0, VW, VH);
   X.save(); X.translate(-camX, -camY);
   X.drawImage(BG, 0, 0);
-  for (const [x, y] of WATER) drawWater(X, x, y, t);
+  drawPondAnim(t);
   const has = (x, y) => !!S.soil[x + ',' + y];
   for (const k in S.soil) {
     const s = S.soil[k], [tx, ty] = k.split(',').map(Number), x0 = tx * 16, y0 = ty * 16;
