@@ -415,6 +415,11 @@ body,button,kbd,small{font-size-adjust:.56;font-synthesis:none;letter-spacing:.0
 body:not(.port) #toast{top:3.2em}
 #hint{font-size:.7em;border-width:.35em}
 body.port #hint{bottom:.3em}
+#dlg .ssech{color:#e0703a;background-image:linear-gradient(90deg,#f8c8a4 50%,transparent 0)}
+#time{color:#e0703a}
+#dlg .sinfo b,#dlg .money{color:#e0703a}
+#dlg .townimg{margin:.2em 0 .4em;border:.4em solid transparent;border-image:var(--t-dsec) 4 fill / .4em stretch}
+#dlg .townimg img{display:block;width:100%;image-rendering:pixelated}
 </style>
 </head>
 <body>
@@ -481,6 +486,8 @@ const ITEM = {
   shovel: { name: 'Schaufel', kind: 'shovel', tool: 1, dura: 40, price: 70, desc: 'Gräbt Pflanzen aus und macht Felder wieder zu Wiese.' },
   wood: { name: 'Holz', kind: 'mat', sell: 8, desc: 'Frisch gehacktes Holz. Bringt 8 Taler am Verkaufsstand.' },
   'sap-green': { name: 'Baumsetzling', kind: 'sapling', k: 'green', desc: 'Auf freier Wiese pflanzen. Wird in 4 Tagen zu einem Baum.' },
+  'sap-berry': { name: 'Beerenstrauch', kind: 'sapling', k: 'berry', desc: 'Auf freier Wiese pflanzen. Trägt nach 3 Tagen Beeren, danach alle 2 Tage.' },
+  berry: { name: 'Beeren', kind: 'crop', eat: 10, sell: 25, desc: 'Süße Beeren vom eigenen Strauch. Bringen 25 Taler am Verkaufsstand.' },
   'sap-cherry': { name: 'Kirschbaum-Setzling', kind: 'sapling', k: 'cherry', desc: 'Auf freier Wiese pflanzen. Wird in 4 Tagen zu einem blühenden Kirschbaum.' },
   snack: { name: 'Gartensalat', kind: 'food', eat: 40, desc: 'Ein knackiger Salat aus dem Dorfladen.' },
 };
@@ -502,7 +509,7 @@ const duraCol = f => f > .5 ? '#7cc85a' : f > .2 ? '#ffb84d' : '#e0503a';
 function duraBar(id, cls) { const f = duraOf(id) / ITEM[id].dura; return `<span class="${cls}"><i style="width:${Math.max(4, f * 100)}%;background:${duraCol(f)}"></i></span>`; }
 const duraOf = id => (S.dura && S.dura[id] !== undefined) ? S.dura[id] : ITEM[id].dura;
 const iconOf = id => id.replace('-', '_');
-const SELLABLE = [...Object.keys(CROPS), 'wood'];
+const SELLABLE = [...Object.keys(CROPS), 'berry', 'wood'];
 const sellOf = id => ITEM[id].sell || 0;
 const SEASONS = ['Frühling', 'Sommer', 'Herbst', 'Winter'];
 const WDAYS = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
@@ -522,13 +529,18 @@ for (let x = 18; x <= 20; x++) for (let y = 2; y <= 3; y++) set(x, y, 'S');
 set(8, 3, 'B'); set(9, 3, 'B'); set(8, 4, 'B'); set(9, 4, 'B');
 set(11, 3, 'L'); set(11, 4, 'L');
 set(4, 5, 'P'); for (let x = 4; x <= 19; x++) set(x, 6, 'P'); set(19, 5, 'P'); set(19, 4, 'P'); set(8, 5, 'P'); set(9, 5, 'P'); set(11, 5, 'P');
-[[11,2],[14,2],[22,6],[22,7],[1,8],[15,14]].forEach(([x,y]) => set(x, y, 'U'));
+[[11,2],[14,2],[22,7],[1,8],[15,14]].forEach(([x,y]) => set(x, y, 'U'));
+// Der Laden ist jetzt in der Innenstadt: Platz frei machen, Weg nach Osten bis zum Tor
+for (let x = 18; x <= 20; x++) for (let y = 2; y <= 3; y++) set(x, y, 'G');
+set(19, 4, 'G'); set(19, 5, 'G');
+for (let x = 4; x <= 23; x++) set(x, 6, 'P');
+const GATE = [23, 6];
 let TREES = {};
 const tileAt = (x, y) => {
   if (x < 0 || y < 0 || x >= COLS || y >= ROWS) return 'T';
   const t = MAP[y][x];
   const st = TREES[x + ',' + y];
-  if (st) return st.s === 'tree' ? 'T' : st.s === 'stump' ? 'X' : st.s === 'sap' ? 'Y' : 'G';
+  if (st) return st.s === 'tree' ? 'T' : st.s === 'stump' ? 'X' : st.s === 'sap' ? 'Y' : st.s === 'bush' ? 'U' : 'G';
   return t;
 };
 
@@ -548,7 +560,7 @@ function drawGrass(g, tx, ty) {
   const f = hash(tx, ty, 999);
   const px = x0 + 4 + Math.floor(hash(tx, ty, 7) * 8), py = y0 + 4 + Math.floor(hash(tx, ty, 8) * 8);
   if (f < .17) {
-    const col = ['#ff9ec4', '#ffc2dc', '#ffffff', '#ff7fb0', '#d9b8ff'][Math.floor(hash(tx, ty, 9) * 5)];
+    const col = ['#ff9ec4', '#ffc2dc', '#ffffff', '#ff7fb0', '#ffa94d', '#ffb870'][Math.floor(hash(tx, ty, 9) * 6)];
     R(g, px, py + 2, 1, 2, '#5aa040');
     R(g, px - 1, py, 3, 1, col); R(g, px, py - 1, 1, 3, col); R(g, px, py, 1, 1, '#ffd84a');
   } else if (f < .21) {
@@ -883,6 +895,36 @@ function drawStand(g) {
   R(g, x0 + 11, y0 + 20, 10, 7, '#fff7ec'); R(g, x0 + 11, y0 + 20, 10, 1, '#e8c9a0');
   disc(g, x0 + 16, y0 + 23, 2, '#f2c13a'); R(g, x0 + 15, y0 + 22, 1, 1, '#fff0a8');
 }
+function drawSign(g) {
+  const x0 = 352, y0 = 72;
+  R(g, x0 + 7, y0 + 6, 2, 10, '#8a5a40');
+  R(g, x0 + 1, y0 + 1, 13, 6, '#6a3a2a'); R(g, x0 + 2, y0 + 2, 11, 4, '#e0a874');
+  R(g, x0 + 4, y0 + 3, 6, 2, '#f08a3a'); R(g, x0 + 10, y0 + 2, 1, 4, '#f08a3a'); R(g, x0 + 11, y0 + 3, 1, 2, '#f08a3a');
+}
+let TOWNURL = '';
+function makeTown() {
+  const [c, g] = mk(384, 200);
+  R(g, 0, 0, 384, 200, '#8ccf63');
+  for (let i = 0; i < 260; i++) R(g, Math.floor(hash(i, 1, 90) * 384), Math.floor(hash(i, 2, 90) * 200), 1, 2, i % 2 ? '#7bbf55' : '#a6de80');
+  R(g, 0, 120, 384, 48, '#e2c9a6'); R(g, 0, 120, 384, 2, '#c9a87e'); R(g, 0, 166, 384, 2, '#c9a87e');
+  for (let y = 124; y < 164; y += 6) for (let x = (y / 6 % 2) * 6; x < 384; x += 12) R(g, x, y, 10, 4, '#ecd8ba');
+  g.save(); g.translate(-32 + 16, -16 + 40); drawHouse(g); g.restore();
+  g.save(); g.translate(-288 + 168, -32 + 76); drawShop(g); g.restore();
+  g.save(); g.translate(-32 + 270, -16 + 40); drawHouse(g); g.restore();
+  for (const [x, y] of [[0, 2], [6, 1], [14, 2], [22, 1]]) drawTree(g, x, y);
+  disc(g, 192, 186, 9, '#c9a87e'); disc(g, 192, 186, 7, '#7cc6ee'); R(g, 191, 178, 2, 6, '#d2f2ff');
+  R(g, 150, 108, 2, 12, '#8a5a40'); R(g, 228, 108, 2, 12, '#8a5a40'); R(g, 146, 104, 10, 5, '#f08a3a'); R(g, 224, 104, 10, 5, '#f08a3a');
+  TOWNURL = c.toDataURL();
+}
+function drawBerryBush(g, tx, ty, st) {
+  const x0 = tx * 16, y0 = ty * 16;
+  R(g, x0 + 2, y0 + 13, 12, 2, 'rgba(60,20,40,.18)');
+  if (st.d < 2) { disc(g, x0 + 8, y0 + 10, 3, '#3f8f45'); disc(g, x0 + 7, y0 + 9, 2, '#68bb5f'); R(g, x0 + 6, y0 + 8, 1, 1, '#93d982'); return; }
+  disc(g, x0 + 8, y0 + 9, 6, '#3f8f45'); disc(g, x0 + 7, y0 + 8, 5, '#58ae55'); R(g, x0 + 5, y0 + 5, 2, 1, '#93d982');
+  const pts = [[4, 7], [9, 5], [11, 9], [6, 11], [8, 8], [12, 6]];
+  if (st.ripe) pts.forEach(([a, b]) => { R(g, x0 + a, y0 + b, 2, 2, '#e0466e'); R(g, x0 + a, y0 + b, 1, 1, '#ffb3c6'); });
+  else pts.slice(0, 3).forEach(([a, b]) => { R(g, x0 + a, y0 + b, 1, 1, '#ffffff'); R(g, x0 + a + 1, y0 + b, 1, 1, '#ffe066'); });
+}
 function drawStandAwning(g) {
   const x0 = 128, y0 = 48;
   for (let i = 0; i < 6; i++) {
@@ -1000,6 +1042,8 @@ icon('wood', g => {
 });
 icon('sap_green', g => { drawSapling(g, 0, 0, false, false); R(g, 4, 13, 8, 3, '#c98a5a'); R(g, 4, 13, 8, 1, '#e0a874'); });
 icon('sap_cherry', g => { drawSapling(g, 0, 0, false, true); R(g, 4, 13, 8, 3, '#c98a5a'); R(g, 4, 13, 8, 1, '#e0a874'); });
+icon('sap_berry', g => { drawBerryBush(g, 0, 0, { d: 2, ripe: true }); R(g, 3, 13, 10, 3, '#c98a5a'); R(g, 3, 13, 10, 1, '#e0a874'); });
+icon('berry', g => { [[4, 7], [7, 5], [9, 8], [6, 10], [10, 11]].forEach(([a, b]) => { disc(g, a + 1, b + 1, 2, '#e0466e'); R(g, a, b, 1, 1, '#ffb3c6'); }); R(g, 7, 2, 1, 3, '#4f9a3a'); R(g, 8, 2, 3, 1, '#6cc04f'); });
 icon('bag', g => {
   R(g, 5, 1, 6, 1, '#c4527e'); R(g, 4, 2, 1, 3, '#c4527e'); R(g, 11, 2, 1, 3, '#c4527e');
   R(g, 2, 4, 12, 11, '#ff8fb8'); R(g, 3, 3, 10, 1, '#ff8fb8'); R(g, 2, 14, 12, 1, '#e0578c');
@@ -1031,7 +1075,7 @@ frame('sign', '#5a3416', '#c98a5a', '#e8b07a', '#a86d48');
 frame('chalk', '#3d220c', '#41604e', '#4c6e5a', null, ['#a86d48', '#c98a5a', '#8a5a40']);
 frame('paper', '#d9c2a0', '#fffaf0', '#ffffff', '#efe2cc');
 frame('slot', '#e8a8c0', '#fff6fa', '#ffffff', '#f7dbe6');
-frame('slotsel', '#ff4f8b', '#ffe9f1', '#ffffff', '#ffc2dc');
+frame('slotsel', '#f0782a', '#fff1e6', '#ffffff', '#ffd2b0');
 frame('btn', '#6a3a2a', '#ff8fb8', '#ffc2dc', '#e0578c');
 frame('btn2', '#7a4a2a', '#f6dcc0', '#fff0dc', '#d9b085');
 frame('btnoff', '#c9a8b2', '#f3e3e8', '#fbeef3', '#e8d4da');
@@ -1123,7 +1167,8 @@ function rebuildTrees() {
   for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
     const st = TREES[x + ',' + y];
     if (!st) { if (MAP[y][x] === 'T') drawTree(tl, x, y); continue; }
-    if (st.s === 'tree') drawTree(tl, x, y);
+    if (st.s === 'bush') drawBerryBush(tl, x, y, st);
+    else if (st.s === 'tree') drawTree(tl, x, y);
     else if (st.s === 'stump') drawStump(tl, x, y);
     else if (st.s === 'sap') drawSapling(tl, x, y, st.d >= 2, st.k === 'cherry');
   }
@@ -1133,7 +1178,7 @@ for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
   drawGrass(bg, x, y);
 }
 drawPaths(bg);
-drawHouse(bg); drawShop(bg); drawStand(bg); drawCrate(bg);
+drawHouse(bg); drawStand(bg); drawCrate(bg); drawSign(bg);
 for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
   if (MAP[y][x] === 'U') drawBush(bg, x, y);
 }
@@ -1333,12 +1378,14 @@ function updateHUD() {
     if (s && s.c && s.c.d >= CROPS[s.c.t].days) h = tool.kind === 'sickle' ? CROPS[s.c.t].name + ' ernten' : 'Sichel wählen zum Ernten';
     else if (tx === DOOR[0] && ty === DOOR[1]) h = 'Schlafen gehen';
     else if (t === 'S') h = 'Einkaufen';
+    else if (tx === GATE[0] && ty === GATE[1]) h = 'Zur Innenstadt';
     else if (t === 'B') h = 'Verkaufsstand';
     else if (t === 'L') h = S.orders.length ? `Lieferungen (${S.orders.length})` : 'Lieferungen';
     else if (t === 'T' && tool.kind === 'axe') h = 'Baum fällen';
     else if (t === 'X' && tool.kind === 'axe') h = 'Stumpf entfernen';
     else if (t === 'Y' && tool.kind === 'shovel') h = 'Setzling ausgraben';
-    else if (t === 'G' && !s && tool.kind === 'sapling') h = 'Baum pflanzen';
+    else if (t === 'G' && !s && tool.kind === 'sapling') h = 'Pflanzen';
+    else if (TREES[tx + ',' + ty] && TREES[tx + ',' + ty].s === 'bush' && TREES[tx + ',' + ty].ripe) h = 'Beeren pflücken';
     else if (s && tool.kind === 'shovel') h = s.c ? 'Pflanze ausgraben' : 'Feld entfernen';
     else if (isWater(tx, ty) && tool.kind === 'can') h = 'Gießkanne füllen';
   }
@@ -1449,9 +1496,9 @@ function rerenderShip() { const sc = $('dlg').scrollTop; $('dlg').innerHTML = $(
 
 /* ---------- Lieferungen ---------- */
 const WHO = ['Frau Lind', 'Opa Karl', 'Café Kirschblüte', 'Bäckerei Mehlstaub', 'Mia vom Hügel', 'Herr Brombeer', 'Oma Rosi', 'Gasthaus Zum Häschen'];
-const QR = { ruebe: [3, 6], kohl: [2, 4], kuerbis: [1, 3], wood: [5, 12] };
+const QR = { ruebe: [3, 6], kohl: [2, 4], kuerbis: [1, 3], wood: [5, 12], berry: [3, 6] };
 function genOrder() {
-  const pool = ['ruebe', 'wood']; if (S.day >= 2) pool.push('kohl'); if (S.day >= 4) pool.push('kuerbis');
+  const pool = ['ruebe', 'wood']; if (S.day >= 3) pool.push('berry'); if (S.day >= 2) pool.push('kohl'); if (S.day >= 4) pool.push('kuerbis');
   const sh = pool.slice().sort(() => Math.random() - .5), kinds = Math.random() < .35 ? 2 : 1, items = {};
   for (let i = 0; i < kinds; i++) { const t = sh[i], [a, b] = QR[t]; items[t] = a + Math.floor(Math.random() * (b - a + 1)); }
   let val = 0; for (const t in items) val += items[t] * sellOf(t);
@@ -1501,7 +1548,7 @@ const wageOf = () => S.wage || 8;
 const paceOf = w => w <= 5 ? 'gemütlich' : w <= 9 ? 'normal' : w <= 13 ? 'flott' : 'sehr flott';
 const PAL_STAFF = { skin: '#ffe0cc', hair: '#5a3a2a', hairL: '#7a5440', dress: '#b8e0a0', dressD: '#8fc878', apron: '#ffffff', shoe: '#5a6a4a', bow: '#ff8fb8', tails: 1, hat: 0 };
 const lotteIcon = (() => { const [c, g] = mk(16, 16); drawPlayerSprite(pg, 'down', 0, PAL_STAFF); g.drawImage(PC, 0, -1); return c.toDataURL(); })();
-const CUST_PATH = [[312, 78], [312, 108], [152, 108], [152, 92]];
+const CUST_PATH = [[388, 108], [152, 108], [152, 92]];
 function standStock() { return SELLABLE.reduce((a, t) => a + (S.stand[t] || 0), 0); }
 function spawnCustomer() {
   custs.push({ x: CUST_PATH[0][0], y: CUST_PATH[0][1], wp: CUST_PATH.slice(1), st: 'in', t: 0, a: 0, dir: 'down', anim: 0, pal: PAL_VILLAGE[Math.floor(Math.random() * PAL_VILLAGE.length)] });
@@ -1555,7 +1602,7 @@ function drawStandGoods(t) {
     if (!(S.stand[id] > 0) || i > 3) continue;
     const bx = x0 + 3 + i * 7, by = y0 + 11;
     R(X, bx, by + 3, 6, 3, '#a86d48'); R(X, bx, by + 3, 6, 1, '#c48a5e');
-    const col = { ruebe: '#f1e4bb', kohl: '#8fd16a', kuerbis: '#e07b24', wood: '#b87a4a' }[id];
+    const col = { ruebe: '#f1e4bb', kohl: '#8fd16a', kuerbis: '#e07b24', wood: '#b87a4a', berry: '#e0466e' }[id];
     R(X, bx + 1, by + 1, 2, 2, col); R(X, bx + 3, by + 1, 2, 2, col); R(X, bx + 2, by, 2, 2, col);
     i++;
   }
@@ -1572,6 +1619,10 @@ function shopRow(img, name, info, price, id, single) {
   return `<div class="shrow"><img src="${img}" alt=""><div class="sname"><b>${name}</b><small>${info}</small></div><span class="price"><span class="p-coin"></span>${price}</span>
     <div class="shbtns"><button class="btn" data-act="buy:${id}:1" ${d1}>Kaufen</button>${single ? '' : `<button class="btn" data-act="buy:${id}:5" ${d5}>×5</button>`}</div></div>`;
 }
+function townHTML() {
+  return T('shopi', 'Innenstadt') + `<div class="townimg"><img src="${TOWNURL}" alt="Die Innenstadt mit dem Dorfladen"></div><div class="sinfo"><span>Gleich neben der Farm: der Dorfladen hat geöffnet.</span></div><div class="foot"><button class="btn" data-act="close">Zurück zur Farm</button><button class="btn primary" data-act="shop">Dorfladen betreten</button></div>`;
+}
+function openTown() { if (!TOWNURL) makeTown(); S.time += 20; snd('sel'); openDlg(townHTML()); }
 function shopHTML() {
   let h = T('shopi', 'Dorfladen') + `<div class="sinfo"><span>Willkommen! Schau dich ruhig um.</span><span><span class="money"><span class="p-coin"></span>${S.gold.toLocaleString('de-DE')}</span></span></div>`;
   h += '<div class="ssec"><div class="ssech"><span>Samen</span></div>';
@@ -1584,6 +1635,7 @@ function shopHTML() {
   h += '</div><div class="ssec"><div class="ssech"><span>Setzlinge</span></div>';
   h += shopRow(ICONURL.sap_green, 'Baumsetzling', '4 Tage bis zum Baum', 40, 'sap-green');
   h += shopRow(ICONURL.sap_cherry, 'Kirschbaum-Setzling', '4 Tage bis zum Kirschbaum', 60, 'sap-cherry');
+  h += shopRow(ICONURL.sap_berry, 'Beerenstrauch', 'Beeren alle 2 Tage', 50, 'sap-berry');
   h += '</div><div class="ssec"><div class="ssech"><span>Sonstiges</span></div>';
   h += shopRow(ICONURL.snack, 'Gartensalat', '+40 Energie', 30, 'snack');
   if (S.canCap < 40) h += shopRow(ICONURL.can, 'Kupfer-Gießkanne', '40 statt 20 Füllungen', 400, 'can', true);
@@ -1599,7 +1651,7 @@ function buy(id, n) {
     if (!addItem(t, 1)) return;
     S.gold -= pr; if (!S.dura) S.dura = {}; if (!had) S.dura[t] = ITEM[t].dura; snd('coin'); $('dlg').innerHTML = shopHTML(); return;
   }
-  price = id.startsWith('seed-') ? CROPS[id.slice(5)].buy : { snack: 30, can: 400, 'sap-green': 40, 'sap-cherry': 60 }[id];
+  price = id.startsWith('seed-') ? CROPS[id.slice(5)].buy : { snack: 30, can: 400, 'sap-green': 40, 'sap-cherry': 60, 'sap-berry': 50 }[id];
   if (S.gold < price * n) { snd('err'); return; }
   if (id === 'can') { S.canCap = 40; S.water = 40; }
   else if (!addItem(id, n)) return;
@@ -1625,6 +1677,7 @@ $('dlg').addEventListener('click', e => {
   }
   else if (a.startsWith('wage:') && standOpen()) { toast('Den Lohn kannst du nur außerhalb der Öffnungszeit ändern.'); snd('err'); }
   else if (a.startsWith('wage:')) { S.wage = Math.max(4, Math.min(16, wageOf() + +a.slice(5))); snd('sel'); rerenderShip(); }
+  else if (a === 'shop') { $('dlg').innerHTML = shopHTML(); $('dlg').scrollTop = 0; }
   else if (a.startsWith('pk1:') || a.startsWith('up1:')) { const [k, id, t] = a.split(':'); packOne(id, t, k === 'pk1' ? 1 : -1); }
   else if (a.startsWith('pack:')) { const [, id, t] = a.split(':'); packOrder(id, t); }
   else if (a.startsWith('q:')) { const [, t, d] = a.split(':'); shipQ[t] = qOf(t) + +d; snd('sel'); rerenderShip(); }
@@ -1663,6 +1716,12 @@ function act(tx, ty) {
   if (paused || actT > .08) return;
   const k = tx + ',' + ty, s = S.soil[k], t = tileAt(tx, ty), id = held(), kind = id ? ITEM[id].kind : '';
   actT = .25; actTool = null; actTile = [tx, ty];
+  const bush = TREES[k];
+  if (bush && bush.s === 'bush' && bush.ripe && kind !== 'shovel') {
+    const n = 2 + Math.floor(Math.random() * 3);
+    if (addItem('berry', n)) { bush.ripe = false; bush.c = 0; rebuildTrees(); burst(tx, ty, ['#e0466e', '#ffb3c6', '#58ae55'], 10, 60); hearts(tx, ty, 2); snd('harvest'); toast(`+${n} Beeren`); }
+    return;
+  }
   const ripe = s && s.c && s.c.d >= CROPS[s.c.t].days;
   if (ripe && kind !== 'sickle') { toast('Zum Ernten die Sichel nehmen'); return; }
   if (tx === DOOR[0] && ty === DOOR[1]) {
@@ -1673,6 +1732,7 @@ function act(tx, ty) {
   if (t === 'S') { openDlg(shopHTML()); return; }
   if (t === 'B') { shipQ = {}; openDlg(standHTML()); return; }
   if (t === 'L') { openDlg(ordersHTML()); $('dlg').dataset.orders = 1; return; }
+  if (bush && bush.s === 'bush' && !bush.ripe && kind !== 'shovel') { toast(bush.d < 3 ? 'Der Strauch wächst noch.' : 'Noch keine reifen Beeren.'); return; }
   if (!id) { toast('Du hast nichts in der Hand.'); return; }
   if (kind === 'sickle') {
     actTool = 'sickle';
@@ -1726,8 +1786,8 @@ function act(tx, ty) {
   if (kind === 'shovel') {
     actTool = 'shovel';
     const st = TREES[tx + ',' + ty];
-    if (st && st.s === 'sap') {
-      if (!addItem(st.k === 'cherry' ? 'sap-cherry' : 'sap-green', 1)) return;
+    if (st && (st.s === 'sap' || st.s === 'bush')) {
+      if (!addItem(st.s === 'bush' ? 'sap-berry' : st.k === 'cherry' ? 'sap-cherry' : 'sap-green', 1)) return;
       delete TREES[tx + ',' + ty]; rebuildTrees(); snd('till'); burst(tx, ty, ['#7a4d2c', '#93613a'], 6); toast('Setzling ausgegraben'); return;
     }
     if (!s) { toast('Hier ist kein Feld zum Entfernen.'); return; }
@@ -1754,7 +1814,7 @@ function act(tx, ty) {
   } else if (kind === 'sapling') {
     const [px, py] = playerTile();
     if (t !== 'G' || s || wetCount(tx, ty, 2) > 0 || (tx === px && ty === py)) { toast('Hier kann kein Baum wachsen.'); snd('err'); return; }
-    useItem(id); TREES[tx + ',' + ty] = { s: 'sap', d: 0, k: ITEM[id].k }; rebuildTrees();
+    useItem(id); TREES[tx + ',' + ty] = ITEM[id].k === 'berry' ? { s: 'bush', d: 0, c: 0 } : { s: 'sap', d: 0, k: ITEM[id].k }; rebuildTrees();
     snd('plant'); burst(tx, ty, ['#7a4d2c', '#6cc04f'], 6, 30); toast(`${ITEM[id].name} gepflanzt`);
   } else if (kind === 'seed') {
     const crop = ITEM[id].crop;
@@ -1801,6 +1861,7 @@ function endDay(passedOut) {
       if (st.s === 'tree') { if (st.k) delete st.hp; else delete TREES[k]; }
       else if (st.s === 'stump') delete st.d;
       else if (st.s === 'sap' && ++st.d >= 4) { st.s = 'tree'; delete st.d; regrow = true; }
+      else if (st.s === 'bush') { st.d++; if (!st.ripe) { st.c = (st.c || 0) + 1; if (st.d === 3 || (st.d > 3 && st.c >= 2)) { st.ripe = true; st.c = 0; } } }
     }
     rebuildTrees();
     let lost = 0;
@@ -2058,6 +2119,7 @@ function update(dt) {
     animT += dt * (.5 + .5 * Math.min(1, spd));
   } else animT = 0;
   S.time += dt * 2;
+  if (!paused && S.px > GATE[0] * 16 + 4) { S.px = GATE[0] * 16 - 6; S.dir = 'left'; openTown(); }
   if (S.time >= 1440 && !S.warned) { S.warned = true; toast('Mitternacht! Du solltest ins Bett gehen.'); }
   if (S.time >= 1560) { toast('Dir fallen die Augen zu …'); endDay(true); }
 }

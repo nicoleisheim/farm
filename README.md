@@ -37,9 +37,10 @@ Im Hochformat liegen Steuerung und Werkzeugleiste unter dem Spielfeld, und die K
 5. Ernte am **Verkaufsstand** auslegen – von 7 bis 17 Uhr verkauft Mitarbeiterin Lotte zufällig an Leute aus dem Dorf. Ihren Stundenlohn (4–16 Taler) stellst du selbst ein – je mehr sie verdient, desto schneller verkauft sie. Bezahlt wird nur die Zeit, in der Ware ausliegt
 6. Am **Auftragsbrett** warten Bestellungen mit Frist: Ware in die Lieferkiste packen, nachts wird abgeholt und mit Aufschlag bezahlt
 7. Mit der **Axt** Bäume fällen (3 Schläge, 5–8 Holz) und Stümpfe entfernen (2 Holz) – höchstens 10 Holz pro Baum. Stümpfe wachsen nicht nach – dafür kann man **Setzlinge** (Laden oder Glück beim Fällen) auf freier Wiese pflanzen, die in 4 Tagen zu Bäumen werden
-8. Mit der **Schaufel** Pflanzen und Setzlinge ausgraben und Felder wieder zu Wiese machen
+8. **Beerensträucher** pflanzen: ab dem 3. Tag und danach alle 2 Tage reife Beeren pflücken (einfach mit A).
+9. Mit der **Schaufel** Pflanzen und Setzlinge ausgraben und Felder wieder zu Wiese machen
 9. Im **Rucksack** (16 Plätze) liegen Ernte und Holz; Gegenstände lassen sich zwischen Rucksack und Werkzeugleiste (8 Plätze) verschieben
-10. Im **Laden** Samen, Setzlinge, Salat, Ersatzwerkzeug und eine größere Gießkanne kaufen. Werkzeuge nutzen sich ab und gehen irgendwann kaputt
+10. Der **Dorfladen** liegt in der **Innenstadt**: einfach dem Weg nach rechts aus der Farm folgen. Dort gibt es Samen, Setzlinge, Beerensträucher, Salat, Ersatzwerkzeug und eine größere Gießkanne. Werkzeuge nutzen sich ab und gehen irgendwann kaputt
 11. Vor 2 Uhr nachts durch die Haustür **schlafen gehen** – dabei wird gespeichert
 
 | Ware | Samenpreis | Wachstum | Verkaufspreis (Taler) |
