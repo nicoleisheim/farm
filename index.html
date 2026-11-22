@@ -875,21 +875,21 @@ function drawFarmHouse(g) {
   R(g, x0 + 4, y0 + 28, 2, 34, '#f3d0dc'); R(g, x0 + 74, y0 + 28, 2, 34, '#f3d0dc');
   R(g, x0 + 3, y0 + 57, 74, 6, '#d8c0c8');
   for (let i = 0; i < 12; i++) { R(g, x0 + 4 + i * 6, y0 + 58, 5, 2, '#eadbe0'); if (i < 11) R(g, x0 + 7 + i * 6, y0 + 61, 5, 1, '#eadbe0'); }
-  // Schornstein
-  R(g, x0 + 58, y0 - 4, 9, 13, '#d8c0c8');
-  for (let r = 0; r < 4; r++) for (let i = 0; i < 2; i++) R(g, x0 + 58 + (r % 2) * 2 + i * 5, y0 - 3 + r * 3, 4, 2, '#eadbe0');
-  R(g, x0 + 57, y0 - 6, 11, 2, '#b89aa8'); R(g, x0 + 57, y0 - 6, 11, 1, '#cbb2bd');
   // Strohdach in sauberen Lagen
+  let pxa = null;
   for (let r = 0; r < 30; r++) {
     const ins = Math.round(16 * (1 - Math.sin((r + 2) / 32 * Math.PI / 2))), xa = x0 - 3 + ins, w = 86 - ins * 2, rr = r % 5;
     R(g, xa, y0 + r, w, 1, rr === 0 ? TL : rr === 4 ? TD : TH);
     if (rr === 2 || rr === 3) for (let x = xa + 2 + ((r / 5 | 0) % 2) * 2; x < xa + w - 2; x += 4) R(g, x, y0 + r, 1, 1, TS);
-    R(g, xa, y0 + r, 1, 1, TO); R(g, xa + w - 1, y0 + r, 1, 1, TO);
+    // durchgehende Kontur, auch an den Stufen
+    const st = pxa === null ? 1 : Math.max(1, pxa - xa + 1);
+    R(g, xa, y0 + r, st, 1, TO); R(g, xa + w - st, y0 + r, st, 1, TO);
+    if (pxa === null) { const top = 86 - (xa - x0 + 3) * 2; R(g, xa, y0 + r - 1, top, 1, TO); }
+    pxa = xa;
   }
-  R(g, x0 + 13, y0 - 1, 54, 1, TO);
   // saubere Traufkante mit gleichmäßigen Zipfeln
   R(g, x0 - 3, y0 + 30, 86, 1, TD); R(g, x0 - 3, y0 + 31, 86, 1, TO);
-  for (let x = x0 + 1; x < x0 + 80; x += 6) { R(g, x, y0 + 32, 2, 1, TD); R(g, x, y0 + 33, 2, 1, TO); }
+  R(g, x0 + 4, y0 + 32, 72, 1, '#e8c0cf');
   // Gaube: runder Bogen mit Fenster
   const cx = x0 + 40, ARC = [3, 5, 6, 7, 7, 8, 8, 8, 8, 8, 8, 8, 8, 8];
   ARC.forEach((hw, i) => { const y = y0 + 9 + i; R(g, cx - hw, y, hw * 2 + 1, 1, i === 0 ? TO : i < 3 ? TL : TH); R(g, cx - hw, y, 1, 1, TO); R(g, cx + hw, y, 1, 1, TO); });
