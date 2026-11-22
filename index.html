@@ -923,9 +923,10 @@ function drawFarmHouse(g) {
     }
     R(g, wx - 1, y + 12, 14, 2, '#eadde2'); R(g, wx - 1, y + 13, 14, 1, '#c9b2bc');
   }
-  // Übergang Giebel – Haus: Strohkante läuft sauber an den Giebel, Gesims schließt den Giebel unten ab
-  for (const sx of [cx - 17, cx + 17]) { R(g, sx, y0 + 18, 1, 14, TD); }
-  R(g, cx - 16, y0 + 30, 33, 2, '#eadde2'); R(g, cx - 16, y0 + 30, 33, 1, '#f6eef1'); R(g, cx - 16, y0 + 32, 33, 1, '#c9b2bc');
+  // Übergang Giebel – Haus: Holzbalken mit kleinen Konsolen
+  R(g, cx - 16, y0 + 29, 33, 3, '#c08a64'); R(g, cx - 16, y0 + 29, 33, 1, '#e0a874'); R(g, cx - 16, y0 + 31, 33, 1, '#8a5a40');
+  for (const x of [cx - 15, cx + 13]) { R(g, x, y0 + 32, 3, 2, '#a86d48'); R(g, x + 1, y0 + 34, 1, 1, '#a86d48'); }
+  for (const sx of [cx - 17, cx + 17]) R(g, sx, y0 + 18, 1, 14, TD);
   // Rundbogentür mit symmetrischem Rosenbogen
   const DF = [3, 5, 6, 7, 7, 8], DI = [1, 3, 4, 5, 5, 6];
   DF.forEach((hw, i) => R(g, cx - hw, y0 + 38 + i, hw * 2 + 1, 1, '#c8a8b6'));
