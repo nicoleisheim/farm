@@ -2165,7 +2165,9 @@ addEventListener('keydown', e => {
   if (e.key === 'Escape') { if (paused && !fading) closeDlg(); return; }
   if (KMAP[e.key]) { keys.add(KMAP[e.key]); e.preventDefault(); return; }
   if (e.key === 'i' || e.key === 'I' || e.key === 'Tab') { e.preventDefault(); openInv(); return; }
+  if (e.key === 'F1') { e.preventDefault(); if (!fading && !paused) openDlg(helpHTML(false)); return; }
   if (paused) return;
+  if (e.key === 'PageUp' || e.key === 'PageDown') { e.preventDefault(); cycleSlot(e.key === 'PageUp' ? -1 : 1); return; }
   if (e.key === ' ' || e.key === 'e' || e.key === 'E' || e.key === 'Enter') { e.preventDefault(); if (!e.repeat) act(...targetTile()); return; }
   if (/^[1-8]$/.test(e.key)) selectSlot(+e.key - 1);
 });
@@ -2514,6 +2516,7 @@ let last = performance.now();
 /* ---------- Gamepad (z. B. Retroid Pocket) ---------- */
 const padPrev = [], padKeys = new Set();
 function pollPad() {
+  if (navigator.userAgent.includes('SonnenhofApp')) return;
   const gp = navigator.getGamepads ? [...navigator.getGamepads()].find(g => g) : null;
   if (!gp) return;
   const b = i => !!(gp.buttons[i] && gp.buttons[i].pressed), ax = gp.axes[0] || 0, ay = gp.axes[1] || 0;

@@ -1,0 +1,197 @@
+# Baut bei jedem Hochladen automatisch die Android-App (APK) für Sonnenhof.
+# Die fertige APK liegt danach unter "Releases" → "Sonnenhof APK".
+name: APK bauen
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.9"
+
+      - name: Android-Projekt anlegen
+        run: |
+          set -e
+          A=android/app/src/main
+          mkdir -p $A/assets $A/java/de/sonnenhof/spiel $A/res/mipmap-xxhdpi
+          cp index.html $A/assets/index.html
+          echo "iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAIAAADdvvtQAAACUUlEQVR4Xu3cu23DQBBAQctQjW5FNbgVF6QOVIcMpY7WeqcvZ3IeQeBhk8Vxdz6ePuBan9c+CBcCIhEQiYBIBEQiIBIBkQiIREAkAiIREImASAREIiASAZEIiERAJAIiERCJgEgERCIgEgGRCIhEQCQCIhEQiYBIBEQiIBIBkQiIREAkAiIREImASAREIiASAZEIiERAJAIiERDJPj19O98/K88+fK08begNPmHABCIREImASAREIiASAZEIiERAJAIiERCJgEgERLI7H0/pgP8arhiH68/haUMPeelaw09YxwQiERCJgEgERCIgEgGRCIhEQCQCIhEQiYBIBESyjZupQ2tXs9tgApEIiERAJAIiERCJgEgERCIgEgGRCIhEQCQCIhEQiYBIBEQiIBIBkQiIREAkAiIREImASAREIiASAZHc/Te/Qy6J/nH3//cOmUAkAiIREImASAREIiASAZEIiERAJAIiERCJgEiedZk69AY712fdkg6ZQCQCIhEQiYBIBEQiIBIBkQiIREAkAiIREImASF58mTr0kJ3ri29Jh0wgEgGRCIhEQCQCIhEQiYBIBEQiIBIBkQiIREAk21imDg13rtvYkg6ZQCQCIhEQiYBIBEQiIBIBkQiIREAkAiIREImASCxTSUwgEgGRCIhEQCQCIhEQiYBIBEQiIBIBkQiIREAkAiIREImASAREIiASAZEIiERAJAIiERCJgEgERCIgEgGRCIhEQCQCIhEQiYBIBEQiIBIBkQiIREAkAiIREImASAREIiASAZEIiOQXkUAo+pDQjUoAAAAASUVORK5CYII=" | base64 -d > $A/res/mipmap-xxhdpi/ic_launcher.png
+          echo "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" | base64 -d > android/sonnenhof.jks
+
+          cat > android/settings.gradle <<'G'
+          pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }
+          dependencyResolutionManagement { repositories { google(); mavenCentral() } }
+          rootProject.name = "Sonnenhof"
+          include ':app'
+          G
+
+          cat > android/build.gradle <<'G'
+          plugins { id 'com.android.application' version '8.5.2' apply false }
+          G
+
+          cat > android/gradle.properties <<'G'
+          org.gradle.jvmargs=-Xmx2g
+          G
+
+          cat > android/app/build.gradle <<'G'
+          plugins { id 'com.android.application' }
+          android {
+            namespace 'de.sonnenhof.spiel'
+            compileSdk 34
+            defaultConfig {
+              applicationId 'de.sonnenhof.spiel'
+              minSdk 24
+              targetSdk 34
+              versionCode Integer.parseInt(project.findProperty('vCode') ?: '1')
+              versionName '1.' + (project.findProperty('vCode') ?: '1')
+            }
+            signingConfigs {
+              fest {
+                storeFile rootProject.file('sonnenhof.jks')
+                storePassword 'sonnenhof'
+                keyAlias 'sonnenhof'
+                keyPassword 'sonnenhof'
+              }
+            }
+            buildTypes { release { minifyEnabled false; signingConfig signingConfigs.fest } }
+            compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+          }
+          G
+
+          cat > $A/AndroidManifest.xml <<'G'
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+            <application android:label="Sonnenhof" android:icon="@mipmap/ic_launcher" android:isGame="true"
+                android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" android:hardwareAccelerated="true">
+              <activity android:name=".MainActivity" android:exported="true"
+                  android:configChanges="orientation|screenSize|screenLayout|keyboard|keyboardHidden|navigation|uiMode">
+                <intent-filter>
+                  <action android:name="android.intent.action.MAIN" />
+                  <category android:name="android.intent.category.LAUNCHER" />
+                </intent-filter>
+              </activity>
+            </application>
+          </manifest>
+          G
+
+          cat > $A/java/de/sonnenhof/spiel/MainActivity.java <<'G'
+          package de.sonnenhof.spiel;
+
+          import android.app.Activity;
+          import android.os.Bundle;
+          import android.view.InputDevice;
+          import android.view.KeyEvent;
+          import android.view.MotionEvent;
+          import android.view.View;
+          import android.view.WindowManager;
+          import android.webkit.WebSettings;
+          import android.webkit.WebView;
+          import android.webkit.WebViewClient;
+
+          public class MainActivity extends Activity {
+            private WebView web;
+            private boolean hl, hr, hu, hd;
+
+            @Override protected void onCreate(Bundle b) {
+              super.onCreate(b);
+              getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+              web = new WebView(this);
+              WebSettings s = web.getSettings();
+              s.setJavaScriptEnabled(true);
+              s.setDomStorageEnabled(true);
+              s.setAllowFileAccess(true);
+              s.setMediaPlaybackRequiresUserGesture(false);
+              s.setUserAgentString(s.getUserAgentString() + " SonnenhofApp");
+              web.setWebViewClient(new WebViewClient());
+              setContentView(web);
+              hideBars();
+              web.loadUrl("file:///android_asset/index.html");
+            }
+
+            private void hideBars() {
+              getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+            }
+
+            @Override public void onWindowFocusChanged(boolean f) { super.onWindowFocusChanged(f); if (f) hideBars(); }
+            @Override protected void onPause() { web.onPause(); super.onPause(); }
+            @Override protected void onResume() { super.onResume(); web.onResume(); }
+
+            private void key(String k, boolean down) {
+              web.evaluateJavascript("window.dispatchEvent(new KeyboardEvent('" + (down ? "keydown" : "keyup") + "',{key:'" + k + "'}))", null);
+            }
+
+            @Override public void onBackPressed() { key("Escape", true); }
+
+            @Override public boolean dispatchKeyEvent(KeyEvent e) {
+              String k = null;
+              switch (e.getKeyCode()) {
+                case KeyEvent.KEYCODE_DPAD_UP: k = "ArrowUp"; break;
+                case KeyEvent.KEYCODE_DPAD_DOWN: k = "ArrowDown"; break;
+                case KeyEvent.KEYCODE_DPAD_LEFT: k = "ArrowLeft"; break;
+                case KeyEvent.KEYCODE_DPAD_RIGHT: k = "ArrowRight"; break;
+                case KeyEvent.KEYCODE_BUTTON_A: case KeyEvent.KEYCODE_DPAD_CENTER: k = " "; break;
+                case KeyEvent.KEYCODE_BUTTON_B: k = "Escape"; break;
+                case KeyEvent.KEYCODE_BUTTON_X: case KeyEvent.KEYCODE_BUTTON_Y: case KeyEvent.KEYCODE_BUTTON_SELECT: k = "i"; break;
+                case KeyEvent.KEYCODE_BUTTON_L1: case KeyEvent.KEYCODE_BUTTON_L2: k = "PageUp"; break;
+                case KeyEvent.KEYCODE_BUTTON_R1: case KeyEvent.KEYCODE_BUTTON_R2: k = "PageDown"; break;
+                case KeyEvent.KEYCODE_BUTTON_START: k = "F1"; break;
+              }
+              if (k == null) return super.dispatchKeyEvent(e);
+              boolean dir = k.startsWith("Arrow");
+              if (e.getAction() == KeyEvent.ACTION_DOWN && e.getRepeatCount() == 0) key(k, true);
+              else if (e.getAction() == KeyEvent.ACTION_UP && dir) key(k, false);
+              return true;
+            }
+
+            private void stick(boolean want, boolean have, String k) { if (want != have) key(k, want); }
+
+            @Override public boolean dispatchGenericMotionEvent(MotionEvent e) {
+              if ((e.getSource() & InputDevice.SOURCE_JOYSTICK) != InputDevice.SOURCE_JOYSTICK) return super.dispatchGenericMotionEvent(e);
+              float x = e.getAxisValue(MotionEvent.AXIS_X), y = e.getAxisValue(MotionEvent.AXIS_Y);
+              float hx = e.getAxisValue(MotionEvent.AXIS_HAT_X), hy = e.getAxisValue(MotionEvent.AXIS_HAT_Y);
+              if (Math.abs(hx) > Math.abs(x)) x = hx;
+              if (Math.abs(hy) > Math.abs(y)) y = hy;
+              boolean l = x < -0.45f, r = x > 0.45f, u = y < -0.45f, d = y > 0.45f;
+              stick(l, hl, "ArrowLeft"); stick(r, hr, "ArrowRight"); stick(u, hu, "ArrowUp"); stick(d, hd, "ArrowDown");
+              hl = l; hr = r; hu = u; hd = d;
+              return true;
+            }
+          }
+          G
+
+      - name: APK bauen
+        run: gradle -p android assembleRelease -PvCode=${{ github.run_number }}
+
+      - name: APK umbenennen
+        run: cp android/app/build/outputs/apk/release/app-release.apk Sonnenhof.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Sonnenhof-APK
+          path: Sonnenhof.apk
+
+      - name: Als Release veröffentlichen
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk
+          name: Sonnenhof APK
+          body: "Automatisch gebaut aus dem neuesten Stand (Build ${{ github.run_number }}). Sonnenhof.apk herunterladen und auf dem Gerät installieren."
+          files: Sonnenhof.apk
+          make_latest: true
