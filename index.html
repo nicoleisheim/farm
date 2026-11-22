@@ -605,7 +605,13 @@ function drawGrass(g, tx, ty) {
     R(g, px + 1, py + 2, 2, 2, '#fff4e6'); R(g, px, py, 4, 2, '#ff6f9a'); R(g, px + 1, py - 1, 2, 1, '#ff6f9a');
     R(g, px + 1, py, 1, 1, '#fff'); R(g, px + 3, py + 1, 1, 1, '#fff');
   } else if (f < .24) {
-    heart(g, px - 1, py, '#ff8fb8');
+    // verschiedene Blumen statt Herzen
+    const k = Math.floor(hash(tx, ty, 31) * 4);
+    R(g, px, py + 1, 1, 3, '#5aa040');
+    if (k === 0) { const c = ['#e0466e', '#b07ad8', '#ffb02e'][Math.floor(hash(tx, ty, 32) * 3)]; R(g, px - 1, py + 2, 1, 1, '#7cc25e'); R(g, px - 1, py - 1, 3, 2, c); R(g, px - 1, py - 2, 1, 1, c); R(g, px + 1, py - 2, 1, 1, c); }
+    else if (k === 1) { R(g, px + 1, py + 2, 1, 1, '#7cc25e'); R(g, px - 1, py, 1, 2, '#7aa8ff'); R(g, px + 1, py, 1, 2, '#7aa8ff'); R(g, px - 1, py - 1, 3, 1, '#5aa040'); R(g, px, py - 2, 1, 1, '#9cc0ff'); }
+    else if (k === 2) { R(g, px, py - 3, 1, 4, '#9a7ad8'); R(g, px - 1, py - 2, 1, 1, '#b89af0'); R(g, px + 1, py - 1, 1, 1, '#b89af0'); R(g, px, py - 4, 1, 1, '#c8b0f8'); }
+    else { R(g, px - 1, py - 1, 3, 3, '#ffffff'); R(g, px - 2, py, 5, 1, '#ffffff'); R(g, px, py - 2, 1, 5, '#ffffff'); R(g, px, py, 1, 1, '#ffb02e'); }
   }
 }
 const isPT = (a, b) => tileAt(a, b) === 'P';
@@ -1512,7 +1518,12 @@ function migrate2(d) {
   if (d.shipped) { for (const t in d.shipped) if (d.shipped[t]) d.stand[t] = (d.stand[t] || 0) + d.shipped[t]; delete d.shipped; }
   return d;
 }
-function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+function save() { S.loc = LOC; try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+window.__saveGame = save;
+setInterval(() => { if (!paused) save(); }, 30000);
+document.addEventListener('visibilitychange', () => { if (document.hidden) save(); });
+addEventListener('pagehide', save);
+let locInit = false;
 function load() { try { const d = JSON.parse(localStorage.getItem(KEY)); if (d && d.day) return migrate(d); } catch (e) {} return null; }
 let S = load();
 const firstRun = !S;
@@ -1656,7 +1667,7 @@ function helpHTML(intro) {
   if (!intro) h += `<div class="ssec"><div class="ssech"><span>Anzeige</span></div>${[['bar', 'Werkzeugleiste'], ['top', 'Datum und Hilfe-Knopf'], ['dlg', 'Fenster']].map(([k, n]) => `<div class="lrow"><span></span><div class="ln"><b>${n}</b><small>Größe anpassen</small></div><div class="qty"><button class="btn sq" data-act="ui:${k}:-1" ${UIS[k] > .5 ? '' : 'disabled'}>−</button><span class="qv">${Math.round(UIS[k] * 100)}%</span><button class="btn sq" data-act="ui:${k}:1" ${UIS[k] < 1.5 ? '' : 'disabled'}>+</button></div><span></span></div>`).join('')}</div>`;
   h += `<div class="ssec"><div class="ssech"><span>So geht's</span></div><div class="steps">${steps.map(([ic, t]) => `<div class="step"><img src="${ICONURL[ic]}" alt=""><span>${t}</span></div>`).join('')}</div></div>`;
   h += `<div class="ssec"><div class="ssech"><span>Gut zu wissen</span></div><div class="kv"><img src="${ICONURL.w_moon}" alt=""><span>Geh vor 2 Uhr nachts durch die Haustür ins Bett – sonst kippst du um. Gespeichert wird beim Schlafen.</span></div></div>`;
-  return h + `<div class="foot">${intro ? '' : '<button class="btn red" data-act="new">Neues Spiel</button>'}<button class="btn primary" data-act="close">${intro ? "Los geht's!" : 'Weiter'}</button></div>`;
+  return h + `<div class="foot">${intro ? '' : '<button class="btn red" data-act="new">Neues Spiel</button><button class="btn" data-act="save">Speichern</button>'}<button class="btn primary" data-act="close">${intro ? "Los geht's!" : 'Weiter'}</button></div>`;
 }
 const T = (ic, txt) => `<h2>${ic ? `<img src="${ICONURL[ic]}" alt="">` : ''}<span>${txt}</span></h2>`;
 let invSel = null;
@@ -1958,8 +1969,9 @@ $('dlg').addEventListener('click', e => {
     try { localStorage.setItem('sonnenhof-ui', JSON.stringify(UIS)); } catch (e) {}
     applyUI(); snd('sel'); const sc = $('dlg').scrollTop; $('dlg').innerHTML = helpHTML(false); $('dlg').scrollTop = sc;
   }
+  else if (a === 'save') { save(); snd('sel'); toast('Spielstand gespeichert'); }
   else if (a === 'new') $('dlg').innerHTML = `${T('heart', 'Neues Spiel?')}<div class="ssec warn"><p class="lead">Dein ganzer Fortschritt geht verloren – Hof, Geld und Rucksack.</p></div><div class="foot"><button class="btn" data-act="close">Abbrechen</button><button class="btn red" data-act="newc">Ja, neu anfangen</button></div>`;
-  else if (a === 'newc') { S = newState(); TREES = S.trees; rebuildTrees(); custs.length = 0; save(); parts.length = 0; closeDlg(); toast('Ein neuer Anfang!'); }
+  else if (a === 'newc') { LOC = 'farm'; S = newState(); TREES = S.trees; rebuildTrees(); custs.length = 0; save(); parts.length = 0; closeDlg(); toast('Ein neuer Anfang!'); }
 });
 
 /* ---------- actions ---------- */
@@ -2624,6 +2636,7 @@ function pollPad() {
   gp.buttons.forEach((x, i) => padPrev[i] = x.pressed);
 }
 function loop(now) {
+  if (!locInit) { locInit = true; if (S.loc === 'town') { LOC = 'town'; if (!BG_T) makeTown(); } }
   pollPad();
   if (padScroll && paused) $('dlg').scrollTop += padScroll * 9;
   const dt = Math.min(.05, (now - last) / 1000); last = now;

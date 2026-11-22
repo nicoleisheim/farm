@@ -141,7 +141,7 @@ jobs:
             }
 
             @Override public void onWindowFocusChanged(boolean f) { super.onWindowFocusChanged(f); if (f) hideBars(); }
-            @Override protected void onPause() { web.onPause(); super.onPause(); }
+            @Override protected void onPause() { web.evaluateJavascript("window.__saveGame && __saveGame()", null); web.onPause(); super.onPause(); }
             @Override protected void onResume() { super.onResume(); web.onResume(); }
 
             private void key(String k, boolean down) {
