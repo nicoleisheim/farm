@@ -8,13 +8,13 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Sonnenhof – Ein kleines Farmspiel</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 b,strong,h2{font-weight:600}
 button,input,kbd,small{font-family:inherit;font-variant-numeric:tabular-nums}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;touch-action:none;-webkit-text-size-adjust:100%;text-size-adjust:100%}
-body{background:radial-gradient(circle at 50% 30%,#6a3d5e,#26121f 75%);font-family:'Fredoka',ui-rounded,'Arial Rounded MT Bold','Nunito',system-ui,sans-serif;font-variant-numeric:tabular-nums;font-weight:500;overflow:hidden;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:manipulation;overscroll-behavior:none}
+body{background:radial-gradient(circle at 50% 30%,#6a3d5e,#26121f 75%);font-family:'Pixelify Sans',ui-rounded,'Arial Rounded MT Bold','Nunito',system-ui,sans-serif;font-variant-numeric:tabular-nums;font-weight:500;overflow:hidden;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:manipulation;overscroll-behavior:none}
 #app{position:fixed;top:0;left:0;width:100%;height:100%;touch-action:none;display:flex;align-items:center;justify-content:center;font-size:14px}
 #stage{position:relative;flex:none}
 #c{display:block;width:100%;height:100%;image-rendering:pixelated;image-rendering:crisp-edges;border-radius:6px;box-shadow:0 10px 40px rgba(0,0,0,.55);cursor:pointer;touch-action:none}
@@ -405,6 +405,10 @@ body.touch .slot .n{font-size:.5em;min-width:0;padding:.05em .25em;right:-.55em;
 .slot .n{z-index:2;top:-.45em;bottom:auto}
 body.touch .slot .n{top:-.55em;bottom:auto}
 #hotbar .slot img{width:92%;height:92%}
+body.port #clock{flex-wrap:nowrap;gap:.6em;padding:0 .3em;font-size:.85em}
+body.port #date{width:auto;font-size:.9em;opacity:.8}
+body.port #time{font-size:1.15em}
+body.port #topbar{padding:.35em .5em}
 </style>
 </head>
 <body>
@@ -866,16 +870,20 @@ function drawStand(g) {
   const x0 = 128, y0 = 48;
   R(g, x0 + 2, y0 + 30, 30, 3, 'rgba(60,20,40,.18)');
   R(g, x0 + 2, y0 + 4, 2, 24, '#b07a5a'); R(g, x0 + 28, y0 + 4, 2, 24, '#b07a5a');
-  for (let i = 0; i < 6; i++) {
-    const c = i % 2 ? '#ffffff' : '#ff8fb8';
-    R(g, x0 + i * 5 + 1, y0, 5, 8, c); R(g, x0 + i * 5 + 2, y0 + 8, 3, 1, c);
-  }
-  R(g, x0 + 1, y0 - 1, 30, 1, '#d9608c');
+  drawStandAwning(g);
   R(g, x0 + 1, y0 + 16, 30, 14, '#d39a64'); R(g, x0 + 1, y0 + 16, 30, 2, '#f2c79a'); R(g, x0 + 1, y0 + 29, 30, 1, '#a86d48');
   for (let k = 7; k < 31; k += 8) R(g, x0 + k, y0 + 18, 1, 11, '#b8804f');
   // Preisschild
   R(g, x0 + 11, y0 + 20, 10, 7, '#fff7ec'); R(g, x0 + 11, y0 + 20, 10, 1, '#e8c9a0');
   disc(g, x0 + 16, y0 + 23, 2, '#f2c13a'); R(g, x0 + 15, y0 + 22, 1, 1, '#fff0a8');
+}
+function drawStandAwning(g) {
+  const x0 = 128, y0 = 48;
+  for (let i = 0; i < 6; i++) {
+    const c = i % 2 ? '#ffffff' : '#ff8fb8';
+    R(g, x0 + i * 5 + 1, y0, 5, 8, c); R(g, x0 + i * 5 + 2, y0 + 8, 3, 1, c);
+  }
+  R(g, x0 + 1, y0 - 1, 30, 1, '#d9608c');
 }
 function drawCrate(g) {
   const x0 = 176, y0 = 48;
@@ -962,9 +970,12 @@ icon('can', g => {
   R(g, 12, 8, 2, 1, '#7d8a96'); R(g, 13, 6, 1, 2, '#7d8a96'); R(g, 13, 5, 2, 1, '#a9b6c2'); R(g, 5, 8, 2, 2, '#4fb3ff');
 });
 icon('sickle', g => {
-  R(g, 3, 10, 2, 5, '#a0582f'); R(g, 3, 10, 1, 5, '#c0763f'); R(g, 2, 14, 4, 1, '#7a4320'); R(g, 3, 11, 2, 1, '#ff8fb8');
-  R(g, 4, 8, 2, 2, '#8f99a3'); R(g, 5, 6, 2, 2, '#8f99a3'); R(g, 6, 4, 2, 2, '#8f99a3'); R(g, 8, 3, 3, 2, '#8f99a3'); R(g, 11, 3, 2, 2, '#8f99a3'); R(g, 13, 4, 1, 3, '#8f99a3');
-  R(g, 6, 6, 1, 1, '#dfe6ee'); R(g, 7, 5, 1, 1, '#dfe6ee'); R(g, 8, 4, 3, 1, '#dfe6ee'); R(g, 12, 4, 1, 1, '#dfe6ee');
+  R(g, 3, 9, 2, 6, '#c98a5a'); R(g, 3, 9, 1, 6, '#e0a874'); R(g, 3, 12, 2, 2, '#ff8fb8'); R(g, 3, 14, 2, 1, '#8a5a40');
+  R(g, 3, 8, 3, 1, '#6f7b88');
+  for (const [x, y] of [[5, 7], [5, 6], [6, 5], [6, 4], [7, 3], [8, 2], [9, 2], [10, 1], [11, 1], [12, 2], [13, 3], [14, 4], [14, 5], [14, 6]]) R(g, x, y, 1, 1, '#7f8b97');
+  for (const [x, y] of [[6, 6], [7, 5], [7, 4], [8, 3], [9, 3], [10, 2], [11, 2], [12, 3], [13, 4], [13, 5]]) R(g, x, y, 1, 1, '#b8c3ce');
+  for (const [x, y] of [[8, 4], [9, 4], [10, 3], [11, 3], [12, 4]]) R(g, x, y, 1, 1, '#eef3f7');
+  R(g, 13, 7, 1, 1, '#7f8b97');
 });
 icon('axe', g => {
   for (let i = 0; i < 9; i++) { R(g, 3 + i, 13 - i, 2, 2, '#d39a5a'); R(g, 4 + i, 14 - i, 1, 1, '#a86d36'); }
@@ -1527,7 +1538,8 @@ function drawCustomer(c) {
 function drawStaff() {
   if (!(S.time >= 420 && S.time < 1020 && standStock() > 0)) return;
   drawPlayerSprite(pg, 'down', 0, PAL_STAFF);
-  X.save(); X.beginPath(); X.rect(128, 40, 32, 24); X.clip(); X.drawImage(PC, 136, 47); X.restore();
+  X.save(); X.beginPath(); X.rect(130, 44, 28, 20); X.clip(); X.drawImage(PC, 136, 51); X.restore();
+  drawStandAwning(X);
 }
 function drawStandGoods(t) {
   drawStaff();
