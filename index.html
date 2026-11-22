@@ -410,6 +410,11 @@ body.port #date{width:auto;font-size:.9em;opacity:.8}
 body.port #time{font-size:1.15em}
 body.port #topbar{padding:.35em .5em}
 body,button,kbd,small{font-size-adjust:.56;font-synthesis:none;letter-spacing:.02em}
+#toast{top:.4em;bottom:auto !important;font-size:.72em;max-width:70%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-width:.35em;transform:translateX(-50%) translateY(-.3em)}
+#toast.show{transform:translateX(-50%) translateY(0)}
+body:not(.port) #toast{top:3.2em}
+#hint{font-size:.7em;border-width:.35em}
+body.port #hint{bottom:.3em}
 </style>
 </head>
 <body>
@@ -1249,7 +1254,7 @@ function snd(type) {
 let toastTimer = 0;
 function toast(m) {
   const e = $('toast'); e.textContent = m; e.classList.add('show');
-  clearTimeout(toastTimer); toastTimer = setTimeout(() => e.classList.remove('show'), 2300);
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => e.classList.remove('show'), 1700);
 }
 let paused = false;
 function openDlg(html) { delete $('dlg').dataset.inv; delete $('dlg').dataset.orders; $('dlg').classList.remove('standdlg', 'pixdlg'); $('dlg').innerHTML = html; $('dlg').scrollTop = 0; $('shade').style.display = 'flex'; paused = true; keys.clear(); joyReset(); }
