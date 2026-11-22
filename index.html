@@ -974,14 +974,22 @@ function drawShop(g) {
 }
 function drawStand(g) {
   const x0 = 128, y0 = 48;
-  R(g, x0 + 2, y0 + 30, 30, 3, 'rgba(60,20,40,.18)');
-  R(g, x0 + 2, y0 + 4, 2, 24, '#b07a5a'); R(g, x0 + 28, y0 + 4, 2, 24, '#b07a5a');
+  R(g, x0 + 1, y0 + 30, 34, 3, 'rgba(60,20,40,.18)');
+  for (const px of [x0 + 3, x0 + 27]) { R(g, px, y0 + 5, 2, 12, '#c08a64'); R(g, px, y0 + 5, 1, 12, '#e0a874'); }
   drawStandAwning(g);
-  R(g, x0 + 1, y0 + 16, 30, 14, '#d39a64'); R(g, x0 + 1, y0 + 16, 30, 2, '#f2c79a'); R(g, x0 + 1, y0 + 29, 30, 1, '#a86d48');
-  for (let k = 7; k < 31; k += 8) R(g, x0 + k, y0 + 18, 1, 11, '#b8804f');
-  // Preisschild
-  R(g, x0 + 11, y0 + 20, 10, 7, '#fff7ec'); R(g, x0 + 11, y0 + 20, 10, 1, '#e8c9a0');
-  disc(g, x0 + 16, y0 + 23, 2, '#f2c13a'); R(g, x0 + 15, y0 + 22, 1, 1, '#fff0a8');
+  R(g, x0 + 1, y0 + 16, 30, 11, '#e0a874'); R(g, x0 + 1, y0 + 16, 30, 2, '#f6cf9c');
+  R(g, x0 + 1, y0 + 21, 30, 1, '#c88e5c'); R(g, x0 + 1, y0 + 26, 30, 1, '#8a5a40');
+  R(g, x0 + 1, y0 + 16, 2, 11, '#c08a64'); R(g, x0 + 29, y0 + 16, 2, 11, '#c08a64');
+  R(g, x0 + 31, y0 + 20, 4, 2, '#c08a64'); R(g, x0 + 31, y0 + 20, 4, 1, '#e0a874'); R(g, x0 + 34, y0 + 18, 2, 6, '#a86d48');
+  R(g, x0 + 10, y0 + 18, 12, 8, '#c08a64'); R(g, x0 + 11, y0 + 19, 10, 6, '#4a3a44');
+  heart(g, x0 + 12, y0 + 20, '#ff8fb8'); R(g, x0 + 18, y0 + 20, 2, 1, '#ffffff'); R(g, x0 + 18, y0 + 22, 2, 1, '#ffffff');
+  for (const wx of [x0 + 7, x0 + 25]) {
+    const wy = y0 + 28;
+    disc(g, wx, wy, 4, '#6a3a2a'); disc(g, wx, wy, 3, '#e0a874');
+    R(g, wx - 2, wy, 5, 1, '#8a5a40'); R(g, wx, wy - 2, 1, 5, '#8a5a40');
+    R(g, wx - 1, wy - 1, 1, 1, '#8a5a40'); R(g, wx + 1, wy + 1, 1, 1, '#8a5a40'); R(g, wx + 1, wy - 1, 1, 1, '#8a5a40'); R(g, wx - 1, wy + 1, 1, 1, '#8a5a40');
+    R(g, wx, wy, 1, 1, '#ffd84a');
+  }
 }
 function drawSign(g) {
   const x0 = 352, y0 = 72;
@@ -1082,12 +1090,17 @@ function drawBerryBush(g, tx, ty, st) {
   else pts.slice(0, 3).forEach(([a, b]) => { R(g, x0 + a, y0 + b, 1, 1, '#ffffff'); R(g, x0 + a + 1, y0 + b, 1, 1, '#ffe066'); });
 }
 function drawStandAwning(g) {
-  const x0 = 128, y0 = 48;
-  for (let i = 0; i < 6; i++) {
-    const c = i % 2 ? '#ffffff' : '#ff8fb8';
-    R(g, x0 + i * 5 + 1, y0, 5, 8, c); R(g, x0 + i * 5 + 2, y0 + 8, 3, 1, c);
+  const x0 = 128, y0 = 48, ins = [3, 1];
+  for (let r = 0; r < 10; r++) {
+    const i0 = ins[r] || 0;
+    for (let x = i0; x < 32 - i0; x++) {
+      const pink = (x >> 2) % 2 === 0;
+      R(g, x0 + x, y0 - 5 + r, 1, 1, r === 9 ? (pink ? '#e86f9c' : '#f3dce6') : r < 2 ? (pink ? '#ffb0cf' : '#ffffff') : (pink ? '#ff8fb8' : '#ffffff'));
+    }
   }
-  R(g, x0 + 1, y0 - 1, 30, 1, '#d9608c');
+  for (let x = 0; x < 32; x += 4) { const c = (x >> 2) % 2 === 0 ? '#ff8fb8' : '#ffffff'; R(g, x0 + x, y0 + 5, 4, 1, c); R(g, x0 + x + 1, y0 + 6, 2, 1, c); }
+  R(g, x0 + 3, y0 - 6, 26, 1, '#d9608c'); R(g, x0 + 1, y0 - 5, 2, 1, '#d9608c'); R(g, x0 + 29, y0 - 5, 2, 1, '#d9608c');
+  R(g, x0, y0 - 4, 1, 9, '#d9608c'); R(g, x0 + 31, y0 - 4, 1, 9, '#d9608c');
 }
 function drawCrate(g) {
   const x0 = 176, y0 = 48;
