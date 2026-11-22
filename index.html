@@ -463,11 +463,13 @@ body.port #hint{bottom:.3em}
 <script>
 (() => {
 'use strict';
-const W = 384, H = 256, TS = 16, COLS = 24, ROWS = 16;
+const W = 384, H = 384, TS = 16, COLS = 24, ROWS = 24; // Farm: 24 Reihen (unten Land zum Dazukaufen)
+const TH = 256, TROWS = 16; // Innenstadt
+const curH = () => LOC === 'town' ? TH : H;
 const C = document.getElementById('c'), X = C.getContext('2d');
 X.imageSmoothingEnabled = false;
 const $ = id => document.getElementById(id);
-let VW = W, VH = H, camX = 0, camY = 0, HUDB = 0, HUDT = 0;
+let VW = W, VH = TH, camX = 0, camY = 0, HUDB = 0, HUDT = 0;
 let touchMode = matchMedia('(pointer:coarse)').matches || ('ontouchstart' in window);
 let padMode = navigator.userAgent.includes('SonnenhofApp');
 const tmode = () => touchMode && !padMode;
@@ -560,6 +562,19 @@ for (let x = 18; x <= 20; x++) for (let y = 2; y <= 3; y++) set(x, y, 'G');
 set(19, 3, 'B'); set(20, 3, 'B'); set(19, 4, 'B'); set(20, 4, 'B'); set(19, 5, 'P'); set(20, 5, 'P');
 for (let x = 4; x <= 23; x++) set(x, 6, 'P');
 const GATE = [23, 6];
+// Land zum Dazukaufen: drei Stücke im Süden (Reihen 15–22), bis zum Kauf Wald
+const LAND = [{ id: 'sw', name: 'Südwiese West', x0: 1, x1: 7, price: 1000 }, { id: 'sm', name: 'Südwiese Mitte', x0: 8, x1: 15, price: 1500 }, { id: 'so', name: 'Südwiese Ost', x0: 16, x1: 22, price: 2000 }];
+const LAND_Y0 = 15, LAND_Y1 = 22;
+let LANDOWN = [];
+const landAt = (x, y) => y >= LAND_Y0 && y <= LAND_Y1 ? LAND.find(L => x >= L.x0 && x <= L.x1) : null;
+const lockedAt = (x, y) => { const L = landAt(x, y); return !!L && !LANDOWN.includes(L.id); };
+function applyLand(owned) {
+  LANDOWN = owned || [];
+  for (const L of LAND) for (let y = LAND_Y0; y <= LAND_Y1; y++) for (let x = L.x0; x <= L.x1; x++) {
+    let wet = false; for (let py = 0; py < 16 && !wet; py += 2) for (let px = 0; px < 16 && !wet; px += 2) if (WET[(y * 16 + py) * W + x * 16 + px]) wet = true;
+    MAP[y][x] = !LANDOWN.includes(L.id) || (y === LAND_Y0 && wet) ? 'T' : 'G';
+  }
+}
 const STX = 304, STY = 48; // Verkaufsstand (Kacheln 19–20 / 3–4)
 const BDX = 128, BDY = 48; // Auftragsbrett (Kacheln 8–9 / 3–4)
 // Kuhweide (Kacheln 12–17 / 2–5) mit Holzzaun, Tor unten zum Weg
@@ -571,13 +586,13 @@ function fenceAt(x, y) {
   if (inX && Math.abs(y - P.y1) <= 2 && !(x > P.g0 && x < P.g1)) return true;
   return inY && (Math.abs(x - P.x0) <= 3 || Math.abs(x - P.x1) <= 3);
 }
-const isEdge = (x, y) => x <= 0 || y <= 0 || x >= COLS - 1 || y >= ROWS - 1;
+const isEdge = (x, y) => x <= 0 || y <= 0 || x >= COLS - 1 || y >= ROWS - 1 || lockedAt(x, y);
 // Innenstadt: eigene Karte
 const MAP_T = [];
-for (let y = 0; y < ROWS; y++) MAP_T.push(new Array(COLS).fill('G'));
-const setT = (x, y, c) => { if (x >= 0 && y >= 0 && x < COLS && y < ROWS) MAP_T[y][x] = c; };
-for (let x = 0; x < COLS; x++) { setT(x, 0, 'T'); setT(x, ROWS - 1, 'T'); }
-for (let y = 0; y < ROWS; y++) { setT(0, y, 'T'); setT(COLS - 1, y, 'T'); }
+for (let y = 0; y < TROWS; y++) MAP_T.push(new Array(COLS).fill('G'));
+const setT = (x, y, c) => { if (x >= 0 && y >= 0 && x < COLS && y < TROWS) MAP_T[y][x] = c; };
+for (let x = 0; x < COLS; x++) { setT(x, 0, 'T'); setT(x, TROWS - 1, 'T'); }
+for (let y = 0; y < TROWS; y++) { setT(0, y, 'T'); setT(COLS - 1, y, 'T'); }
 for (let x = 0; x < COLS - 1; x++) for (let y = 7; y <= 9; y++) setT(x, y, 'P');
 for (let x = 2; x <= 6; x++) for (let y = 2; y <= 5; y++) setT(x, y, 'H');
 for (let x = 17; x <= 21; x++) for (let y = 2; y <= 5; y++) setT(x, y, 'H');
@@ -597,7 +612,7 @@ TOWN_NPC.forEach(n => setT(n.x, n.y, 'N'));
 const TWIN = [[42, 71, 12, 10], [90, 71, 12, 10], [266, 71, 12, 10], [314, 71, 12, 10]];
 let TREES = {};
 const tileAt = (x, y) => {
-  if (x < 0 || y < 0 || x >= COLS || y >= ROWS) return 'T';
+  if (x < 0 || y < 0 || x >= COLS || y >= (LOC === 'town' ? TROWS : ROWS)) return 'T';
   if (LOC === 'town') return MAP_T[y][x];
   const t = MAP[y][x];
   const st = TREES[x + ',' + y];
@@ -1115,9 +1130,9 @@ function cherryTree(g, tx, ty) {
   R(g, x0 + 5, y0 + 3, 2, 1, P[3]); R(g, x0 + 10, y0 + 6, 1, 1, P[2]); R(g, x0 + 4, y0 + 8, 1, 1, P[2]);
 }
 function makeTown() {
-  const [c, g] = mk(W, H); BG_T = c;
+  const [c, g] = mk(W, TH); BG_T = c;
   const prev = LOC; LOC = 'town';
-  for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) drawGrass(g, x, y);
+  for (let y = 0; y < TROWS; y++) for (let x = 0; x < COLS; x++) drawGrass(g, x, y);
   drawPaths(g); LOC = prev;
   // Ortsschild am Eingang
   R(g, 20, 98, 2, 12, '#8a5a40'); R(g, 13, 92, 16, 8, '#a86d48'); R(g, 14, 93, 14, 6, '#d8a878'); R(g, 15, 95, 3, 2, '#f08a3a'); R(g, 16, 94, 1, 4, '#f08a3a');
@@ -1172,8 +1187,8 @@ function makeTown() {
   // Blumenkübel
   for (const [x, y] of [[144, 104], [216, 104], [144, 216], [232, 216]]) { R(g, x, y + 4, 10, 6, '#c08a64'); R(g, x, y + 4, 10, 1, '#d8a878'); disc(g, x + 5, y + 2, 4, '#58ae55'); R(g, x + 2, y, 2, 2, '#ff6f9f'); R(g, x + 6, y + 1, 2, 2, '#fff'); R(g, x + 4, y + 3, 2, 2, '#ffe066'); }
   TOWN_TREES.forEach(([x, y], i) => (i % 2 ? drawTree : cherryTree)(g, x, y));
-  for (let x = 0; x < COLS; x++) { if (!TOWN_TREES.some(t => t[0] === x && t[1] === 0)) drawTree(g, x, 0); if (!TOWN_TREES.some(t => t[0] === x && t[1] === ROWS - 1)) drawTree(g, x, ROWS - 1); }
-  for (let y = 1; y < ROWS - 1; y++) { if (y < 7 || y > 9) drawTree(g, 0, y); drawTree(g, COLS - 1, y); }
+  for (let x = 0; x < COLS; x++) { if (!TOWN_TREES.some(t => t[0] === x && t[1] === 0)) drawTree(g, x, 0); if (!TOWN_TREES.some(t => t[0] === x && t[1] === TROWS - 1)) drawTree(g, x, TROWS - 1); }
+  for (let y = 1; y < TROWS - 1; y++) { if (y < 7 || y > 9) drawTree(g, 0, y); drawTree(g, COLS - 1, y); }
   // Laternen
   TOWN_LAMPS.forEach(([tx, ty]) => { const x = tx * 16 + 7, y = ty * 16; R(g, x - 2, y + 13, 6, 2, 'rgba(60,20,40,.18)'); R(g, x, y + 2, 2, 13, '#5a4050'); R(g, x - 2, y - 3, 6, 6, '#5a4050'); R(g, x - 1, y - 2, 4, 4, '#ffe6a0'); R(g, x - 3, y - 4, 8, 1, '#3a2a34'); });
   // Wimpelkette zwischen den Laternen
@@ -1456,6 +1471,11 @@ icon('bucket', g => {
   const B = ['....oooooo....', '...o......o...', '..o........o..', '.PPPPPPPPPPPP.', '.pWWWWWWWWWWp.', '..pWWWWWWWWp..', '..pWWWWWWWWp..', '..pPPPPPPPPp..', '..pWWWWWWWWp..', '...pWWWWWWp...', '...pppppppp...'];
   B.forEach((r, j) => [...r].forEach((ch, i) => { const c = { o: '#6f6470', P: '#ee8fb0', p: '#7d8a99', W: '#cfdbe6' }[ch]; if (c) R(g, i + 1, j + 3, 1, 1, c); }));
 });
+icon('land', g => {
+  R(g, 1, 9, 14, 6, '#8fd16a'); R(g, 1, 9, 14, 1, '#b5e6a0'); R(g, 1, 14, 14, 1, '#6cb04f');
+  R(g, 3, 4, 1, 6, '#c08a64'); R(g, 12, 4, 1, 6, '#c08a64'); R(g, 2, 5, 12, 2, '#fff4e6'); R(g, 2, 5, 12, 1, '#ffffff'); R(g, 2, 7, 12, 1, '#c08a64');
+  R(g, 6, 5, 4, 1, '#ee8fb0'); R(g, 7, 6, 2, 1, '#ee8fb0'); R(g, 5, 11, 1, 1, '#ffffff'); R(g, 10, 12, 1, 1, '#ee8fb0');
+});
 icon('cow', g => g.drawImage(COWSPR[0], 0, 0, 20, 13, -3, 2, 20, 13));
 icon('coin', g => { disc(g, 8, 8, 6, '#9c6b12'); disc(g, 8, 8, 5, '#f2c13a'); R(g, 7, 5, 2, 6, '#d29a1e'); R(g, 5, 5, 2, 1, '#fff0a8'); });
 
@@ -1474,16 +1494,17 @@ function rebuildTrees() {
   }
 }
 const [BG, bg] = mk(W, H);
-for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
-  drawGrass(bg, x, y);
+let LIT = null, EDGE_TOP = null, EDGE_BOT = null, EDGE_BOT_T = null;
+function buildFarmBG() {
+  const prev = LOC; LOC = 'farm'; bg.clearRect(0, 0, W, H);
+  for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) drawGrass(bg, x, y);
+  drawPaths(bg);
+  drawFarmHouse(bg); drawStand(bg); drawCrate(bg); drawSign(bg); drawFence(bg);
+  for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) if (MAP[y][x] === 'U') drawBush(bg, x, y);
+  drawPond(bg);
+  LIT = makeLit(BG, WINDOWS); EDGE_TOP = EDGE_BOT = null; LOC = prev;
 }
-drawPaths(bg);
-drawFarmHouse(bg); drawStand(bg); drawCrate(bg); drawSign(bg); drawFence(bg);
-for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
-  if (MAP[y][x] === 'U') drawBush(bg, x, y);
-}
-drawPond(bg);
-const LIT = makeLit(BG, WINDOWS);
+applyLand([]); buildFarmBG();
 
 /* ---------- player sprite ---------- */
 const [PC, pg] = mk(16, 20);
@@ -1544,7 +1565,7 @@ function drawPlayerSprite(g, dir, f, pal) {
 const KEY = 'sonnenhof-v1';
 function newState() {
   const bar = ['hoe', 'can', 'sickle', 'axe', 'shovel', 'seed-ruebe', 'snack', null];
-  return { day: 1, time: 360, gold: 150, energy: 100, maxEnergy: 100, water: 20, canCap: 20, rain: false,
+  return { land: [], cows: [], day: 1, time: 360, gold: 150, energy: 100, maxEnergy: 100, water: 20, canCap: 20, rain: false,
     items: { hoe: 1, can: 1, sickle: 1, axe: 1, shovel: 1, 'seed-ruebe': 15, snack: 2 }, dura: {}, bar, bag: Array(BAG_N).fill(null),
     stand: {}, sold: {}, soldGold: 0, trees: {}, orders: [{ id: 'o1', who: 'Frau Lind', items: { ruebe: 3 }, packed: {}, days: 4, reward: 200 }], soil: {}, sel: 0, px: 72, py: 93, dir: 'down', warned: false, earned: 0 };
 }
@@ -1569,7 +1590,7 @@ function migrate2(d) {
     for (const c of ['bar', 'bag']) { const i = d[c].indexOf(null); if (i >= 0) { d[c][i] = id; break; } }
   }
   d.dura = d.dura || {};
-  d.cows = d.cows || []; if (d.cows.length && !(d.bar || []).includes('bucket') && !(d.bag || []).includes('bucket')) { const c = (d.bar || []).includes(null) ? d.bar : d.bag, i = c ? c.indexOf(null) : -1; if (i >= 0) { c[i] = 'bucket'; d.items = d.items || {}; d.items.bucket = 1; } } d.stand = d.stand || {}; d.sold = d.sold || {}; d.soldGold = d.soldGold || 0; d.trees = d.trees || {};
+  d.land = d.land || []; d.cows = d.cows || []; if (d.cows.length && !(d.bar || []).includes('bucket') && !(d.bag || []).includes('bucket')) { const c = (d.bar || []).includes(null) ? d.bar : d.bag, i = c ? c.indexOf(null) : -1; if (i >= 0) { c[i] = 'bucket'; d.items = d.items || {}; d.items.bucket = 1; } } d.stand = d.stand || {}; d.sold = d.sold || {}; d.soldGold = d.soldGold || 0; d.trees = d.trees || {};
   if (!d.orders) d.orders = [{ id: 'o1', who: 'Frau Lind', items: { ruebe: 3 }, packed: {}, days: 4, reward: 200 }];
   if (d.shipped) { for (const t in d.shipped) if (d.shipped[t]) d.stand[t] = (d.stand[t] || 0) + d.shipped[t]; delete d.shipped; }
   return d;
@@ -1592,6 +1613,7 @@ const firstRun = !S;
 if (!S) S = newState();
 for (const k of ['19,3', '20,3', '19,4', '20,4', '19,5', '20,5', '8,3', '9,3', '8,4', '9,4', '8,5', '9,5']) { delete S.soil[k]; delete S.trees[k]; }
 for (const k in S.soil) { const [x, y] = k.split(',').map(Number); if (inPast(x * 16 + 8, y * 16 + 8)) delete S.soil[k]; }
+applyLand(S.land); buildFarmBG();
 TREES = S.trees; for (const k in TREES) { const [x, y] = k.split(',').map(Number); if (isEdge(x, y)) delete TREES[k]; } rebuildTrees();
 
 /* ---------- sound ---------- */
@@ -1966,6 +1988,8 @@ function shopHTML() {
   h += '</div><div class="ssec"><div class="ssech"><span>Tiere</span></div>';
   h += slotOf('bucket') ? '' : shopRow(ICONURL.bucket, 'Melkeimer', 'Zum Melken deiner Kühe', 120, 'bucket', true);
   h += S.cows.length < COW_MAX ? shopRow(ICONURL.cow, 'Kuh', `${S.cows.length}/${COW_MAX} auf der Weide · täglich 1 Milch`, COW_PRICE, 'cow', true) : `<div class="lrow"><img src="${ICONURL.cow}" alt=""><div class="ln"><b>Kuh</b><small>Die Weide ist voll (${COW_MAX}/${COW_MAX}).</small></div></div>`;
+  h += '</div><div class="ssec"><div class="ssech"><span>Land</span></div>';
+  for (const L of LAND) h += S.land.includes(L.id) ? `<div class="lrow"><img src="${ICONURL.land}" alt=""><div class="ln"><b>${L.name}</b><small>Gehört dir</small></div></div>` : shopRow(ICONURL.land, L.name, `Wald im Süden roden, ${L.x1 - L.x0 + 1}×8 Felder mehr Platz`, L.price, 'land-' + L.id, true);
   h += '</div><div class="ssec"><div class="ssech"><span>Sonstiges</span></div>';
   h += shopRow(ICONURL.snack, 'Gartensalat', '+40 Energie', 30, 'snack');
   if (S.canCap < 40) h += shopRow(ICONURL.can, 'Kupfer-Gießkanne', '40 statt 20 Füllungen', 400, 'can', true);
@@ -1974,6 +1998,12 @@ function shopHTML() {
 function buy(id, n) {
   let price;
   if (id === 'own') return;
+  if (id.startsWith('land-')) {
+    const L = LAND.find(l => l.id === id.slice(5));
+    if (!L || S.land.includes(L.id) || S.gold < L.price) { snd('err'); return; }
+    S.gold -= L.price; S.land.push(L.id); applyLand(S.land); buildFarmBG(); rebuildTrees(); save();
+    snd('coin'); toast(`${L.name} gehört jetzt dir!`); $('dlg').innerHTML = shopHTML(); return;
+  }
   if (id.startsWith('tool-')) {
     const t = id.slice(5), pr = ITEM[t].price;
     if (S.gold < pr) { snd('err'); return; }
@@ -2039,7 +2069,7 @@ $('dlg').addEventListener('click', e => {
     setTimeout(() => { if (b.isConnected) { b.textContent = 'Speichern'; b.classList.remove('primary'); } }, 1600);
   }
   else if (a === 'new') $('dlg').innerHTML = `${T('heart', 'Neues Spiel?')}<div class="ssec warn"><p class="lead">Dein ganzer Fortschritt geht verloren – Hof, Geld und Rucksack.</p></div><div class="foot"><button class="btn" data-act="close">Abbrechen</button><button class="btn red" data-act="newc">Ja, neu anfangen</button></div>`;
-  else if (a === 'newc') { LOC = 'farm'; S = newState(); TREES = S.trees; rebuildTrees(); custs.length = 0; save(); parts.length = 0; closeDlg(); toast('Ein neuer Anfang!'); }
+  else if (a === 'newc') { LOC = 'farm'; S = newState(); applyLand(S.land); buildFarmBG(); TREES = S.trees; rebuildTrees(); custs.length = 0; save(); parts.length = 0; closeDlg(); toast('Ein neuer Anfang!'); }
 });
 
 /* ---------- actions ---------- */
@@ -2451,7 +2481,7 @@ function updateCritters(dt) {
   for (const c of critters) {
     if (c.k === 'fly') {
       c.t += dt;
-      if (!c.gx || Math.hypot(c.gx - c.x, c.gy - c.y) < 4) { c.gx = 24 + Math.random() * (W - 48); c.gy = 40 + Math.random() * (H - 70); }
+      if (!c.gx || Math.hypot(c.gx - c.x, c.gy - c.y) < 4) { c.gx = 24 + Math.random() * (W - 48); c.gy = 40 + Math.random() * (TH - 70); }
       const d = Math.hypot(c.gx - c.x, c.gy - c.y);
       c.x += (c.gx - c.x) / d * 16 * dt; c.y += (c.gy - c.y) / d * 16 * dt + Math.sin(c.t * 5) * 12 * dt;
     } else {
@@ -2601,7 +2631,6 @@ function corners(x, y) {
   R(X, x, y, 4, 1, c); R(X, x, y, 1, 4, c); R(X, x + 12, y, 4, 1, c); R(X, x + 15, y, 1, 4, c);
   R(X, x, y + 15, 4, 1, c); R(X, x, y + 12, 1, 4, c); R(X, x + 12, y + 15, 4, 1, c); R(X, x + 15, y + 12, 1, 4, c);
 }
-let EDGE_TOP = null, EDGE_BOT = null;
 const EDGE_H = 96;
 function buildEdge() {
   const mkE = (ty0, ty1, oy) => {
@@ -2621,11 +2650,12 @@ function buildEdge() {
   };
   EDGE_TOP = mkE(-7, -1, EDGE_H);
   EDGE_BOT = mkE(ROWS, ROWS + 6, -H);
+  EDGE_BOT_T = mkE(TROWS, TROWS + 6, -TH);
 }
 function render(t) {
   camX = Math.max(0, Math.min(W - VW, Math.round(S.px) - (VW >> 1)));
   // Unter der Werkzeugleiste darf die Kamera etwas weiter scrollen, damit nichts verdeckt bleibt
-  camY = Math.max(-HUDT, Math.min(H - VH + HUDB, Math.round(S.py) - 8 - HUDT - ((VH - HUDB - HUDT) >> 1)));
+  camY = Math.max(-HUDT, Math.min(curH() - VH + HUDB, Math.round(S.py) - 8 - HUDT - ((VH - HUDB - HUDT) >> 1)));
   X.fillStyle = '#26121f'; X.fillRect(0, 0, VW, VH);
   X.save(); X.translate(-camX, -camY);
   const farm = LOC === 'farm';
@@ -2641,7 +2671,7 @@ function render(t) {
   }
   // Waldrand unten weiterführen, wenn die Kamera über den Kartenrand hinaus schaut
   // Waldrand außerhalb der Karte: gemischte Bäume im Raster
-  if (camY < 0 || camY + VH > H) { if (!EDGE_TOP) buildEdge(); if (camY < 0) X.drawImage(EDGE_TOP, 0, -EDGE_H); if (camY + VH > H) X.drawImage(EDGE_BOT, 0, H); }
+  if (camY < 0 || camY + VH > curH()) { if (!EDGE_TOP) buildEdge(); if (camY < 0) X.drawImage(EDGE_TOP, 0, -EDGE_H); if (camY + VH > curH()) X.drawImage(LOC === 'town' ? EDGE_BOT_T : EDGE_BOT, 0, curH()); }
   if (farm) for (const k in S.soil) if (S.soil[k].w && Math.floor(t * 1.5 + hash(...k.split(',').map(Number), 12) * 4) % 4 === 0) {
     const [tx, ty] = k.split(',').map(Number); R(X, tx * 16 + 3 + Math.floor(hash(tx, ty, 13) * 9), ty * 16 + 5 + Math.floor(hash(tx, ty, 14) * 7), 1, 1, '#b8dcf0');
   }
@@ -2727,15 +2757,15 @@ function fit() {
     const cs = getComputedStyle(bot), gap = parseFloat(cs.rowGap) || 0;
     const need = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom) + gap * 2 +
       $('hotbar').offsetHeight + $('energy').offsetHeight + Math.max($('joy').offsetHeight, $('abtn').offsetHeight) + fs * .6;
-    VH = Math.max(96, Math.min(H, Math.floor((ih - top.offsetHeight - need) / s)));
+    VH = Math.max(96, Math.min(TH, Math.floor((ih - top.offsetHeight - need) / s)));
     stage.style.width = iw + 'px'; stage.style.height = VH * s + 'px';
   } else {
     stage.insertBefore(top, $('hint')); stage.appendChild(bot); app.insertBefore(ctrl, $('fade'));
-    VW = W; VH = H;
-    s = Math.min(iw / W, ih / H) * .97;
+    VW = W; VH = TH;
+    s = Math.min(iw / W, ih / TH) * .97;
     if (s >= 2 && !tmode()) s = Math.floor(s);
     // Breitbild (z. B. Retroid 16:9): ganze Breite nutzen, die Kamera scrollt senkrecht
-    if ((padMode || tmode()) && iw / ih > W / H) { s = iw / W; VH = Math.min(H, Math.max(160, Math.round(ih / s))); }
+    if ((padMode || tmode()) && iw / ih > W / TH) { s = iw / W; VH = Math.min(TH, Math.max(160, Math.round(ih / s))); }
     app.style.fontSize = (tmode() ? Math.max(10, Math.min(15, s * 4.3)) : Math.max(9, Math.min(18, s * 4.6))) + 'px';
     if (padMode) app.style.fontSize = Math.round(ih / 22) + 'px';
     stage.style.width = W * s + 'px'; stage.style.height = VH * s + 'px';
