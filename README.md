@@ -33,16 +33,21 @@ Im Hochformat liegen Steuerung und Werkzeugleiste unter dem Spielfeld, und die K
 1. Gras mit der **Hacke** auflockern
 2. **Samen** säen (Rübe, Kohl, Kürbis)
 3. Täglich mit der **Gießkanne** gießen – am Teich auffüllen
-4. Reife Pflanzen mit der **Sichel** ernten (erntet auch die beiden Nachbarfelder) und in die **Versandkiste** legen – du wählst selbst, wie viel; bezahlt wird über Nacht
-5. Im **Dorfladen** neue Samen, Salat (Energie) und eine größere Gießkanne kaufen
-6. Im **Rucksack** (16 Plätze) liegt die Ernte. Gegenstände lassen sich zwischen Rucksack und Werkzeugleiste (8 Plätze) verschieben; Ernte und Salat kann man essen
-7. Vor 2 Uhr nachts durch die Haustür **schlafen gehen** – dabei wird gespeichert
+4. Reife Pflanzen mit der **Sichel** ernten (erntet auch die beiden Nachbarfelder)
+5. Ernte am **Verkaufsstand** auslegen – von 8 bis 18 Uhr kommen Leute aus dem Dorf vorbei und kaufen zufällig etwas
+6. Am **Auftragsbrett** warten Bestellungen mit Frist: Ware in die Lieferkiste packen, nachts wird abgeholt und mit Aufschlag bezahlt
+7. Mit der **Axt** Bäume fällen (3 Schläge) und Stümpfe entfernen → **Holz**. Stümpfe wachsen nach 4 Tagen wieder zu Bäumen heran
+8. Mit der **Schaufel** Pflanzen ausgraben und Felder wieder zu Wiese machen
+9. Im **Rucksack** (16 Plätze) liegen Ernte und Holz; Gegenstände lassen sich zwischen Rucksack und Werkzeugleiste (8 Plätze) verschieben
+10. Im **Laden** Samen, Salat und eine größere Gießkanne kaufen
+11. Vor 2 Uhr nachts durch die Haustür **schlafen gehen** – dabei wird gespeichert
 
-| Pflanze | Samenpreis | Wachstum | Verkaufspreis |
+| Ware | Samenpreis | Wachstum | Verkaufspreis |
 |---|---|---|---|
 | Rübe | 20g | 2 Tage | 35g |
 | Kohl | 45g | 3 Tage | 90g |
 | Kürbis | 90g | 5 Tage | 200g |
+| Holz | – | – | 8g |
 
 ## Technik
 

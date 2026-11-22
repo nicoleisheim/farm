@@ -82,6 +82,17 @@ body{background:radial-gradient(circle at 50% 30%,#6a3d5e,#26121f 75%);font-fami
 .row{flex-wrap:wrap}
 .row small{opacity:.75}
 .qty{display:flex;align-items:center;gap:.25em}
+.order{background:#fff0f6;border-radius:.7em;padding:.55em .7em;margin:.5em 0;border:.12em solid #f5c0d4}
+.order.done{background:#effbe8;border-color:#b8e0a0}
+.ohead{display:flex;justify-content:space-between;align-items:center;gap:.5em;margin-bottom:.25em}
+.badge{font-size:.75em;font-weight:600;background:#fff;border-radius:1em;padding:.15em .55em;color:#c4527e;white-space:nowrap}
+.order.done .badge{color:#4f9a3a}
+.oline{display:flex;align-items:center;gap:.45em;padding:.2em 0}
+.oline img{width:1.8em;height:1.8em;image-rendering:pixelated}
+.oline .on{flex:1}.oline .op{font-weight:600;min-width:2.6em;text-align:right}
+.oline .ok{color:#4f9a3a;font-weight:600;min-width:1.5em;text-align:center}
+.oline .btn{padding:.2em .6em;font-size:.9em}
+.ofoot{display:flex;justify-content:space-between;border-top:.1em dashed #ec9dbd;margin-top:.3em;padding-top:.3em}
 .btn.sq{width:1.9em;padding:.25em 0;text-align:center}
 .qv{min-width:1.7em;text-align:center;font-weight:600}
 .row .price{font-weight:600;min-width:2.8em;text-align:right}
@@ -112,9 +123,10 @@ body.port #energy{position:static;width:100%;max-width:24em;height:auto;flex-dir
 body.port #elabel{order:0}
 body.port #ebar{height:.6em}
 body.port #efill{top:0;right:auto;height:100%;width:var(--e,100%)}
-body.port .slot{width:2.8em;height:2.8em}
+body.port .slot{width:min(2.8em,9.3vw);height:min(2.8em,9.3vw)}
 body.port #hotbar{gap:.22em;padding:.3em}
-body.port #invBtn{width:3.55em;height:3.55em}
+body.port #invBtn{width:min(3.55em,12.2vw);height:min(3.55em,12.2vw)}
+body.port #barRow{gap:min(.4em,1.2vw)}
 body.port #hotbar{flex:none}
 body.port #ctrl{position:static;width:100%;max-width:24em;flex:1;min-height:0;align-items:center;padding:0 .8em}
 body.port #joy{width:7em;height:7em}
@@ -182,18 +194,23 @@ const ITEM = {
   hoe: { name: 'Hacke', kind: 'hoe', tool: 1, desc: 'Lockert Gras zu Ackerboden auf. Kostet 2 Energie.' },
   can: { name: 'Gießkanne', kind: 'can', tool: 1, desc: 'Gießt aufgelockerten Boden. Am Teich auffüllen.' },
   sickle: { name: 'Sichel', kind: 'sickle', tool: 1, desc: 'Erntet reife Pflanzen – das Feld vor dir und die beiden daneben.' },
+  axe: { name: 'Axt', kind: 'axe', tool: 1, desc: 'Fällt Bäume (3 Schläge) und entfernt Baumstümpfe. Gibt Holz.' },
+  shovel: { name: 'Schaufel', kind: 'shovel', tool: 1, desc: 'Gräbt Pflanzen aus und macht Felder wieder zu Wiese.' },
+  wood: { name: 'Holz', kind: 'mat', sell: 8, desc: 'Frisch gehacktes Holz. Bringt 8g am Verkaufsstand.' },
   snack: { name: 'Gartensalat', kind: 'food', eat: 40, desc: 'Ein knackiger Salat aus dem Dorfladen.' },
 };
 for (const t in CROPS) {
   const c = CROPS[t];
   ITEM['seed-' + t] = { name: c.seed, kind: 'seed', crop: t, desc: `Reif nach ${c.days} Tagen, wenn du täglich gießt.` };
-  ITEM[t] = { name: c.name, kind: 'crop', crop: t, eat: c.eat, desc: `Frisch geerntet. Bringt ${c.sell}g in der Versandkiste.` };
+  ITEM[t] = { name: c.name, kind: 'crop', crop: t, eat: c.eat, sell: c.sell, desc: `Frisch geerntet. Bringt ${c.sell}g am Verkaufsstand.` };
 }
 const BAR_N = 8, BAG_N = 16;
 const iconOf = id => id.replace('-', '_');
+const SELLABLE = [...Object.keys(CROPS), 'wood'];
+const sellOf = id => ITEM[id].sell || 0;
 const SEASONS = ['Frühling', 'Sommer', 'Herbst', 'Winter'];
 const WDAYS = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
-const SOLID = new Set(['T', 'H', 'S', 'B', 'U', 'W']);
+const SOLID = new Set(['T', 'H', 'S', 'B', 'U', 'W', 'L', 'X']);
 const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
 const DOOR = [4, 4];
 
@@ -206,12 +223,19 @@ for (let y = 0; y < ROWS; y++) { set(0, y, 'T'); set(COLS - 1, y, 'T'); }
 [[1,1],[22,1],[22,2],[1,13],[1,14],[2,14],[22,13],[21,14],[22,14],[16,1],[12,14]].forEach(([x,y]) => set(x, y, 'T'));
 for (let x = 2; x <= 6; x++) for (let y = 1; y <= 4; y++) set(x, y, 'H');
 for (let x = 18; x <= 20; x++) for (let y = 2; y <= 3; y++) set(x, y, 'S');
-set(8, 4, 'B');
+set(8, 3, 'B'); set(9, 3, 'B'); set(8, 4, 'B'); set(9, 4, 'B');
+set(11, 3, 'L'); set(11, 4, 'L');
 for (let x = 17; x <= 21; x++) for (let y = 10; y <= 13; y++) set(x, y, 'W');
 set(17, 10, 'G'); set(21, 10, 'G'); set(17, 13, 'G'); set(21, 13, 'G');
-set(4, 5, 'P'); for (let x = 4; x <= 19; x++) set(x, 6, 'P'); set(19, 5, 'P'); set(19, 4, 'P'); set(8, 5, 'P');
+set(4, 5, 'P'); for (let x = 4; x <= 19; x++) set(x, 6, 'P'); set(19, 5, 'P'); set(19, 4, 'P'); set(8, 5, 'P'); set(9, 5, 'P'); set(11, 5, 'P');
 [[11,2],[14,2],[22,6],[22,7],[1,8],[15,14]].forEach(([x,y]) => set(x, y, 'U'));
-const tileAt = (x, y) => (x < 0 || y < 0 || x >= COLS || y >= ROWS) ? 'T' : MAP[y][x];
+let TREES = {};
+const tileAt = (x, y) => {
+  if (x < 0 || y < 0 || x >= COLS || y >= ROWS) return 'T';
+  const t = MAP[y][x];
+  if (t === 'T') { const st = TREES[x + ',' + y]; if (st && st.s !== 'tree') return st.s === 'stump' ? 'X' : 'G'; }
+  return t;
+};
 
 /* ---------- tile art ---------- */
 function heart(g, x, y, c) { R(g, x, y, 2, 1, c); R(g, x + 3, y, 2, 1, c); R(g, x, y + 1, 5, 1, c); R(g, x + 1, y + 2, 3, 1, c); R(g, x + 2, y + 3, 1, 1, c); }
@@ -240,7 +264,7 @@ function drawGrass(g, tx, ty) {
   }
 }
 const isPT = (a, b) => tileAt(a, b) === 'P';
-const connT = (a, b) => { const t = tileAt(a, b); return t === 'P' || t === 'H' || t === 'S' || t === 'B'; };
+const connT = (a, b) => { const t = tileAt(a, b); return t === 'P' || t === 'H' || t === 'S' || t === 'B' || t === 'L'; };
 function pathPix(x, y) {
   const tx = Math.floor(x / 16), ty = Math.floor(y / 16), lx = x - tx * 16, ly = y - ty * 16;
   const hx = lx < 8 ? -1 : 1, hy = ly < 8 ? -1 : 1, cx = lx < 8 ? lx : 15 - lx, cy = ly < 8 ? ly : 15 - ly;
@@ -248,7 +272,7 @@ function pathPix(x, y) {
   return isPT(tx + hx, ty) && isPT(tx, ty + hy) && isPT(tx + hx, ty + hy) && cy < 4 && cx < [4, 2, 1, 1][cy];
 }
 function drawPaths(g) {
-  const bld = (x, y) => { const t = tileAt(Math.floor(x / 16), Math.floor(y / 16)); return t === 'H' || t === 'S' || t === 'B'; };
+  const bld = (x, y) => { const t = tileAt(Math.floor(x / 16), Math.floor(y / 16)); return t === 'H' || t === 'S' || t === 'B' || t === 'L'; };
   const edge = (x, y) => [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => !pathPix(x + dx, y + dy) && !bld(x + dx, y + dy));
   const P = new Uint8Array(W * H);
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (pathPix(x, y)) P[y * W + x] = edge(x, y) ? 2 : 1;
@@ -413,14 +437,39 @@ function drawShop(g) {
   R(g, x0 + 5, y0 + 15, 11, 6, '#c48660'); [[7,15],[10,14],[13,15]].forEach(([a,b]) => R(g, x0 + a, y0 + b, 2, 2, '#ff6f6f'));
   R(g, x0 + 32, y0 + 15, 11, 6, '#c48660'); [[34,15],[37,14],[40,15]].forEach(([a,b]) => R(g, x0 + a, y0 + b, 2, 2, '#ffc2dc'));
 }
-function drawBin(g) {
-  const x0 = 128, y0 = 64;
-  R(g, x0 + 2, y0 + 14, 13, 2, 'rgba(60,20,40,.2)');
-  R(g, x0 + 1, y0 + 5, 14, 10, '#f5a3c0');
-  R(g, x0 + 1, y0 + 14, 14, 1, '#d97ea2');
-  R(g, x0, y0 + 2, 16, 4, '#ffc2d9'); R(g, x0, y0 + 2, 16, 1, '#ffe3ee'); R(g, x0, y0 + 5, 16, 1, '#e58cae');
-  R(g, x0 + 2, y0 + 2, 1, 13, '#fff'); R(g, x0 + 13, y0 + 2, 1, 13, '#fff');
-  R(g, x0 + 3, y0 + 9, 10, 1, '#e58cae'); R(g, x0 + 3, y0 + 12, 10, 1, '#e58cae');
+function drawStand(g) {
+  const x0 = 128, y0 = 48;
+  R(g, x0 + 2, y0 + 30, 30, 3, 'rgba(60,20,40,.18)');
+  R(g, x0 + 2, y0 + 4, 2, 24, '#b07a5a'); R(g, x0 + 28, y0 + 4, 2, 24, '#b07a5a');
+  for (let i = 0; i < 6; i++) {
+    const c = i % 2 ? '#ffffff' : '#ff8fb8';
+    R(g, x0 + i * 5 + 1, y0, 5, 8, c); R(g, x0 + i * 5 + 2, y0 + 8, 3, 1, c);
+  }
+  R(g, x0 + 1, y0 - 1, 30, 1, '#d9608c');
+  R(g, x0 + 1, y0 + 16, 30, 14, '#d39a64'); R(g, x0 + 1, y0 + 16, 30, 2, '#f2c79a'); R(g, x0 + 1, y0 + 29, 30, 1, '#a86d48');
+  for (let k = 7; k < 31; k += 8) R(g, x0 + k, y0 + 18, 1, 11, '#b8804f');
+  // Preisschild
+  R(g, x0 + 11, y0 + 20, 10, 7, '#fff7ec'); R(g, x0 + 11, y0 + 20, 10, 1, '#e8c9a0');
+  disc(g, x0 + 16, y0 + 23, 2, '#f2c13a'); R(g, x0 + 15, y0 + 22, 1, 1, '#fff0a8');
+}
+function drawCrate(g) {
+  const x0 = 176, y0 = 48;
+  // Auftragsbrett
+  R(g, x0 + 3, y0 + 2, 2, 18, '#8a5a40'); R(g, x0 + 11, y0 + 2, 2, 18, '#8a5a40');
+  R(g, x0 + 1, y0 + 1, 14, 11, '#a86d48'); R(g, x0 + 2, y0 + 2, 12, 9, '#d8a878'); R(g, x0 + 1, y0, 14, 1, '#c48a5e');
+  // Kiste
+  R(g, x0 + 2, y0 + 30, 13, 2, 'rgba(60,20,40,.18)');
+  R(g, x0 + 1, y0 + 19, 14, 12, '#c98a5a'); R(g, x0 + 1, y0 + 19, 14, 1, '#e8b07a');
+  R(g, x0 + 1, y0 + 23, 14, 1, '#a86d48'); R(g, x0 + 1, y0 + 27, 14, 1, '#a86d48');
+  R(g, x0 + 1, y0 + 19, 1, 12, '#a86d48'); R(g, x0 + 14, y0 + 19, 1, 12, '#a86d48');
+  R(g, x0 + 5, y0 + 24, 6, 3, '#ffb3cf'); R(g, x0 + 6, y0 + 25, 4, 1, '#fff');
+}
+function drawStump(g, tx, ty) {
+  const x0 = tx * 16, y0 = ty * 16;
+  R(g, x0 + 3, y0 + 13, 10, 2, 'rgba(60,20,40,.18)');
+  R(g, x0 + 5, y0 + 9, 6, 5, '#8a5a40'); R(g, x0 + 5, y0 + 9, 1, 5, '#a8735a'); R(g, x0 + 4, y0 + 13, 1, 1, '#8a5a40'); R(g, x0 + 11, y0 + 13, 1, 1, '#8a5a40');
+  R(g, x0 + 5, y0 + 8, 6, 2, '#e0b080'); R(g, x0 + 7, y0 + 8, 2, 1, '#c49060'); R(g, x0 + 6, y0 + 9, 4, 1, '#d29e6c');
+  R(g, x0 + 10, y0 + 6, 1, 2, '#6cbf5a'); R(g, x0 + 11, y0 + 6, 1, 1, '#8fd67a');
 }
 
 /* ---------- crops ---------- */
@@ -481,6 +530,21 @@ icon('sickle', g => {
   R(g, 4, 8, 2, 2, '#8f99a3'); R(g, 5, 6, 2, 2, '#8f99a3'); R(g, 6, 4, 2, 2, '#8f99a3'); R(g, 8, 3, 3, 2, '#8f99a3'); R(g, 11, 3, 2, 2, '#8f99a3'); R(g, 13, 4, 1, 3, '#8f99a3');
   R(g, 6, 6, 1, 1, '#dfe6ee'); R(g, 7, 5, 1, 1, '#dfe6ee'); R(g, 8, 4, 3, 1, '#dfe6ee'); R(g, 12, 4, 1, 1, '#dfe6ee');
 });
+icon('axe', g => {
+  for (let i = 0; i < 9; i++) { R(g, 3 + i, 13 - i, 2, 2, '#d39a5a'); R(g, 4 + i, 14 - i, 1, 1, '#a86d36'); }
+  R(g, 3, 12, 2, 2, '#ff8fb8');
+  R(g, 8, 1, 5, 7, '#9aa6b2'); R(g, 7, 2, 1, 5, '#9aa6b2'); R(g, 8, 1, 5, 1, '#c8d0d8'); R(g, 7, 2, 1, 5, '#e3eaf0'); R(g, 12, 3, 2, 3, '#6f7b88');
+});
+icon('shovel', g => {
+  R(g, 6, 1, 4, 1, '#a86d36'); R(g, 6, 1, 1, 3, '#a86d36'); R(g, 9, 1, 1, 3, '#a86d36'); R(g, 7, 3, 2, 1, '#ff8fb8');
+  R(g, 7, 4, 2, 6, '#d39a5a'); R(g, 7, 4, 1, 6, '#e8b87a');
+  R(g, 5, 9, 6, 5, '#b8c3ce'); R(g, 6, 14, 4, 1, '#b8c3ce'); R(g, 7, 15, 2, 1, '#8f99a3'); R(g, 5, 9, 1, 5, '#e3eaf0'); R(g, 10, 9, 1, 5, '#7f8b97'); R(g, 5, 9, 6, 1, '#7f8b97');
+});
+icon('wood', g => {
+  R(g, 2, 8, 12, 4, '#a8693e'); R(g, 2, 8, 12, 1, '#c48a5e'); R(g, 4, 4, 11, 4, '#b87a4a'); R(g, 4, 4, 11, 1, '#d39a64');
+  disc(g, 3, 10, 2, '#e8c094'); R(g, 3, 10, 1, 1, '#c49060'); disc(g, 14, 6, 2, '#e8c094'); R(g, 14, 6, 1, 1, '#c49060');
+  R(g, 6, 12, 7, 1, '#8a5a40');
+});
 icon('bag', g => {
   R(g, 5, 1, 6, 1, '#c4527e'); R(g, 4, 2, 1, 3, '#c4527e'); R(g, 11, 2, 1, 3, '#c4527e');
   R(g, 2, 4, 12, 11, '#ff8fb8'); R(g, 3, 3, 10, 1, '#ff8fb8'); R(g, 2, 14, 12, 1, '#e0578c');
@@ -516,24 +580,40 @@ icon('coin', g => { disc(g, 8, 8, 6, '#9c6b12'); disc(g, 8, 8, 5, '#f2c13a'); R(
 
 /* ---------- static background ---------- */
 const CHERRY = [];
+const [TL, tl] = mk(W, H);
+function rebuildTrees() {
+  tl.clearRect(0, 0, W, H); CHERRY.length = 0;
+  for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
+    if (MAP[y][x] !== 'T') continue;
+    const st = TREES[x + ',' + y];
+    if (!st || st.s === 'tree') drawTree(tl, x, y); else if (st.s === 'stump') drawStump(tl, x, y);
+  }
+}
 const [BG, bg] = mk(W, H);
 for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
   drawGrass(bg, x, y);
 }
 drawPaths(bg);
-drawHouse(bg); drawShop(bg); drawBin(bg);
+drawHouse(bg); drawShop(bg); drawStand(bg); drawCrate(bg);
 for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
-  if (MAP[y][x] === 'T') drawTree(bg, x, y);
   if (MAP[y][x] === 'U') drawBush(bg, x, y);
 }
 drawPond(bg);
 
 /* ---------- player sprite ---------- */
 const [PC, pg] = mk(16, 20);
-function drawPlayerSprite(g, dir, f) {
+const PAL_PLAYER = { skin: '#ffdcc4', hair: '#a0582f', hairL: '#c0763f', dress: '#ff8fb8', dressD: '#e86f9c', apron: '#fff3f7', shoe: '#c4527e', bow: '#ff5f8f', tails: 1, hat: 1 };
+const PAL_VILLAGE = [
+  { skin: '#ffdcc4', hair: '#3a2a20', hairL: '#5a4030', dress: '#8fc8ff', dressD: '#6aa8e8', apron: '#ffffff', shoe: '#5a6a8a', bow: '#ffe066', tails: 0, hat: 0 },
+  { skin: '#f0c4a0', hair: '#e8c070', hairL: '#f8dc98', dress: '#b8e0a0', dressD: '#8fc878', apron: '#fffbe8', shoe: '#7a5a3a', bow: '#ff8fb8', tails: 1, hat: 0 },
+  { skin: '#d8a07a', hair: '#2a1a14', hairL: '#4a3024', dress: '#ffd08a', dressD: '#f0b060', apron: '#fff4e0', shoe: '#8a5a3a', bow: '#c4527e', tails: 0, hat: 0 },
+  { skin: '#ffe0cc', hair: '#c8c8d0', hairL: '#e8e8f0', dress: '#d9b8ff', dressD: '#b898e8', apron: '#ffffff', shoe: '#6a5a8a', bow: '#ff8fb8', tails: 0, hat: 0 },
+  { skin: '#ffd8c0', hair: '#d0602a', hairL: '#f08a4a', dress: '#9ee0d0', dressD: '#70c4b0', apron: '#ffffff', shoe: '#3a6a5a', bow: '#fff', tails: 1, hat: 0 },
+];
+function drawPlayerSprite(g, dir, f, pal) {
   g.clearRect(0, 0, 16, 20);
-  const o = 3, skin = '#ffdcc4', hair = '#a0582f', hairL = '#c0763f', dress = '#ff8fb8', dressD = '#e86f9c', apron = '#fff3f7',
-    shoe = '#c4527e', bow = '#ff5f8f', eye = '#3a2030', blush = '#ff9ab8';
+  pal = pal || PAL_PLAYER;
+  const o = 3, { skin, hair, hairL, dress, dressD, apron, shoe, bow } = pal, eye = '#3a2030', blush = '#ff9ab8';
   const step = f === 1 ? 1 : f === 3 ? -1 : 0, a = step > 0 ? 1 : 0, b = step < 0 ? 1 : 0;
   if (dir === 'down' || dir === 'up') {
     // Beine & Schuhe
@@ -545,9 +625,10 @@ function drawPlayerSprite(g, dir, f) {
     // Puffärmel & Arme
     R(g, 3, o + 8, 2, 2, dress); R(g, 11, o + 8, 2, 2, dress);
     R(g, 3, o + 10 + a, 1, 2, skin); R(g, 12, o + 10 + b, 1, 2, skin);
-    // Zöpfe
-    R(g, 1, o + 4, 2, 4, hair); R(g, 13, o + 4, 2, 4, hair); R(g, 1, o + 7, 2, 1, hairL); R(g, 13, o + 7, 2, 1, hairL);
-    R(g, 1, o + 3, 2, 1, bow); R(g, 13, o + 3, 2, 1, bow);
+    if (pal.tails) {
+      R(g, 1, o + 4, 2, 4, hair); R(g, 13, o + 4, 2, 4, hair); R(g, 1, o + 7, 2, 1, hairL); R(g, 13, o + 7, 2, 1, hairL);
+      R(g, 1, o + 3, 2, 1, bow); R(g, 13, o + 3, 2, 1, bow);
+    }
     if (dir === 'down') {
       R(g, 6, o + 9, 4, 3, apron); R(g, 7, o + 10, 2, 1, '#ffc2dc');
       R(g, 3, o + 1, 10, 7, skin); R(g, 3, o, 10, 3, hair); R(g, 3, o + 3, 1, 3, hair); R(g, 12, o + 3, 1, 3, hair);
@@ -565,9 +646,10 @@ function drawPlayerSprite(g, dir, f) {
     R(g, 10, o + 9, 2, 3, apron);
     R(g, 7, o + 8, 2, 2, dressD); R(g, 7 - step, o + 10, 2, 2, skin);
     R(g, 4, o + 1, 9, 7, skin); R(g, 3, o, 10, 2, hair); R(g, 3, o, 5, 7, hair); R(g, 4, o + 1, 3, 1, hairL);
-    R(g, 1, o + 4, 2, 4, hair); R(g, 1, o + 3, 2, 1, bow); R(g, 1, o + 7, 2, 1, hairL);
+    if (pal.tails) { R(g, 1, o + 4, 2, 4, hair); R(g, 1, o + 3, 2, 1, bow); R(g, 1, o + 7, 2, 1, hairL); }
     R(g, 10, o + 4, 2, 3, eye); R(g, 10, o + 4, 1, 1, '#fff'); R(g, 10, o + 7, 2, 1, blush);
   }
+  if (!pal.hat) { R(g, 4, o - 1, 8, 1, hair); R(g, 5, o - 1, 3, 1, hairL); return; }
   // Strohhut mit Blume
   R(g, 2, o, 12, 1, '#e8b95a'); R(g, 4, o - 2, 8, 2, '#f6d47a'); R(g, 4, o - 1, 8, 1, '#ff8fb8'); R(g, 5, o - 2, 3, 1, '#fde9a8');
   R(g, 10, o - 3, 3, 3, '#ff5f8f'); R(g, 11, o - 2, 1, 1, '#ffe066');
@@ -576,13 +658,13 @@ function drawPlayerSprite(g, dir, f) {
 /* ---------- state ---------- */
 const KEY = 'sonnenhof-v1';
 function newState() {
-  const bar = ['hoe', 'can', 'sickle', 'seed-ruebe', 'snack', null, null, null];
+  const bar = ['hoe', 'can', 'sickle', 'axe', 'shovel', 'seed-ruebe', 'snack', null];
   return { day: 1, time: 360, gold: 150, energy: 100, maxEnergy: 100, water: 20, canCap: 20, rain: false,
-    items: { hoe: 1, can: 1, sickle: 1, 'seed-ruebe': 15, snack: 2 }, bar, bag: Array(BAG_N).fill(null),
-    shipped: { ruebe: 0, kohl: 0, kuerbis: 0 }, soil: {}, sel: 0, px: 72, py: 93, dir: 'down', warned: false, earned: 0 };
+    items: { hoe: 1, can: 1, sickle: 1, axe: 1, shovel: 1, 'seed-ruebe': 15, snack: 2 }, bar, bag: Array(BAG_N).fill(null),
+    stand: {}, sold: {}, soldGold: 0, trees: {}, orders: [{ id: 'o1', who: 'Frau Lind', items: { ruebe: 3 }, packed: {}, days: 4, reward: 200 }], soil: {}, sel: 0, px: 72, py: 93, dir: 'down', warned: false, earned: 0 };
 }
 function migrate(d) {
-  if (d.bar) return d;
+  if (d.bar) return migrate2(d);
   const items = { hoe: 1, can: 1, sickle: 1 };
   for (const t in CROPS) {
     if (d.seeds && d.seeds[t]) items['seed-' + t] = d.seeds[t];
@@ -593,6 +675,16 @@ function migrate(d) {
   ['hoe', 'can', 'sickle', 'seed-ruebe', 'seed-kohl', 'seed-kuerbis', 'snack'].filter(i => items[i]).forEach((id, i) => d.bar[i] = id);
   Object.keys(CROPS).filter(t => items[t]).forEach((t, i) => d.bag[i] = t);
   d.sel = 0; delete d.seeds; delete d.produce; delete d.snacks;
+  return migrate2(d);
+}
+function migrate2(d) {
+  for (const id of ['axe', 'shovel']) if (!d.items[id]) {
+    d.items[id] = 1;
+    for (const c of ['bar', 'bag']) { const i = d[c].indexOf(null); if (i >= 0) { d[c][i] = id; break; } }
+  }
+  d.stand = d.stand || {}; d.sold = d.sold || {}; d.soldGold = d.soldGold || 0; d.trees = d.trees || {};
+  if (!d.orders) d.orders = [{ id: 'o1', who: 'Frau Lind', items: { ruebe: 3 }, packed: {}, days: 4, reward: 200 }];
+  if (d.shipped) { for (const t in d.shipped) if (d.shipped[t]) d.stand[t] = (d.stand[t] || 0) + d.shipped[t]; delete d.shipped; }
   return d;
 }
 function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
@@ -600,12 +692,13 @@ function load() { try { const d = JSON.parse(localStorage.getItem(KEY)); if (d &
 let S = load();
 const firstRun = !S;
 if (!S) S = newState();
+TREES = S.trees; rebuildTrees();
 
 /* ---------- sound ---------- */
 let AC = null;
 const SND = { till: ['square', 150, 80, .08, .05], water: ['sine', 700, 280, .16, .06], plant: ['triangle', 480, 720, .08, .07],
   harvest: ['triangle', 520, 1100, .16, .08], coin: ['square', 880, 1320, .12, .035], err: ['sawtooth', 170, 110, .12, .03],
-  sel: ['triangle', 900, 900, .03, .03], eat: ['triangle', 300, 520, .14, .07], ship: ['triangle', 300, 200, .12, .07] };
+  sel: ['triangle', 900, 900, .03, .03], chop: ['square', 240, 110, .07, .05], eat: ['triangle', 300, 520, .14, .07], ship: ['triangle', 300, 200, .12, .07] };
 function snd(type) {
   try {
     if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
@@ -624,7 +717,7 @@ function toast(m) {
   clearTimeout(toastTimer); toastTimer = setTimeout(() => e.classList.remove('show'), 2300);
 }
 let paused = false;
-function openDlg(html) { delete $('dlg').dataset.inv; $('dlg').innerHTML = html; $('dlg').scrollTop = 0; $('shade').style.display = 'flex'; paused = true; keys.clear(); joyReset(); }
+function openDlg(html) { delete $('dlg').dataset.inv; delete $('dlg').dataset.orders; $('dlg').innerHTML = html; $('dlg').scrollTop = 0; $('shade').style.display = 'flex'; paused = true; keys.clear(); joyReset(); }
 function closeDlg() { $('shade').style.display = 'none'; paused = false; }
 
 const cnt = id => (id && S.items[id]) || 0;
@@ -632,7 +725,7 @@ function itemName(id) { return id === 'can' && S.canCap > 20 ? 'Kupfer-Gießkann
 function slotOf(id) { let i = S.bar.indexOf(id); if (i >= 0) return ['bar', i]; i = S.bag.indexOf(id); return i >= 0 ? ['bag', i] : null; }
 function addItem(id, n) {
   if (!slotOf(id)) {
-    const order = ITEM[id].kind === 'crop' ? ['bag', 'bar'] : ['bar', 'bag'];
+    const order = ITEM[id].kind === 'crop' || ITEM[id].kind === 'mat' ? ['bag', 'bar'] : ['bar', 'bag'];
     let placed = false;
     for (const c of order) { const i = S[c].indexOf(null); if (i >= 0) { S[c][i] = id; placed = true; break; } }
     if (!placed) { toast('Kein Platz mehr im Rucksack!'); snd('err'); return false; }
@@ -698,7 +791,11 @@ function updateHUD() {
     if (s && s.c && s.c.d >= CROPS[s.c.t].days) h = tool.kind === 'sickle' ? CROPS[s.c.t].name + ' ernten' : 'Sichel wählen zum Ernten';
     else if (tx === DOOR[0] && ty === DOOR[1]) h = 'Schlafen gehen';
     else if (t === 'S') h = 'Einkaufen';
-    else if (t === 'B') h = 'Ernte in die Versandkiste';
+    else if (t === 'B') h = 'Verkaufsstand';
+    else if (t === 'L') h = S.orders.length ? `Lieferungen (${S.orders.length})` : 'Lieferungen';
+    else if (t === 'T' && tool.kind === 'axe') h = 'Baum fällen';
+    else if (t === 'X' && tool.kind === 'axe') h = 'Stumpf entfernen';
+    else if (s && tool.kind === 'shovel') h = s.c ? 'Pflanze ausgraben' : 'Feld entfernen';
     else if (isWater(tx, ty) && tool.kind === 'can') h = 'Gießkanne füllen';
   }
   const he = $('hint');
@@ -727,7 +824,7 @@ function helpHTML(intro) {
     <li><kbd>I</kbd> – Rucksack öffnen</li>
     <li>Klick auf ein Feld direkt neben dir – dort handeln</li>
   </ul>`}
-  <p><b>So geht's:</b> Mit der <b>Hacke</b> Gras auflockern, <b>Samen</b> säen, täglich mit der <b>Gießkanne</b> gießen (am Teich auffüllen). Reife Pflanzen erntest du mit der <b>Sichel</b>, die Ernte kommt in die <b>Versandkiste</b> neben dem Haus und wird über Nacht bezahlt. Im <b>Laden</b> rechts oben gibt's Samen.</p>
+  <p><b>So geht's:</b> Mit der <b>Hacke</b> Gras auflockern, <b>Samen</b> säen, täglich mit der <b>Gießkanne</b> gießen (am Teich auffüllen). Reife Pflanzen erntest du mit der <b>Sichel</b>, die Ernte legst du am <b>Verkaufsstand</b> neben dem Haus aus – tagsüber kaufen Leute aus dem Dorf davon. Am <b>Auftragsbrett</b> daneben warten Bestellungen, die du in die Lieferkiste packst. Mit der <b>Axt</b> fällst du Bäume für Holz, mit der <b>Schaufel</b> entfernst du Felder. Im <b>Laden</b> rechts oben gibt's Samen.</p>
   <p>Geh vor 2 Uhr nachts ins Bett (Haustür) – sonst kippst du um. Gespeichert wird beim Schlafen.</p>
   <div class="foot">${intro ? '' : '<button class="btn red" data-act="new">Neues Spiel</button>'}<button class="btn" data-act="close">${intro ? "Los geht's!" : 'Weiter'}</button></div>`;
 }
@@ -783,28 +880,124 @@ function eatItem() {
   rerenderInv();
 }
 let shipQ = {};
-const qOf = t => Math.max(0, Math.min(cnt(t), shipQ[t] === undefined ? cnt(t) : shipQ[t]));
-function shipHTML() {
-  let h = '<h2>Versandkiste</h2><p class="sub">Alles in der Kiste wird heute Nacht verkauft.</p>';
-  const have = Object.keys(CROPS).filter(t => cnt(t) > 0);
+const qOf = t => Math.max(0, Math.min(cnt(t), shipQ[t] || 0));
+function standHTML() {
+  let h = '<h2>Verkaufsstand</h2><p class="sub">Leg Ware aus. Von 8 bis 18 Uhr kommen Leute aus dem Dorf vorbei und kaufen zufällig etwas. Bei Regen kommen weniger.</p>';
+  const have = SELLABLE.filter(t => cnt(t) > 0);
   let n = 0, sum = 0;
   if (have.length) {
     for (const t of have) {
-      const c = CROPS[t], q = qOf(t); n += q; sum += q * c.sell;
-      h += `<div class="row"><img src="${ICONURL[t]}" alt=""><div class="info"><b>${c.name}</b><small>Du hast ${cnt(t)} · ${c.sell}g pro Stück</small></div>
+      const q = qOf(t); n += q; sum += q * sellOf(t);
+      h += `<div class="row"><img src="${ICONURL[iconOf(t)]}" alt=""><div class="info"><b>${ITEM[t].name}</b><small>Du hast ${cnt(t)} · ${sellOf(t)}g pro Stück</small></div>
         <div class="qty"><button class="btn sq" data-act="q:${t}:-1" ${q ? '' : 'disabled'}>−</button><span class="qv">${q}</span><button class="btn sq" data-act="q:${t}:1" ${q < cnt(t) ? '' : 'disabled'}>+</button></div>
         <button class="btn" data-act="qa:${t}">${q < cnt(t) ? 'Alle' : 'Keine'}</button></div>`;
     }
-    h += `<div class="sumline total"><span>Ausgewählt: ${n} Stück</span><span>${sum.toLocaleString('de-DE')}g</span></div>`;
-  } else h += '<p>Du hast gerade keine Ernte dabei.</p>';
-  const inBox = Object.keys(CROPS).filter(t => S.shipped[t] > 0);
-  if (inBox.length) {
-    h += '<div class="invlbl">Schon in der Kiste</div>';
-    for (const t of inBox) h += `<div class="row"><img src="${ICONURL[t]}" alt=""><div class="info"><b>${S.shipped[t]}× ${CROPS[t].name}</b><small>${(S.shipped[t] * CROPS[t].sell).toLocaleString('de-DE')}g</small></div><button class="btn" data-act="back:${t}">Zurücknehmen</button></div>`;
+    h += `<div class="sumline total"><span>Ausgewählt: ${n} Stück</span><span>Wert ${sum.toLocaleString('de-DE')}g</span></div>`;
+  } else h += '<p>Du hast gerade nichts zum Verkaufen dabei.</p>';
+  const on = SELLABLE.filter(t => S.stand[t] > 0);
+  if (on.length) {
+    h += '<div class="invlbl">Am Stand ausgelegt</div>';
+    for (const t of on) h += `<div class="row"><img src="${ICONURL[iconOf(t)]}" alt=""><div class="info"><b>${S.stand[t]}× ${ITEM[t].name}</b><small>Wert ${(S.stand[t] * sellOf(t)).toLocaleString('de-DE')}g</small></div><button class="btn" data-act="back:${t}">Zurücknehmen</button></div>`;
   }
-  return h + `<div class="foot"><button class="btn" data-act="close">Schließen</button>${have.length ? `<button class="btn" data-act="ship" ${n ? '' : 'disabled'}>In die Kiste legen</button>` : ''}</div>`;
+  if (S.soldGold) h += `<p class="sub">Heute schon verkauft: <b>${S.soldGold.toLocaleString('de-DE')}g</b></p>`;
+  return h + `<div class="foot"><button class="btn" data-act="close">Schließen</button>${have.length ? `<button class="btn" data-act="ship" ${n ? '' : 'disabled'}>Auslegen</button>` : ''}</div>`;
 }
-function rerenderShip() { const sc = $('dlg').scrollTop; $('dlg').innerHTML = shipHTML(); $('dlg').scrollTop = sc; }
+function rerenderShip() { const sc = $('dlg').scrollTop; $('dlg').innerHTML = $('dlg').dataset.orders ? ordersHTML() : standHTML(); $('dlg').scrollTop = sc; }
+
+/* ---------- Lieferungen ---------- */
+const WHO = ['Frau Lind', 'Opa Karl', 'Café Kirschblüte', 'Bäckerei Mehlstaub', 'Mia vom Hügel', 'Herr Brombeer', 'Oma Rosi', 'Gasthaus Zum Häschen'];
+const QR = { ruebe: [3, 6], kohl: [2, 4], kuerbis: [1, 3], wood: [5, 12] };
+function genOrder() {
+  const pool = ['ruebe', 'wood']; if (S.day >= 2) pool.push('kohl'); if (S.day >= 4) pool.push('kuerbis');
+  const sh = pool.slice().sort(() => Math.random() - .5), kinds = Math.random() < .35 ? 2 : 1, items = {};
+  for (let i = 0; i < kinds; i++) { const t = sh[i], [a, b] = QR[t]; items[t] = a + Math.floor(Math.random() * (b - a + 1)); }
+  let val = 0; for (const t in items) val += items[t] * sellOf(t);
+  const who = items.wood && Math.random() < .5 ? 'Tischlerei Astloch' : WHO[Math.floor(Math.random() * WHO.length)];
+  return { id: Math.random().toString(36).slice(2, 8), who, items, packed: {}, days: 3 + Math.floor(Math.random() * 3) + (items.kuerbis ? 1 : 0), reward: Math.round((val * 1.7 + 20) / 5) * 5 };
+}
+const orderReady = o => Object.keys(o.items).every(t => (o.packed[t] || 0) >= o.items[t]);
+function ordersHTML() {
+  let h = '<h2>Lieferungen</h2><p class="sub">Pack die Bestellungen in die Lieferkiste. Fertige Lieferungen werden nachts abgeholt und bezahlt – mit ordentlich Aufschlag.</p>';
+  if (!S.orders.length) h += '<p>Gerade gibt es keine Bestellungen. Schau morgen wieder vorbei!</p>';
+  for (const o of S.orders) {
+    const r = orderReady(o);
+    h += `<div class="order${r ? ' done' : ''}"><div class="ohead"><b>${o.who}</b><span class="badge">${r ? 'Bereit zur Abholung' : `noch ${o.days} Tag${o.days > 1 ? 'e' : ''}`}</span></div>`;
+    for (const t in o.items) {
+      const need = o.items[t], have = o.packed[t] || 0, inv = cnt(t);
+      h += `<div class="oline"><img src="${ICONURL[iconOf(t)]}" alt=""><span class="on">${ITEM[t].name}</span><span class="op">${have}/${need}</span>` +
+        (have < need ? `<button class="btn" data-act="pack:${o.id}:${t}" ${inv ? '' : 'disabled'}>${inv ? `${Math.min(inv, need - have)} einpacken` : 'Fehlt'}</button>` : '<span class="ok">✓</span>') + '</div>';
+    }
+    h += `<div class="ofoot"><span>Belohnung</span><b>${o.reward.toLocaleString('de-DE')}g</b></div></div>`;
+  }
+  return h + '<div class="foot"><button class="btn" data-act="close">Schließen</button></div>';
+}
+function packOrder(id, t) {
+  const o = S.orders.find(x => x.id === id); if (!o) return;
+  const n = Math.min(cnt(t), o.items[t] - (o.packed[t] || 0)); if (n <= 0) return;
+  useItem(t, n); o.packed[t] = (o.packed[t] || 0) + n; snd('plant');
+  if (orderReady(o)) { snd('coin'); toast(`Lieferung für ${o.who} ist fertig gepackt!`); }
+  rerenderShip();
+}
+
+/* ---------- Kundschaft am Stand ---------- */
+const custs = [];
+const CUST_PATH = [[312, 78], [312, 108], [152, 108], [152, 92]];
+function standStock() { return SELLABLE.reduce((a, t) => a + (S.stand[t] || 0), 0); }
+function spawnCustomer() {
+  custs.push({ x: CUST_PATH[0][0], y: CUST_PATH[0][1], wp: CUST_PATH.slice(1), st: 'in', t: 0, a: 0, dir: 'down', anim: 0, pal: PAL_VILLAGE[Math.floor(Math.random() * PAL_VILLAGE.length)] });
+}
+function customerBuys(c) {
+  let k = 1 + (Math.random() < .4) + (Math.random() < .15), got = {}, gold = 0;
+  while (k-- > 0 && standStock() > 0) {
+    let r = Math.random() * standStock();
+    for (const t of SELLABLE) { r -= S.stand[t] || 0; if (r < 0) { S.stand[t]--; got[t] = (got[t] || 0) + 1; gold += sellOf(t); break; } }
+  }
+  if (!gold) { toast('Eine Kundin schaut vorbei – aber der Stand ist leer.'); return; }
+  for (const t in got) S.sold[t] = (S.sold[t] || 0) + got[t];
+  S.gold += gold; S.soldGold += gold; S.earned += gold; snd('coin');
+  parts.push({ x: c.x, y: c.y - 22, vx: 0, vy: -14, life: 1.2, col: '#ff5f8f', h: 1 });
+  toast(`Verkauft: ${Object.entries(got).map(([t, n]) => `${n}× ${ITEM[t].name}`).join(', ')} · +${gold}g`);
+}
+function updateCustomers(dt) {
+  if (S.time >= 480 && S.time < 1080 && standStock() > 0 && custs.length < 2 && Math.random() < dt * (S.rain ? .025 : .06)) spawnCustomer();
+  for (let i = custs.length - 1; i >= 0; i--) {
+    const c = custs[i];
+    c.a = Math.min(1, c.a + dt * 2.5);
+    if (c.st === 'buy') { c.t -= dt; c.dir = 'up'; if (c.t <= 0) { customerBuys(c); c.st = 'out'; c.wp = CUST_PATH.slice(0, -1).reverse(); } continue; }
+    if (!c.wp.length) { if (c.st === 'in') { c.st = 'buy'; c.t = 1.2; } else { c.a -= dt * 5; if (c.a <= 0) custs.splice(i, 1); } continue; }
+    const [gx, gy] = c.wp[0], dx = gx - c.x, dy = gy - c.y, d = Math.hypot(dx, dy), sp = 34 * dt;
+    if (d <= sp) { c.x = gx; c.y = gy; c.wp.shift(); }
+    else { c.x += dx / d * sp; c.y += dy / d * sp; c.dir = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'); c.anim += dt; }
+  }
+}
+function drawCustomer(c) {
+  const moving = c.st !== 'buy' && c.wp.length;
+  const f = moving ? Math.floor(c.anim * 8) % 4 : 0, flip = c.dir === 'left';
+  drawPlayerSprite(pg, flip ? 'right' : c.dir, f, c.pal);
+  const ox = Math.round(c.x - 8), oy = Math.round(c.y - 19);
+  X.globalAlpha = Math.max(0, c.a);
+  R(X, Math.round(c.x) - 5, Math.round(c.y) - 2, 10, 2, 'rgba(0,0,0,.2)');
+  if (flip) { X.save(); X.translate(ox + 16, oy); X.scale(-1, 1); X.drawImage(PC, 0, 0); X.restore(); } else X.drawImage(PC, ox, oy);
+  X.globalAlpha = 1;
+}
+function drawStandGoods(t) {
+  const x0 = 128, y0 = 48; let i = 0;
+  for (const id of SELLABLE) {
+    if (!(S.stand[id] > 0) || i > 3) continue;
+    const bx = x0 + 3 + i * 7, by = y0 + 11;
+    R(X, bx, by + 3, 6, 3, '#a86d48'); R(X, bx, by + 3, 6, 1, '#c48a5e');
+    const col = { ruebe: '#f1e4bb', kohl: '#8fd16a', kuerbis: '#e07b24', wood: '#b87a4a' }[id];
+    R(X, bx + 1, by + 1, 2, 2, col); R(X, bx + 3, by + 1, 2, 2, col); R(X, bx + 2, by, 2, 2, col);
+    i++;
+  }
+  // Notizzettel am Auftragsbrett
+  S.orders.forEach((o, k) => {
+    if (k > 2) return;
+    const nx = 176 + 3 + k * 4, ny = 48 + 3 + (k % 2);
+    R(X, nx, ny, 3, 5, orderReady(o) ? '#d8f5c8' : '#fff7ec'); R(X, nx + 1, ny, 1, 1, '#ff5f8f');
+  });
+  if (S.orders.some(orderReady) && Math.floor(t * 2) % 2) heart(X, 181, 63, '#ff5f8f');
+}
 function shopRow(img, name, info, price, id, single) {
   const d1 = S.gold < price ? 'disabled' : '', d5 = S.gold < price * 5 ? 'disabled' : '';
   return `<div class="row"><img src="${img}" alt=""><div class="info"><b>${name}</b><small>${info}</small></div><span class="price">${price}g</span>
@@ -838,14 +1031,15 @@ $('dlg').addEventListener('click', e => {
   else if (a.startsWith('qa:')) { const t = a.slice(3); shipQ[t] = qOf(t) < cnt(t) ? cnt(t) : 0; snd('sel'); rerenderShip(); }
   else if (a === 'ship') {
     let n = 0;
-    for (const t in CROPS) { const q = qOf(t); if (q) { S.shipped[t] += q; useItem(t, q); n += q; } }
-    closeDlg(); snd('ship'); toast(`${n} Stück in die Versandkiste gelegt`);
+    for (const t of SELLABLE) { const q = qOf(t); if (q) { S.stand[t] = (S.stand[t] || 0) + q; useItem(t, q); n += q; } }
+    shipQ = {}; snd('ship'); toast(`${n} Stück am Stand ausgelegt`); rerenderShip();
   }
-  else if (a.startsWith('back:')) { const t = a.slice(5), m = S.shipped[t]; if (m && addItem(t, m)) { S.shipped[t] = 0; delete shipQ[t]; shipQ[t] = 0; snd('plant'); } rerenderShip(); }
+  else if (a.startsWith('back:')) { const t = a.slice(5), m = S.stand[t]; if (m && addItem(t, m)) { S.stand[t] = 0; shipQ[t] = 0; snd('plant'); } rerenderShip(); }
+  else if (a.startsWith('pack:')) { const [, id, t] = a.split(':'); packOrder(id, t); }
   else if (a === 'eat') eatItem();
   else if (a === 'hold') { const bi = invSel[1]; closeDlg(); setSel(bi); }
   else if (a === 'new') $('dlg').innerHTML = `<h2>Neues Spiel?</h2><p>Dein ganzer Fortschritt geht verloren.</p><div class="foot"><button class="btn" data-act="close">Abbrechen</button><button class="btn red" data-act="newc">Ja, neu anfangen</button></div>`;
-  else if (a === 'newc') { S = newState(); save(); parts.length = 0; closeDlg(); toast('Ein neuer Anfang!'); }
+  else if (a === 'newc') { S = newState(); TREES = S.trees; rebuildTrees(); custs.length = 0; save(); parts.length = 0; closeDlg(); toast('Ein neuer Anfang!'); }
 });
 
 /* ---------- actions ---------- */
@@ -877,11 +1071,8 @@ function act(tx, ty) {
   }
   if (t === 'H') { toast('Die Haustür ist in der Mitte.'); return; }
   if (t === 'S') { openDlg(shopHTML()); return; }
-  if (t === 'B') {
-    const any = Object.keys(CROPS).some(c => cnt(c) > 0 || S.shipped[c] > 0);
-    if (!any) { toast('Leg hier deine Ernte rein – sie wird über Nacht verkauft.'); return; }
-    shipQ = {}; openDlg(shipHTML()); return;
-  }
+  if (t === 'B') { shipQ = {}; openDlg(standHTML()); return; }
+  if (t === 'L') { openDlg(ordersHTML()); $('dlg').dataset.orders = 1; return; }
   if (!id) { toast('Du hast nichts in der Hand.'); return; }
   if (kind === 'sickle') {
     actTool = 'sickle';
@@ -898,6 +1089,44 @@ function act(tx, ty) {
     if (n) { snd('harvest'); toast(Object.entries(got).map(([c, v]) => `+${v} ${CROPS[c].name}`).join('  ')); return; }
     snd('sel'); burst(tx, ty, ['#7bbf55', '#a6de80'], 4, 30);
     if (s && s.c) toast(`${CROPS[s.c.t].name} ist noch nicht reif.`);
+    return;
+  }
+  if (kind === 'axe') {
+    actTool = 'axe';
+    const key = tx + ',' + ty;
+    if (t !== 'T' && t !== 'X') { toast('Hier gibt es nichts zu fällen.'); return; }
+    if (!needEnergy(t === 'T' ? 3 : 2)) return;
+    const cherry = hash(tx, ty, 21) < .4;
+    snd('chop'); burst(tx, ty, ['#c48a5e', '#e8c094'], 5, 50);
+    if (t === 'T') {
+      const st = TREES[key] || (TREES[key] = { s: 'tree', hp: 3 });
+      st.hp--;
+      burst(tx, ty, cherry ? ['#ffb6d3', '#ffcfe2'] : ['#58ae55', '#7dcb6c'], 6, 40);
+      if (st.hp <= 0) {
+        const n = 4 + Math.floor(Math.random() * 3);
+        TREES[key] = { s: 'stump', hp: 2, d: 0 }; rebuildTrees();
+        burst(tx, ty, cherry ? ['#ffb6d3', '#ffcfe2', '#fff'] : ['#58ae55', '#7dcb6c', '#a5e08a'], 22, 90);
+        if (addItem('wood', n)) toast(`Baum gefällt! +${n} Holz`);
+        snd('harvest');
+      }
+    } else {
+      const st = TREES[key]; st.hp--;
+      if (st.hp <= 0) {
+        const n = 1 + Math.floor(Math.random() * 2);
+        TREES[key] = { s: 'gone' }; rebuildTrees();
+        if (addItem('wood', n)) toast(`Stumpf entfernt! +${n} Holz`);
+        snd('harvest');
+      }
+    }
+    return;
+  }
+  if (kind === 'shovel') {
+    actTool = 'shovel';
+    if (!s) { toast('Hier ist kein Feld zum Entfernen.'); return; }
+    if (!needEnergy(1)) return;
+    burst(tx, ty, ['#7a4d2c', '#93613a', '#7bbf55'], 8);
+    if (s.c) { s.c = null; snd('till'); toast('Pflanze ausgegraben'); }
+    else { delete S.soil[k]; snd('till'); toast('Feld entfernt'); }
     return;
   }
   if (kind === 'hoe') {
@@ -930,14 +1159,30 @@ function endDay(passedOut) {
   if (fading) return;
   fading = true; paused = true; $('fade').style.opacity = 1;
   setTimeout(() => {
-    let income = 0, lines = '';
-    for (const t in CROPS) {
-      const n = S.shipped[t]; if (!n) continue;
-      income += n * CROPS[t].sell;
-      lines += `<div class="sumline"><span>${n}× ${CROPS[t].name}</span><span>${(n * CROPS[t].sell).toLocaleString('de-DE')}g</span></div>`;
-      S.shipped[t] = 0;
+    let lines = '';
+    for (const t of SELLABLE) {
+      const n = S.sold[t]; if (!n) continue;
+      lines += `<div class="sumline"><span>${n}× ${ITEM[t].name}</span><span>${(n * sellOf(t)).toLocaleString('de-DE')}g</span></div>`;
     }
-    S.gold += income; S.earned += income;
+    const income = S.soldGold; S.sold = {}; S.soldGold = 0; custs.length = 0;
+    // Lieferungen
+    let dl = '';
+    for (const o of S.orders.slice()) {
+      if (orderReady(o)) { S.gold += o.reward; S.earned += o.reward; dl += `<div class="sumline"><span>Lieferung an ${o.who}</span><span>+${o.reward}g</span></div>`; S.orders.splice(S.orders.indexOf(o), 1); continue; }
+      o.days--;
+      if (o.days <= 0) {
+        for (const t in o.packed) if (o.packed[t]) addItem(t, o.packed[t]);
+        dl += `<div class="sumline"><span>Bestellung von ${o.who} abgelaufen</span><span>–</span></div>`;
+        S.orders.splice(S.orders.indexOf(o), 1);
+      }
+    }
+    let fresh = [];
+    if (!S.orders.length) { const o = genOrder(); S.orders.push(o); fresh.push(o.who); }
+    while (S.orders.length < 3 && Math.random() < .55) { const o = genOrder(); S.orders.push(o); fresh.push(o.who); }
+    // Bäume
+    let regrow = false;
+    for (const k in TREES) { const st = TREES[k]; if (st.s === 'tree') delete TREES[k]; else if (st.s === 'stump' && ++st.d >= 4) { delete TREES[k]; regrow = true; } }
+    rebuildTrees();
     let lost = 0;
     if (passedOut) { lost = Math.min(Math.floor(S.gold * .1), 500); S.gold -= lost; }
     let grown = 0;
@@ -954,7 +1199,10 @@ function endDay(passedOut) {
     const ready = Object.values(S.soil).filter(s => s.c && s.c.d >= CROPS[s.c.t].days).length;
     let html = `<h2>${passedOut ? 'Du bist vor Erschöpfung umgekippt …' : 'Ein neuer Morgen'}</h2>`;
     if (passedOut) html += `<p>Ein Nachbar hat dich nach Hause gebracht. Für die Hilfe fehlen dir <b>${lost}g</b>, und du bist nicht ganz ausgeruht.</p>`;
-    html += lines ? `<p><b>Verkauft:</b></p>${lines}<div class="sumline total"><span>Einnahmen</span><span>${income.toLocaleString('de-DE')}g</span></div>` : '<p>Gestern wurde nichts verkauft.</p>';
+    html += lines ? `<p><b>Gestern am Stand verkauft:</b></p>${lines}<div class="sumline total"><span>Einnahmen</span><span>${income.toLocaleString('de-DE')}g</span></div>` : '<p>Gestern wurde am Stand nichts verkauft.</p>';
+    if (dl) html += `<p><b>Lieferungen:</b></p>${dl}`;
+    if (fresh.length) html += `<p>Neue Bestellung${fresh.length > 1 ? 'en' : ''} von ${fresh.join(', ')} am Auftragsbrett.</p>`;
+    if (regrow) html += '<p>Ein Baumstumpf ist wieder zu einem Baum herangewachsen.</p>';
     if (grown) html += `<p>${grown} Pflanze${grown > 1 ? 'n sind' : ' ist'} über Nacht gewachsen.</p>`;
     if (ready) html += `<p>${ready} Pflanze${ready > 1 ? 'n sind' : ' ist'} erntereif!</p>`;
     if (S.rain) html += '<p>Heute regnet es – deine Felder sind schon gegossen.</p>';
@@ -1100,6 +1348,7 @@ function update(dt) {
     parts.push({ x: tx * 16 + 3 + Math.random() * 10, y: ty * 16 + 6 + Math.random() * 6, vx: -5 - Math.random() * 6, vy: 7 + Math.random() * 5,
       life: 2.5 + Math.random() * 2, col: Math.random() < .5 ? '#ffc2dc' : '#ffe3ee', pt: 1, s: Math.random() * 6 });
   updateCritters(dt);
+  if (!paused) updateCustomers(dt);
   if (S.rain) for (const d of rain) { d.y += d.s * dt; d.x -= d.s * .25 * dt; if (d.y > VH) { d.y = -4; d.x = Math.random() * (VW + 60); } }
   if (paused) { moving = false; return; }
   let dx = 0, dy = 0;
@@ -1134,8 +1383,8 @@ function render(t) {
   camY = Math.round(Math.max(0, Math.min(H - VH, S.py - 8 - VH / 2)));
   X.fillStyle = '#26121f'; X.fillRect(0, 0, VW, VH);
   X.save(); X.translate(-camX, -camY);
-  X.drawImage(BG, 0, 0);
-  drawPondAnim(t);
+  X.drawImage(BG, 0, 0); X.drawImage(TL, 0, 0);
+  drawPondAnim(t); drawStandGoods(t);
   const has = (x, y) => !!S.soil[x + ',' + y];
   for (const k in S.soil) {
     const s = S.soil[k], [tx, ty] = k.split(',').map(Number), x0 = tx * 16, y0 = ty * 16;
@@ -1161,6 +1410,7 @@ function render(t) {
   const night = S.time > 1200;
   const buns = critters.filter(c => c.k === 'bun');
   for (const c of buns) if (c.y <= S.py) drawBunny(c);
+  for (const c of custs) if (c.y <= S.py) drawCustomer(c);
   // player
   const f = moving ? Math.floor(animT * 8) % 4 : 0;
   const flip = S.dir === 'left';
@@ -1177,6 +1427,7 @@ function render(t) {
     else X.drawImage(ICON[actTool], ix, iy);
   }
   for (const c of buns) if (c.y > S.py) drawBunny(c);
+  for (const c of custs) if (c.y > S.py) drawCustomer(c);
   for (const p of parts) {
     if (p.h) heart(X, Math.round(p.x) - 2, Math.round(p.y) - 2, p.col);
     else R(X, Math.round(p.x), Math.round(p.y), p.pt ? (p.s > 3 ? 2 : 1) : 2, p.pt ? 1 : 2, p.col);
