@@ -55,4 +55,4 @@ Im Hochformat liegen Steuerung und Werkzeugleiste unter dem Spielfeld, und die K
 - Alle Grafiken prozedural im Code gezeichnet – keine Bilddateien
 - Soundeffekte per Web Audio API
 - Spielstand im `localStorage` des Browsers
-- Schrift: [Pixelify Sans](https://fonts.google.com/specimen/Pixelify+Sans) über Google Fonts
+- Schrift: [VT323](https://fonts.google.com/specimen/VT323) über Google Fonts
