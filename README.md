@@ -35,14 +35,14 @@ Im Hochformat liegen Steuerung und Werkzeugleiste unter dem Spielfeld, und die K
 3. Täglich mit der **Gießkanne** gießen – am Teich auffüllen
 4. Reife Pflanzen mit der **Sichel** ernten (erntet auch die beiden Nachbarfelder) und in die **Versandkiste** legen – bezahlt wird über Nacht
 5. Im **Dorfladen** neue Samen, Salat (Energie) und eine größere Gießkanne kaufen
-6. Im **Rucksack** alle Gegenstände ansehen, Werkzeuge in die Hand nehmen oder Ernte essen
+6. Im **Rucksack** (16 Plätze) liegt die Ernte. Gegenstände lassen sich zwischen Rucksack und Werkzeugleiste (8 Plätze) verschieben; Ernte und Salat kann man essen
 7. Vor 2 Uhr nachts durch die Haustür **schlafen gehen** – dabei wird gespeichert
 
 | Pflanze | Samenpreis | Wachstum | Verkaufspreis |
 |---|---|---|---|
-| Rübe | 20g | 4 Tage | 35g |
-| Kohl | 50g | 7 Tage | 120g |
-| Kürbis | 100g | 10 Tage | 260g |
+| Rübe | 20g | 2 Tage | 35g |
+| Kohl | 45g | 3 Tage | 90g |
+| Kürbis | 90g | 5 Tage | 200g |
 
 ## Technik
 

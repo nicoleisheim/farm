@@ -10,9 +10,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+b,strong,h2{font-weight:600}
+button,input,kbd,small{font-family:inherit;font-variant-numeric:tabular-nums}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;touch-action:none;-webkit-text-size-adjust:100%;text-size-adjust:100%}
-body{background:radial-gradient(circle at 50% 30%,#6a3d5e,#26121f 75%);font-family:'Fredoka',ui-rounded,'Arial Rounded MT Bold','Nunito',system-ui,sans-serif;font-variant-numeric:tabular-nums;overflow:hidden;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:manipulation;overscroll-behavior:none}
+body{background:radial-gradient(circle at 50% 30%,#6a3d5e,#26121f 75%);font-family:'Fredoka',ui-rounded,'Arial Rounded MT Bold','Nunito',system-ui,sans-serif;font-variant-numeric:tabular-nums;font-weight:500;overflow:hidden;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:manipulation;overscroll-behavior:none}
 #app{position:fixed;top:0;left:0;width:100%;height:100%;touch-action:none;display:flex;align-items:center;justify-content:center;font-size:14px}
 #stage{position:relative;flex:none}
 #c{display:block;width:100%;height:100%;image-rendering:pixelated;image-rendering:crisp-edges;border-radius:6px;box-shadow:0 10px 40px rgba(0,0,0,.55);cursor:pointer;touch-action:none}
@@ -22,35 +24,40 @@ body{background:radial-gradient(circle at 50% 30%,#6a3d5e,#26121f 75%);font-fami
 #tl{display:flex;gap:.5em;align-items:flex-start}
 #clock{padding:.4em .7em;text-align:right;min-width:8.6em;line-height:1.2}
 #date{font-weight:600}
-#time{font-size:1.45em;font-weight:600;letter-spacing:.02em}
-#weather{margin-right:.3em}
-#gold{margin-top:.25em;display:flex;align-items:center;justify-content:flex-end;gap:.3em;font-weight:700;border-top:.12em dashed #ec9dbd;padding-top:.25em}
+#time{font-size:1.45em;font-weight:600}
+#weather{width:1.25em;height:1.25em;image-rendering:pixelated;vertical-align:-.15em;margin-right:.3em}
+#elabel img{width:1.1em;height:1.1em;image-rendering:pixelated;display:block}
+#gold{margin-top:.25em;display:flex;align-items:center;justify-content:flex-end;gap:.3em;font-weight:600;border-top:.12em dashed #ec9dbd;padding-top:.25em}
 #gold img{width:1.2em;height:1.2em;image-rendering:pixelated}
 #barRow{display:flex;align-items:center;gap:.4em}
 #invBtn{width:3.75em;height:3.75em;padding:0;border-radius:1.2em;cursor:pointer;display:flex;align-items:center;justify-content:center;flex:none;touch-action:manipulation}
 #invBtn img{width:2.2em;height:2.2em;image-rendering:pixelated;pointer-events:none}
 #invBtn:active{transform:translateY(.1em)}
-.inv{display:grid;grid-template-columns:repeat(6,1fr);gap:.35em;margin:.5em 0 .6em}
-.inv .slot{width:auto;height:auto;aspect-ratio:1}
-.inv .slot.empty{opacity:.4;cursor:default}
+.inv{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:.28em;margin:.25em 0 .55em}
+.invlbl{font-size:.8em;font-weight:600;color:#c4527e;margin-top:.3em}
+.inv .slot,body.port .inv .slot{width:auto;height:auto;min-width:0;aspect-ratio:1;border-radius:.7em}
+.inv .slot.empty{background:#ffe9f1;border-style:dashed}
+.inv .slot .n{font-size:.62em}
+.detail.empty{align-items:center;justify-content:center;text-align:center;opacity:.8}
+.detail .tip{display:block;margin-top:.4em;opacity:.65;font-size:.75em}
 .detail{display:flex;gap:.7em;align-items:flex-start;background:#fff0f6;border-radius:.7em;padding:.6em .7em;min-height:5.2em}
 .detail img{width:3em;height:3em;image-rendering:pixelated;flex:none}
 .detail .t{flex:1;line-height:1.3}
 .detail .t b{font-size:1.1em;color:#c4527e}
 .detail .acts{display:flex;gap:.4em;margin-top:.45em;flex-wrap:wrap}
-#helpBtn{width:2.3em;height:2.3em;font:inherit;font-weight:700;cursor:pointer;padding:0;flex:none}
+#helpBtn{width:2.3em;height:2.3em;font:inherit;font-weight:600;cursor:pointer;padding:0;flex:none}
 #bottom{position:absolute;left:0;right:0;bottom:.6em;display:flex;justify-content:center;pointer-events:none}
 #bottom>*{pointer-events:auto}
 #energy{position:absolute;right:.6em;bottom:0;width:2.3em;height:9.5em;padding:.4em .4em .25em;display:flex;flex-direction:column;align-items:center;gap:.15em}
 #ebar{flex:1;width:100%;background:#6a3a4a;border-radius:.2em;position:relative;overflow:hidden}
 #efill{position:absolute;left:0;right:0;bottom:0;height:var(--e,100%);background:#5fcf3a;transition:height .3s,width .3s}
-#elabel{font-weight:700;font-size:.95em;order:2;color:#ff4f8b}
+#elabel{font-weight:600;font-size:.95em;order:2;color:#ff4f8b}
 #hotbar{display:flex;gap:.3em;padding:.35em;border-radius:1.2em}
 .slot{width:2.9em;height:2.9em;background:#fff0f6;border:.16em solid #f5a3c3;border-radius:.9em;position:relative;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .1s;touch-action:manipulation}
 .slot.sel{border-color:#ff4f8b;background:#ffe3ee;box-shadow:0 0 0 .16em #fff,0 .25em .6em rgba(255,79,139,.55);transform:translateY(-.2em)}
 .slot img{width:80%;height:80%;image-rendering:pixelated;pointer-events:none}
-.slot .n{position:absolute;right:.3em;bottom:.05em;font-weight:700;font-size:.85em;line-height:1;color:#fff;-webkit-text-stroke:.2em #c4527e;paint-order:stroke fill;pointer-events:none}
-.slot .k{position:absolute;left:.5em;top:.2em;font-size:.6em;line-height:1;font-weight:600;color:#e07aa2;pointer-events:none}
+.slot .n{position:absolute;right:-.15em;bottom:-.15em;min-width:1.5em;padding:.12em .3em;border-radius:1em;background:#fff;border:.12em solid #f5a3c3;font-weight:600;font-size:.72em;line-height:1;text-align:center;color:#c4527e;pointer-events:none}
+.slot .k{position:absolute;left:.45em;top:.25em;font-size:.6em;line-height:1;font-weight:600;color:#e07aa2;pointer-events:none}
 .slot .wl{position:absolute;left:.5em;right:.5em;bottom:.3em;height:.28em;background:#6a3a4a;border-radius:.1em;overflow:hidden;pointer-events:none}
 .slot .wl i{display:block;height:100%;background:#4fb3ff}
 #hint{position:absolute;left:50%;bottom:5.5em;transform:translateX(-50%);padding:.2em .6em;font-size:.85em;font-weight:600;white-space:nowrap;display:none;pointer-events:none}
@@ -64,7 +71,7 @@ body{background:radial-gradient(circle at 50% 30%,#6a3d5e,#26121f 75%);font-fami
 #dlg .sub{opacity:.8;margin-top:0}
 #dlg ul{margin:.3em 0;padding-left:1.2em;line-height:1.45}
 #dlg kbd{font-family:inherit;background:#e0578c;color:#fff;border-radius:.2em;padding:0 .3em}
-.btn{font:inherit;font-weight:700;background:#ffb3cf;border:.14em solid #7a4a2a;border-radius:.7em;padding:.3em .8em;color:#5a2a35;cursor:pointer;box-shadow:0 .15em 0 #7a4a2a;touch-action:manipulation}
+.btn{font:inherit;font-weight:600;background:#ffb3cf;border:.14em solid #7a4a2a;border-radius:.7em;padding:.3em .8em;color:#5a2a35;cursor:pointer;box-shadow:0 .15em 0 #7a4a2a;touch-action:manipulation}
 .btn:hover:not(:disabled){background:#ffc8dc}
 .btn:active:not(:disabled){transform:translateY(.1em);box-shadow:0 .05em 0 #7a4a2a}
 .btn:disabled{opacity:.4;cursor:default}
@@ -73,17 +80,17 @@ body{background:radial-gradient(circle at 50% 30%,#6a3d5e,#26121f 75%);font-fami
 .row img{width:2.1em;height:2.1em;image-rendering:pixelated}
 .row .info{flex:1;display:flex;flex-direction:column;line-height:1.2;min-width:0}
 .row small{opacity:.75}
-.row .price{font-weight:700;min-width:2.8em;text-align:right}
+.row .price{font-weight:600;min-width:2.8em;text-align:right}
 .foot{display:flex;gap:.5em;justify-content:flex-end;margin-top:.7em;flex-wrap:wrap}
 .sumline{display:flex;justify-content:space-between;padding:.15em 0}
-.total{font-weight:700;border-top:.12em solid #ec9dbd;margin-top:.3em;padding-top:.3em}
+.total{font-weight:600;border-top:.12em solid #ec9dbd;margin-top:.3em;padding-top:.3em}
 #fade{position:absolute;inset:0;background:#1a0a14;opacity:0;pointer-events:none;transition:opacity .6s;z-index:19}
 #ctrl{display:none;position:absolute;left:0;right:0;bottom:0;justify-content:space-between;align-items:flex-end;padding:1em max(1em,env(safe-area-inset-right)) max(1em,env(safe-area-inset-bottom)) max(1em,env(safe-area-inset-left));pointer-events:none;z-index:3}
 #ctrl>*{pointer-events:auto}
 body.touch #ctrl{display:flex}
 #joy{width:6.6em;height:6.6em;border-radius:50%;background:radial-gradient(circle,rgba(255,227,238,.55),rgba(255,143,184,.4));border:.25em solid #fff;box-shadow:0 .25em .7em rgba(120,30,70,.35);position:relative;touch-action:none;flex:none}
 #knob{position:absolute;left:50%;top:50%;width:2.8em;height:2.8em;margin:-1.4em 0 0 -1.4em;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe3ee,#ff8fb8 60%,#f06a9e);border:.22em solid #fff;box-shadow:0 .2em .5em rgba(120,30,70,.45);pointer-events:none}
-#abtn{width:3.4em;height:3.4em;border-radius:50%;font:inherit;font-weight:700;font-size:1.2em;background:radial-gradient(circle at 35% 30%,#ffe3ee,#ff8fb8 60%,#f06a9e);border:.22em solid #fff;color:#fff;text-shadow:0 .08em 0 #c4527e;box-shadow:0 .3em .7em rgba(120,30,70,.45);touch-action:none;flex:none}
+#abtn{width:3.4em;height:3.4em;border-radius:50%;font:inherit;font-weight:600;font-size:1.2em;background:radial-gradient(circle at 35% 30%,#ffe3ee,#ff8fb8 60%,#f06a9e);border:.22em solid #fff;color:#fff;box-shadow:0 .3em .7em rgba(120,30,70,.45);touch-action:none;flex:none}
 #abtn.down{transform:translateY(.12em) scale(.96);box-shadow:0 .1em .3em rgba(120,30,70,.45);background:radial-gradient(circle at 35% 30%,#ffd0e2,#ff7aa8 60%,#e85a92)}
 /* Handy hochkant */
 body.port #app{flex-direction:column;justify-content:flex-start;align-items:stretch;padding-top:env(safe-area-inset-top)}
@@ -119,7 +126,7 @@ body.port #toast{bottom:2.7em}
       <div id="tl"><button id="helpBtn" class="panel" title="Hilfe & Steuerung">?</button></div>
       <div id="clock" class="panel">
         <div id="date"></div>
-        <div><span id="weather"></span><span id="time"></span></div>
+        <div><img id="weather" alt=""><span id="time"></span></div>
         <div id="gold"></div>
       </div>
     </div>
@@ -127,7 +134,7 @@ body.port #toast{bottom:2.7em}
     <div id="toast" class="panel"></div>
     <div id="bottom">
       <div id="barRow"><div id="hotbar" class="panel"></div><button id="invBtn" class="panel" title="Rucksack (I)" aria-label="Rucksack"><img id="invIcon" alt=""></button></div>
-      <div id="energy" class="panel" title="Energie"><div id="elabel">♥</div><div id="ebar"><div id="efill"></div></div></div>
+      <div id="energy" class="panel" title="Energie"><div id="elabel"><img id="heartIcon" alt=""></div><div id="ebar"><div id="efill"></div></div></div>
     </div>
   </div>
   <div id="ctrl"><div id="joy"><div id="knob"></div></div><button id="abtn" aria-label="Aktion">A</button></div>
@@ -163,19 +170,23 @@ function mk(w, h) { const c = document.createElement('canvas'); c.width = w; c.h
 
 /* ---------- game data ---------- */
 const CROPS = {
-  ruebe:   { name: 'Rübe',   seed: 'Rübensamen',  days: 4,  buy: 20,  sell: 35,  eat: 15 },
-  kohl:    { name: 'Kohl',   seed: 'Kohlsamen',   days: 7,  buy: 50,  sell: 120, eat: 30 },
-  kuerbis: { name: 'Kürbis', seed: 'Kürbissamen', days: 10, buy: 100, sell: 260, eat: 50 },
+  ruebe:   { name: 'Rübe',   seed: 'Rübensamen',  days: 2, buy: 20, sell: 35,  eat: 15 },
+  kohl:    { name: 'Kohl',   seed: 'Kohlsamen',   days: 3, buy: 45, sell: 90,  eat: 30 },
+  kuerbis: { name: 'Kürbis', seed: 'Kürbissamen', days: 5, buy: 90, sell: 200, eat: 50 },
 };
-const SLOTS = [
-  { kind: 'hoe', name: 'Hacke', icon: 'hoe' },
-  { kind: 'can', name: 'Gießkanne', icon: 'can' },
-  { kind: 'sickle', name: 'Sichel', icon: 'sickle' },
-  { kind: 'seed', crop: 'ruebe', icon: 'seed_ruebe' },
-  { kind: 'seed', crop: 'kohl', icon: 'seed_kohl' },
-  { kind: 'seed', crop: 'kuerbis', icon: 'seed_kuerbis' },
-  { kind: 'snack', name: 'Gartensalat', icon: 'snack' },
-];
+const ITEM = {
+  hoe: { name: 'Hacke', kind: 'hoe', tool: 1, desc: 'Lockert Gras zu Ackerboden auf. Kostet 2 Energie.' },
+  can: { name: 'Gießkanne', kind: 'can', tool: 1, desc: 'Gießt aufgelockerten Boden. Am Teich auffüllen.' },
+  sickle: { name: 'Sichel', kind: 'sickle', tool: 1, desc: 'Erntet reife Pflanzen – das Feld vor dir und die beiden daneben.' },
+  snack: { name: 'Gartensalat', kind: 'food', eat: 40, desc: 'Ein knackiger Salat aus dem Dorfladen.' },
+};
+for (const t in CROPS) {
+  const c = CROPS[t];
+  ITEM['seed-' + t] = { name: c.seed, kind: 'seed', crop: t, desc: `Reif nach ${c.days} Tagen, wenn du täglich gießt.` };
+  ITEM[t] = { name: c.name, kind: 'crop', crop: t, eat: c.eat, desc: `Frisch geerntet. Bringt ${c.sell}g in der Versandkiste.` };
+}
+const BAR_N = 8, BAG_N = 16;
+const iconOf = id => id.replace('-', '_');
 const SEASONS = ['Frühling', 'Sommer', 'Herbst', 'Winter'];
 const WDAYS = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 const SOLID = new Set(['T', 'H', 'S', 'B', 'U', 'W']);
@@ -224,18 +235,46 @@ function drawGrass(g, tx, ty) {
     heart(g, px - 1, py, '#ff8fb8');
   }
 }
-function drawPath(g, tx, ty) {
-  const x0 = tx * 16, y0 = ty * 16;
-  R(g, x0, y0, 16, 16, '#f3d6b6');
-  for (let i = 0; i < 10; i++) {
-    const px = x0 + Math.floor(hash(tx, ty, i) * 15), py = y0 + Math.floor(hash(tx, ty, i + 30) * 15);
-    R(g, px, py, hash(tx, ty, i + 60) < .5 ? 2 : 1, 1, hash(tx, ty, i + 90) < .6 ? '#e5bf9a' : '#fbe7d0');
+const isPT = (a, b) => tileAt(a, b) === 'P';
+const connT = (a, b) => { const t = tileAt(a, b); return t === 'P' || t === 'H' || t === 'S' || t === 'B'; };
+function pathPix(x, y) {
+  const tx = Math.floor(x / 16), ty = Math.floor(y / 16), lx = x - tx * 16, ly = y - ty * 16;
+  const hx = lx < 8 ? -1 : 1, hy = ly < 8 ? -1 : 1, cx = lx < 8 ? lx : 15 - lx, cy = ly < 8 ? ly : 15 - ly;
+  if (isPT(tx, ty)) return !(!connT(tx + hx, ty) && !connT(tx, ty + hy) && cy < 4 && cx < [4, 2, 1, 1][cy]);
+  return isPT(tx + hx, ty) && isPT(tx, ty + hy) && isPT(tx + hx, ty + hy) && cy < 4 && cx < [4, 2, 1, 1][cy];
+}
+function drawPaths(g) {
+  const bld = (x, y) => { const t = tileAt(Math.floor(x / 16), Math.floor(y / 16)); return t === 'H' || t === 'S' || t === 'B'; };
+  const edge = (x, y) => [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => !pathPix(x + dx, y + dy) && !bld(x + dx, y + dy));
+  const P = new Uint8Array(W * H);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (pathPix(x, y)) P[y * W + x] = edge(x, y) ? 2 : 1;
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const v = P[y * W + x];
+    if (v === 2) R(g, x, y, 1, 1, '#d6ad84');
+    else if (v === 1) R(g, x, y, 1, 1, hash(x, y, 2) < .1 ? '#e7c59d' : '#f0d3ae');
+    else if ((y > 0 && P[(y - 1) * W + x] === 2) && hash(x, y, 6) < .9) R(g, x, y, 1, 1, '#76b650');
   }
-  const p = (x, y) => { const t = tileAt(x, y); return t === 'P' || t === 'H' || t === 'S' || t === 'B'; };
-  if (!p(tx, ty - 1)) R(g, x0, y0, 16, 1, '#dcb08f');
-  if (!p(tx, ty + 1)) R(g, x0, y0 + 15, 16, 1, '#dcb08f');
-  if (!p(tx - 1, ty)) R(g, x0, y0, 1, 16, '#dcb08f');
-  if (!p(tx + 1, ty)) R(g, x0 + 15, y0, 1, 16, '#dcb08f');
+  // Pflastersteine
+  for (let ty = 0; ty < ROWS; ty++) for (let tx = 0; tx < COLS; tx++) {
+    if (!isPT(tx, ty)) continue;
+    for (let k = 0; k < 4; k++) {
+      const sx = tx * 16 + (k % 2) * 8 + 1 + Math.floor(hash(tx, ty, k) * 2), sy = ty * 16 + (k >> 1) * 8 + 1 + Math.floor(hash(tx, ty, k + 9) * 2);
+      const w = 5 + (hash(tx, ty, k + 3) < .5 ? 1 : 0), h = 4 + (hash(tx, ty, k + 5) < .5 ? 1 : 0);
+      const tone = hash(tx, ty, k + 7) < .25 ? ['#fde3ec', '#fff3f7', '#e8bfcf'] : ['#f8e8d4', '#fff7ec', '#dcbf9c'];
+      for (let yy = 0; yy < h; yy++) for (let xx = 0; xx < w; xx++) {
+        if ((xx === 0 || xx === w - 1) && (yy === 0 || yy === h - 1)) continue;
+        const x = sx + xx, y = sy + yy;
+        if (P[y * W + x] !== 1) continue;
+        R(g, x, y, 1, 1, yy === 0 ? tone[1] : yy === h - 1 ? tone[2] : tone[0]);
+      }
+    }
+  }
+  // Grashalme am Rand
+  for (let y = 1; y < H - 1; y++) for (let x = 1; x < W - 1; x++) {
+    if (P[y * W + x] !== 2 || hash(x, y, 8) > .12) continue;
+    const up = !P[(y - 1) * W + x];
+    if (up) { R(g, x, y, 1, 2, '#6aae4a'); } else if (!P[(y + 1) * W + x]) { R(g, x, y - 1, 1, 2, '#7bbf55'); }
+  }
 }
 function drawTree(g, tx, ty) {
   const x0 = tx * 16, y0 = ty * 16, s = Math.floor(hash(tx, ty, 3) * 3) - 1, cherry = hash(tx, ty, 21) < .4;
@@ -439,6 +478,16 @@ icon('bag', g => {
   R(g, 2, 4, 12, 4, '#f06a9e'); R(g, 2, 8, 12, 1, '#c4527e'); R(g, 7, 7, 2, 3, '#ffe066');
   R(g, 4, 10, 8, 4, '#ffb3cf'); R(g, 4, 10, 8, 1, '#e0578c'); R(g, 3, 5, 2, 1, '#ffc2dc');
 });
+icon('w_sun', g => { R(g, 7, 1, 2, 2, '#ffb84d'); R(g, 7, 13, 2, 2, '#ffb84d'); R(g, 1, 7, 2, 2, '#ffb84d'); R(g, 13, 7, 2, 2, '#ffb84d');
+  R(g, 3, 3, 2, 2, '#ffb84d'); R(g, 11, 3, 2, 2, '#ffb84d'); R(g, 3, 11, 2, 2, '#ffb84d'); R(g, 11, 11, 2, 2, '#ffb84d');
+  disc(g, 8, 8, 4, '#ffd84a'); R(g, 6, 6, 2, 2, '#fff3b0'); R(g, 6, 9, 1, 1, '#ff9ab8'); R(g, 10, 9, 1, 1, '#ff9ab8'); });
+icon('w_moon', g => { disc(g, 8, 8, 6, '#ffe58a'); disc(g, 11, 6, 5, 'rgba(0,0,0,0)'); g.clearRect(0, 0, 0, 0);
+  g.globalCompositeOperation = 'destination-out'; disc(g, 11, 6, 5, '#000'); g.globalCompositeOperation = 'source-over';
+  R(g, 13, 11, 1, 1, '#fff'); R(g, 12, 2, 1, 1, '#fff'); });
+icon('w_rain', g => { disc(g, 6, 7, 3, '#cfd9ea'); disc(g, 10, 6, 4, '#e3ebf6'); R(g, 3, 8, 11, 3, '#e3ebf6'); R(g, 3, 10, 11, 1, '#b9c6da');
+  R(g, 4, 12, 1, 2, '#4fb3ff'); R(g, 8, 13, 1, 2, '#4fb3ff'); R(g, 12, 12, 1, 2, '#4fb3ff'); });
+icon('heart', g => { R(g, 2, 3, 4, 2, '#ff4f8b'); R(g, 10, 3, 4, 2, '#ff4f8b'); R(g, 1, 4, 14, 4, '#ff4f8b'); R(g, 2, 8, 12, 2, '#ff4f8b');
+  R(g, 4, 10, 8, 2, '#ff4f8b'); R(g, 6, 12, 4, 1, '#ff4f8b'); R(g, 7, 13, 2, 1, '#ff4f8b'); R(g, 3, 4, 2, 2, '#ffc2dc'); });
 function seedBag(g, a, b) {
   R(g, 4, 3, 8, 11, '#d9b27a'); R(g, 4, 3, 8, 2, '#b98f55'); R(g, 5, 2, 6, 1, '#b98f55');
   R(g, 3, 5, 1, 8, '#c79f66'); R(g, 12, 5, 1, 8, '#c79f66'); R(g, 4, 14, 8, 1, '#9c7444');
@@ -460,8 +509,9 @@ icon('coin', g => { disc(g, 8, 8, 6, '#9c6b12'); disc(g, 8, 8, 5, '#f2c13a'); R(
 const CHERRY = [];
 const [BG, bg] = mk(W, H);
 for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
-  if (MAP[y][x] === 'P') drawPath(bg, x, y); else drawGrass(bg, x, y);
+  drawGrass(bg, x, y);
 }
+drawPaths(bg);
 drawHouse(bg); drawShop(bg); drawBin(bg);
 for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
   if (MAP[y][x] === 'T') drawTree(bg, x, y);
@@ -517,12 +567,27 @@ function drawPlayerSprite(g, dir, f) {
 /* ---------- state ---------- */
 const KEY = 'sonnenhof-v1';
 function newState() {
+  const bar = ['hoe', 'can', 'sickle', 'seed-ruebe', 'snack', null, null, null];
   return { day: 1, time: 360, gold: 150, energy: 100, maxEnergy: 100, water: 20, canCap: 20, rain: false,
-    seeds: { ruebe: 15, kohl: 0, kuerbis: 0 }, produce: { ruebe: 0, kohl: 0, kuerbis: 0 }, shipped: { ruebe: 0, kohl: 0, kuerbis: 0 },
-    snacks: 2, soil: {}, sel: 0, px: 72, py: 93, dir: 'down', warned: false, earned: 0 };
+    items: { hoe: 1, can: 1, sickle: 1, 'seed-ruebe': 15, snack: 2 }, bar, bag: Array(BAG_N).fill(null),
+    shipped: { ruebe: 0, kohl: 0, kuerbis: 0 }, soil: {}, sel: 0, px: 72, py: 93, dir: 'down', warned: false, earned: 0 };
+}
+function migrate(d) {
+  if (d.bar) return d;
+  const items = { hoe: 1, can: 1, sickle: 1 };
+  for (const t in CROPS) {
+    if (d.seeds && d.seeds[t]) items['seed-' + t] = d.seeds[t];
+    if (d.produce && d.produce[t]) items[t] = d.produce[t];
+  }
+  if (d.snacks) items.snack = d.snacks;
+  d.items = items; d.bar = Array(BAR_N).fill(null); d.bag = Array(BAG_N).fill(null);
+  ['hoe', 'can', 'sickle', 'seed-ruebe', 'seed-kohl', 'seed-kuerbis', 'snack'].filter(i => items[i]).forEach((id, i) => d.bar[i] = id);
+  Object.keys(CROPS).filter(t => items[t]).forEach((t, i) => d.bag[i] = t);
+  d.sel = 0; delete d.seeds; delete d.produce; delete d.snacks;
+  return d;
 }
 function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
-function load() { try { const d = JSON.parse(localStorage.getItem(KEY)); if (d && d.day) return d; } catch (e) {} return null; }
+function load() { try { const d = JSON.parse(localStorage.getItem(KEY)); if (d && d.day) return migrate(d); } catch (e) {} return null; }
 let S = load();
 const firstRun = !S;
 if (!S) S = newState();
@@ -553,58 +618,74 @@ let paused = false;
 function openDlg(html) { delete $('dlg').dataset.inv; $('dlg').innerHTML = html; $('dlg').scrollTop = 0; $('shade').style.display = 'flex'; paused = true; keys.clear(); joyReset(); }
 function closeDlg() { $('shade').style.display = 'none'; paused = false; }
 
-function owned(sl) { return sl.kind === 'seed' ? S.seeds[sl.crop] > 0 : sl.kind === 'snack' ? S.snacks > 0 : true; }
-function visSlots() { return SLOTS.map((_, i) => i).filter(i => owned(SLOTS[i])); }
+const cnt = id => (id && S.items[id]) || 0;
+function itemName(id) { return id === 'can' && S.canCap > 20 ? 'Kupfer-Gießkanne' : ITEM[id].name; }
+function slotOf(id) { let i = S.bar.indexOf(id); if (i >= 0) return ['bar', i]; i = S.bag.indexOf(id); return i >= 0 ? ['bag', i] : null; }
+function addItem(id, n) {
+  if (!slotOf(id)) {
+    const order = ITEM[id].kind === 'crop' ? ['bag', 'bar'] : ['bar', 'bag'];
+    let placed = false;
+    for (const c of order) { const i = S[c].indexOf(null); if (i >= 0) { S[c][i] = id; placed = true; break; } }
+    if (!placed) { toast('Kein Platz mehr im Rucksack!'); snd('err'); return false; }
+  }
+  S.items[id] = cnt(id) + n; return true;
+}
+function useItem(id, n = 1) {
+  S.items[id] = cnt(id) - n;
+  if (S.items[id] <= 0) { delete S.items[id]; const sl = slotOf(id); if (sl) S[sl[0]][sl[1]] = null; }
+}
+const held = () => S.bar[S.sel] || null;
+function visSlots() { return S.bar.map((id, i) => id ? i : -1).filter(i => i >= 0); }
 let hbKey = '';
 function buildHotbar() {
-  const hb = $('hotbar'), v = visSlots(); hb.innerHTML = ''; hbKey = v.join(','); hudCache = '';
-  v.forEach((si, n) => {
-    const sl = SLOTS[si], d = document.createElement('div'); d.className = 'slot'; d.dataset.si = si;
-    d.innerHTML = `<span class="k">${n + 1}</span><img src="${ICONURL[sl.icon]}" alt=""><span class="n"></span>` + (sl.kind === 'can' ? '<span class="wl"><i></i></span>' : '');
-    d.addEventListener('click', () => setSel(si));
+  const hb = $('hotbar'), v = visSlots(); hb.innerHTML = ''; hbKey = S.bar.join(','); hudCache = '';
+  hb.style.display = v.length ? '' : 'none';
+  v.forEach((bi, n) => {
+    const id = S.bar[bi], d = document.createElement('div'); d.className = 'slot'; d.dataset.bi = bi;
+    d.innerHTML = `<span class="k">${n + 1}</span><img src="${ICONURL[iconOf(id)]}" alt=""><span class="n"></span>` + (id === 'can' ? '<span class="wl"><i></i></span>' : '');
+    d.addEventListener('click', () => setSel(bi));
     hb.appendChild(d);
   });
 }
-function slotName(sl) { return sl.kind === 'seed' ? CROPS[sl.crop].seed : sl.name; }
-function setSel(si) {
-  if (!owned(SLOTS[si])) return;
-  S.sel = si; snd('sel');
-  const sl = SLOTS[si];
+function setSel(bi) {
+  const id = S.bar[bi]; if (!id) return;
+  S.sel = bi; snd('sel');
   let extra = '';
-  if (sl.kind === 'seed') extra = ` (${S.seeds[sl.crop]})`;
-  if (sl.kind === 'can') extra = ` (${S.water}/${S.canCap})`;
-  if (sl.kind === 'snack') extra = ` (${S.snacks})`;
-  toast(slotName(sl) + extra);
+  if (id === 'can') extra = ` (${S.water}/${S.canCap})`;
+  else if (!ITEM[id].tool) extra = ` (${cnt(id)})`;
+  toast(itemName(id) + extra);
 }
 function selectSlot(n) { const v = visSlots(); if (n >= 0 && n < v.length) setSel(v[n]); }
-function cycleSlot(dir) { const v = visSlots(), i = v.indexOf(S.sel); setSel(v[((i < 0 ? 0 : i) + dir + v.length) % v.length]); }
+function cycleSlot(dir) { const v = visSlots(); if (!v.length) return; const i = v.indexOf(S.sel); setSel(v[((i < 0 ? 0 : i) + dir + v.length) % v.length]); }
 let hudCache = '';
 function updateHUD() {
   const sd = (S.day - 1) % 28 + 1, season = SEASONS[Math.floor((S.day - 1) / 28) % 4];
-  if (!owned(SLOTS[S.sel])) S.sel = 0;
-  if (visSlots().join(',') !== hbKey) buildHotbar();
-  const sig = [S.day, Math.floor(S.time / 10), S.gold, Math.round(S.energy), S.water, S.sel, S.rain, JSON.stringify(S.seeds), JSON.stringify(S.produce), S.snacks, S.canCap].join('|');
+  if (!S.bar[S.sel]) { const v = visSlots(); if (v.length) S.sel = v[0]; }
+  if (S.bar.join(',') !== hbKey) buildHotbar();
+  const sig = [S.day, Math.floor(S.time / 10), S.gold, Math.round(S.energy), S.water, S.sel, S.rain, JSON.stringify(S.items), S.canCap].join('|');
   if (sig !== hudCache) {
     hudCache = sig;
     $('date').textContent = `${WDAYS[(S.day - 1) % 7]}. ${sd}. ${season}`;
     $('time').textContent = fmtTime(S.time);
-    $('weather').textContent = S.rain ? '🌧️' : (S.time >= 1140 ? '🌙' : '🌸');
+    $('weather').src = ICONURL[S.rain ? 'w_rain' : S.time >= 1140 ? 'w_moon' : 'w_sun'];
     $('gold').innerHTML = `<img src="${ICONURL.coin}" alt="">${S.gold.toLocaleString('de-DE')}g`;
     const p = S.energy / S.maxEnergy;
     $('efill').style.setProperty('--e', (p * 100) + '%');
     $('efill').style.background = p > .5 ? '#ff7fae' : p > .25 ? '#ffb84d' : '#e0503a';
     [...$('hotbar').children].forEach(d => {
-      const si = +d.dataset.si, s = SLOTS[si]; d.classList.toggle('sel', si === S.sel);
+      const bi = +d.dataset.bi, id = S.bar[bi]; if (!id) return;
+      d.classList.toggle('sel', bi === S.sel);
       const n = d.querySelector('.n');
-      n.textContent = s.kind === 'seed' ? S.seeds[s.crop] : s.kind === 'snack' ? S.snacks : '';
-      d.title = slotName(s);
-      if (s.kind === 'can') d.querySelector('.wl i').style.width = (S.water / S.canCap * 100) + '%';
+      n.textContent = ITEM[id].tool ? '' : cnt(id);
+      n.style.display = ITEM[id].tool ? 'none' : '';
+      d.title = itemName(id);
+      if (id === 'can') d.querySelector('.wl i').style.width = (S.water / S.canCap * 100) + '%';
     });
   }
   // interaction hint
   let h = '';
   if (!paused) {
-    const [tx, ty] = targetTile(), t = tileAt(tx, ty), s = S.soil[tx + ',' + ty], tool = SLOTS[S.sel];
+    const [tx, ty] = targetTile(), t = tileAt(tx, ty), s = S.soil[tx + ',' + ty], tool = { kind: held() ? ITEM[held()].kind : '' };
     if (s && s.c && s.c.d >= CROPS[s.c.t].days) h = tool.kind === 'sickle' ? CROPS[s.c.t].name + ' ernten' : 'Sichel wählen zum Ernten';
     else if (tx === DOOR[0] && ty === DOOR[1]) h = 'Schlafen gehen';
     else if (t === 'S') h = 'Einkaufen';
@@ -641,36 +722,57 @@ function helpHTML(intro) {
   <p>Geh vor 2 Uhr nachts ins Bett (Haustür) – sonst kippst du um. Gespeichert wird beim Schlafen.</p>
   <div class="foot">${intro ? '' : '<button class="btn red" data-act="new">Neues Spiel</button>'}<button class="btn" data-act="close">${intro ? "Los geht's!" : 'Weiter'}</button></div>`;
 }
-function invItems() {
-  const L = [
-    { id: 'hoe', name: 'Hacke', icon: 'hoe', n: 1, slot: 0, desc: 'Lockert Gras zu Ackerboden auf. Kostet 2 Energie.' },
-    { id: 'can', name: S.canCap > 20 ? 'Kupfer-Gießkanne' : 'Gießkanne', icon: 'can', n: 1, slot: 1, desc: `Gießt den Boden. Füllstand ${S.water}/${S.canCap} – am Teich auffüllen.` },
-    { id: 'sickle', name: 'Sichel', icon: 'sickle', n: 1, slot: 2, desc: 'Erntet reife Pflanzen – das Feld vor dir und die beiden daneben.' },
-  ];
-  Object.keys(CROPS).forEach((t, i) => { const c = CROPS[t]; L.push({ id: 'seed-' + t, name: c.seed, icon: 'seed_' + t, n: S.seeds[t], slot: 3 + i, desc: `Reif nach ${c.days} Tagen, wenn du täglich gießt.` }); });
-  Object.keys(CROPS).forEach(t => { const c = CROPS[t]; L.push({ id: t, name: c.name, icon: t, n: S.produce[t], eat: c.eat, desc: `Frisch geerntet. Verkaufswert ${c.sell}g in der Versandkiste.` }); });
-  L.push({ id: 'snack', name: 'Gartensalat', icon: 'snack', n: S.snacks, slot: 6, eat: 40, desc: 'Ein knackiger Salat aus dem Dorfladen.' });
-  return L;
-}
 let invSel = null;
-function invHTML() {
-  const items = invItems().filter(it => it.n > 0);
-  if (!items.find(it => it.id === invSel)) invSel = items[0].id;
-  let h = `<h2>Rucksack</h2><p class="sub">Geld: <b>${S.gold.toLocaleString('de-DE')}g</b> · Energie: <b>${Math.round(S.energy)}/${S.maxEnergy}</b></p><div class="inv">`;
-  for (const it of items) h += `<div class="slot${it.id === invSel ? ' sel' : ''}" data-act="inv:${it.id}" title="${it.name}"><img src="${ICONURL[it.icon]}" alt="">${it.n > 1 || it.slot === undefined || it.slot > 2 ? `<span class="n">${it.n}</span>` : ''}</div>`;
-  for (let i = items.length; i < 18; i++) h += '<div class="slot empty"></div>';
-  const it = items.find(x => x.id === invSel);
-  h += `</div><div class="detail"><img src="${ICONURL[it.icon]}" alt=""><div class="t"><b>${it.name}</b>${it.n > 1 ? ` <small>×${it.n}</small>` : ''}<br><small>${it.desc}</small>${it.eat ? `<br><small>Essen: +${it.eat} Energie</small>` : ''}<div class="acts">`;
-  if (it.slot !== undefined) h += `<button class="btn" data-act="take:${it.slot}">In die Hand nehmen</button>`;
-  if (it.eat) h += `<button class="btn" data-act="eat:${it.id}" ${S.energy >= S.maxEnergy ? 'disabled' : ''}>Essen</button>`;
-  return h + '</div></div></div><div class="foot"><button class="btn" data-act="close">Schließen</button></div>';
+function slotHTML(c, i) {
+  const id = S[c][i], sel = invSel && invSel[0] === c && invSel[1] === i;
+  if (!id) return `<div class="slot empty${sel ? ' sel' : ''}" data-act="slot:${c}:${i}"></div>`;
+  return `<div class="slot${sel ? ' sel' : ''}" data-act="slot:${c}:${i}" title="${itemName(id)}"><img src="${ICONURL[iconOf(id)]}" alt="">${ITEM[id].tool ? '' : `<span class="n">${cnt(id)}</span>`}</div>`;
 }
-function openInv() { if (fading) return; if (paused) { if ($('dlg').dataset.inv) closeDlg(); return; } invSel = null; const cur = SLOTS[S.sel]; invSel = cur.kind === 'seed' ? 'seed-' + cur.crop : cur.kind; openDlg(invHTML()); $('dlg').dataset.inv = 1; }
-function eatItem(id) {
-  const it = invItems().find(x => x.id === id); if (!it || !it.n || S.energy >= S.maxEnergy) return;
-  if (id === 'snack') S.snacks--; else S.produce[id]--;
-  S.energy = Math.min(S.maxEnergy, S.energy + it.eat); snd('eat'); toast(`Lecker! +${it.eat} Energie`);
-  $('dlg').innerHTML = invHTML();
+function invHTML() {
+  let h = `<h2>Rucksack</h2><p class="sub">Geld: <b>${S.gold.toLocaleString('de-DE')}g</b> · Energie: <b>${Math.round(S.energy)}/${S.maxEnergy}</b></p>`;
+  h += `<div class="invlbl">Werkzeugleiste</div><div class="inv">${S.bar.map((_, i) => slotHTML('bar', i)).join('')}</div>`;
+  h += `<div class="invlbl">Rucksack</div><div class="inv">${S.bag.map((_, i) => slotHTML('bag', i)).join('')}</div>`;
+  const id = invSel ? S[invSel[0]][invSel[1]] : null;
+  if (id) {
+    const it = ITEM[id], other = invSel[0] === 'bar' ? 'bag' : 'bar', free = S[other].includes(null);
+    let d = it.desc;
+    if (id === 'can') d += ` Füllstand ${S.water}/${S.canCap}.`;
+    h += `<div class="detail"><img src="${ICONURL[iconOf(id)]}" alt=""><div class="t"><b>${itemName(id)}</b>${it.tool ? '' : ` <small>×${cnt(id)}</small>`}<br><small>${d}</small>${it.eat ? `<br><small>Essen: +${it.eat} Energie</small>` : ''}<div class="acts">`;
+    h += `<button class="btn" data-act="mv" ${free ? '' : 'disabled'}>${other === 'bar' ? 'In die Leiste' : 'In den Rucksack'}</button>`;
+    if (invSel[0] === 'bar') h += `<button class="btn" data-act="hold">In die Hand</button>`;
+    if (it.eat) h += `<button class="btn" data-act="eat" ${S.energy >= S.maxEnergy ? 'disabled' : ''}>Essen</button>`;
+    h += `</div><small class="tip">Tipp: Danach ein freies Feld antippen, um es dorthin zu legen.</small></div></div>`;
+  } else h += `<div class="detail empty"><small>Tippe auf einen Gegenstand, um ihn anzusehen oder zu verschieben.</small></div>`;
+  return h + '<div class="foot"><button class="btn" data-act="close">Schließen</button></div>';
+}
+function rerenderInv() { const sc = $('dlg').scrollTop; $('dlg').innerHTML = invHTML(); $('dlg').scrollTop = sc; }
+function openInv() {
+  if (fading) return;
+  if (paused) { if ($('dlg').dataset.inv) closeDlg(); return; }
+  invSel = S.bar[S.sel] ? ['bar', S.sel] : null;
+  openDlg(invHTML()); $('dlg').dataset.inv = 1;
+}
+function invClick(c, i) {
+  i = +i;
+  const src = invSel ? S[invSel[0]][invSel[1]] : null;
+  if (src && !S[c][i] && !(invSel[0] === c && invSel[1] === i)) {
+    S[c][i] = src; S[invSel[0]][invSel[1]] = null;
+    if (invSel[0] === 'bar' && invSel[1] === S.sel && c === 'bar') S.sel = i;
+    invSel = [c, i]; snd('plant');
+  } else { invSel = S[c][i] ? [c, i] : null; snd('sel'); }
+  rerenderInv();
+}
+function invMove() {
+  const id = S[invSel[0]][invSel[1]], other = invSel[0] === 'bar' ? 'bag' : 'bar', j = S[other].indexOf(null);
+  if (!id || j < 0) return;
+  S[other][j] = id; S[invSel[0]][invSel[1]] = null; invSel = [other, j]; snd('plant'); rerenderInv();
+}
+function eatItem() {
+  const id = S[invSel[0]][invSel[1]]; if (!id || !ITEM[id].eat || S.energy >= S.maxEnergy) return;
+  const e = ITEM[id].eat; useItem(id); S.energy = Math.min(S.maxEnergy, S.energy + e);
+  snd('eat'); toast(`Lecker! +${e} Energie`);
+  if (!S[invSel[0]][invSel[1]]) invSel = null;
+  rerenderInv();
 }
 function shopRow(img, name, info, price, id, single) {
   const d1 = S.gold < price ? 'disabled' : '', d5 = S.gold < price * 5 ? 'disabled' : '';
@@ -688,10 +790,9 @@ function buy(id, n) {
   let price;
   if (id.startsWith('seed-')) price = CROPS[id.slice(5)].buy; else if (id === 'snack') price = 30; else price = 400;
   if (S.gold < price * n) { snd('err'); return; }
+  if (id === 'can') { S.canCap = 40; S.water = 40; }
+  else if (!addItem(id, n)) return;
   S.gold -= price * n;
-  if (id.startsWith('seed-')) S.seeds[id.slice(5)] += n;
-  else if (id === 'snack') S.snacks += n;
-  else { S.canCap = 40; S.water = 40; }
   snd('coin'); $('dlg').innerHTML = shopHTML();
 }
 $('dlg').addEventListener('click', e => {
@@ -700,9 +801,10 @@ $('dlg').addEventListener('click', e => {
   if (a === 'close') closeDlg();
   else if (a === 'sleep') { closeDlg(); endDay(false); }
   else if (a.startsWith('buy:')) { const [, id, n] = a.split(':'); buy(id, +n); }
-  else if (a.startsWith('inv:')) { invSel = a.slice(4); snd('sel'); $('dlg').innerHTML = invHTML(); }
-  else if (a.startsWith('take:')) { closeDlg(); setSel(+a.slice(5)); }
-  else if (a.startsWith('eat:')) eatItem(a.slice(4));
+  else if (a.startsWith('slot:')) { const [, c, i] = a.split(':'); invClick(c, i); }
+  else if (a === 'mv') invMove();
+  else if (a === 'eat') eatItem();
+  else if (a === 'hold') { const bi = invSel[1]; closeDlg(); setSel(bi); }
   else if (a === 'new') $('dlg').innerHTML = `<h2>Neues Spiel?</h2><p>Dein ganzer Fortschritt geht verloren.</p><div class="foot"><button class="btn" data-act="close">Abbrechen</button><button class="btn red" data-act="newc">Ja, neu anfangen</button></div>`;
   else if (a === 'newc') { S = newState(); save(); parts.length = 0; closeDlg(); toast('Ein neuer Anfang!'); }
 });
@@ -726,61 +828,61 @@ function needEnergy(n) {
 }
 function act(tx, ty) {
   if (paused || actT > .08) return;
-  const k = tx + ',' + ty, s = S.soil[k], t = tileAt(tx, ty), tool = SLOTS[S.sel];
+  const k = tx + ',' + ty, s = S.soil[k], t = tileAt(tx, ty), id = held(), kind = id ? ITEM[id].kind : '';
   actT = .25; actTool = null; actTile = [tx, ty];
   const ripe = s && s.c && s.c.d >= CROPS[s.c.t].days;
-  if (ripe && tool.kind !== 'sickle') { toast(touchMode ? 'Zum Ernten die Sichel wählen' : 'Zum Ernten die Sichel nehmen'); return; }
+  if (ripe && kind !== 'sickle') { toast('Zum Ernten die Sichel nehmen'); return; }
   if (tx === DOOR[0] && ty === DOOR[1]) {
-    openDlg(`<h2>Schlafen gehen?</h2><p>Der Tag endet. Gegossene Pflanzen wachsen über Nacht, und alles in der Versandkiste wird verkauft.</p><div class="foot"><button class="btn" data-act="close">Noch nicht</button><button class="btn" data-act="sleep">Gute Nacht 🌙</button></div>`);
+    openDlg(`<h2>Schlafen gehen?</h2><p>Der Tag endet. Gegossene Pflanzen wachsen über Nacht, und alles in der Versandkiste wird verkauft.</p><div class="foot"><button class="btn" data-act="close">Noch nicht</button><button class="btn" data-act="sleep">Gute Nacht</button></div>`);
     return;
   }
   if (t === 'H') { toast('Die Haustür ist in der Mitte.'); return; }
   if (t === 'S') { openDlg(shopHTML()); return; }
   if (t === 'B') {
-    let n = 0; for (const c in S.produce) { n += S.produce[c]; S.shipped[c] += S.produce[c]; S.produce[c] = 0; }
+    let n = 0;
+    for (const c in CROPS) { const m = cnt(c); if (m) { n += m; S.shipped[c] += m; useItem(c, m); } }
     if (!n) { toast('Leg hier deine Ernte rein – sie wird über Nacht verkauft.'); return; }
     snd('ship'); toast(`${n} Stück in die Versandkiste gelegt`); return;
   }
-  if (!owned(tool)) return;
-  if (tool.kind === 'sickle') {
+  if (!id) { toast('Du hast nichts in der Hand.'); return; }
+  if (kind === 'sickle') {
     actTool = 'sickle';
     const d = DIRS[S.dir], side = [[0, 0], [d[1], d[0]], [-d[1], -d[0]]], got = {};
     let n = 0;
     for (const [ox, oy] of side) {
       const cs = S.soil[(tx + ox) + ',' + (ty + oy)];
       if (cs && cs.c && cs.c.d >= CROPS[cs.c.t].days) {
-        got[cs.c.t] = (got[cs.c.t] || 0) + 1; S.produce[cs.c.t]++; cs.c = null; n++;
+        if (!addItem(cs.c.t, 1)) break;
+        got[cs.c.t] = (got[cs.c.t] || 0) + 1; cs.c = null; n++;
         burst(tx + ox, ty + oy, ['#ffe066', '#fff6c0', '#ffc2dc'], 6, 70); hearts(tx + ox, ty + oy, 3);
       }
     }
-    if (n) { snd('harvest'); toast(Object.entries(got).map(([k, v]) => `+${v} ${CROPS[k].name}`).join('  ')); return; }
+    if (n) { snd('harvest'); toast(Object.entries(got).map(([c, v]) => `+${v} ${CROPS[c].name}`).join('  ')); return; }
     snd('sel'); burst(tx, ty, ['#7bbf55', '#a6de80'], 4, 30);
     if (s && s.c) toast(`${CROPS[s.c.t].name} ist noch nicht reif.`);
     return;
   }
-  if (tool.kind === 'hoe') {
+  if (kind === 'hoe') {
     actTool = 'hoe';
     if (t !== 'G') { toast('Hier kann man nicht hacken.'); snd('err'); return; }
     if (s) { if (s.c) toast('Hier wächst schon etwas.'); return; }
     if (!needEnergy(2)) return;
     S.soil[k] = { w: S.rain, c: null }; burst(tx, ty, ['#7a4d2c', '#93613a', '#5e3b22'], 8); snd('till');
-  } else if (tool.kind === 'can') {
+  } else if (kind === 'can') {
     actTool = 'can';
     if (isWater(tx, ty)) { S.water = S.canCap; burst(tx, ty, ['#8fd0ff', '#d4f0ff'], 8, 60); snd('water'); toast('Gießkanne aufgefüllt'); return; }
     if (!s) { toast('Gieß den aufgelockerten Boden.'); return; }
     if (S.water <= 0) { toast('Die Gießkanne ist leer – füll sie am Teich auf.'); snd('err'); return; }
     if (!needEnergy(1)) return;
     S.water--; s.w = true; burst(tx, ty, ['#4fb3ff', '#8fd0ff'], 8, 30); snd('water');
-  } else if (tool.kind === 'seed') {
-    const c = CROPS[tool.crop];
+  } else if (kind === 'seed') {
+    const crop = ITEM[id].crop;
     if (!s) { toast('Erst den Boden mit der Hacke auflockern.'); snd('err'); return; }
     if (s.c) { toast('Hier wächst schon etwas.'); return; }
-    if (!S.seeds[tool.crop]) { toast(`Keine ${c.seed} mehr – im Laden gibt's neue.`); snd('err'); return; }
-    S.seeds[tool.crop]--; s.c = { t: tool.crop, d: 0 }; snd('plant'); burst(tx, ty, ['#3e2613', '#6cc04f'], 4, 20);
-  } else if (tool.kind === 'snack') {
-    if (!S.snacks) { toast('Kein Salat mehr. Im Laden gibt es welchen.'); snd('err'); return; }
+    useItem(id); s.c = { t: crop, d: 0 }; snd('plant'); burst(tx, ty, ['#3e2613', '#6cc04f'], 4, 20);
+  } else if (kind === 'food' || kind === 'crop') {
     if (S.energy >= S.maxEnergy) { toast('Du bist gerade nicht hungrig.'); return; }
-    S.snacks--; S.energy = Math.min(S.maxEnergy, S.energy + 40); snd('eat'); toast('Mmh, knackig! +40 Energie');
+    const e = ITEM[id].eat; useItem(id); S.energy = Math.min(S.maxEnergy, S.energy + e); snd('eat'); toast(`Lecker! +${e} Energie`);
   }
 }
 
@@ -816,9 +918,9 @@ function endDay(passedOut) {
     let html = `<h2>${passedOut ? 'Du bist vor Erschöpfung umgekippt …' : 'Ein neuer Morgen'}</h2>`;
     if (passedOut) html += `<p>Ein Nachbar hat dich nach Hause gebracht. Für die Hilfe fehlen dir <b>${lost}g</b>, und du bist nicht ganz ausgeruht.</p>`;
     html += lines ? `<p><b>Verkauft:</b></p>${lines}<div class="sumline total"><span>Einnahmen</span><span>${income.toLocaleString('de-DE')}g</span></div>` : '<p>Gestern wurde nichts verkauft.</p>';
-    if (grown) html += `<p>🌱 ${grown} Pflanze${grown > 1 ? 'n sind' : ' ist'} über Nacht gewachsen.</p>`;
-    if (ready) html += `<p>✨ ${ready} Pflanze${ready > 1 ? 'n sind' : ' ist'} erntereif!</p>`;
-    if (S.rain) html += '<p>🌧️ Heute regnet es – deine Felder sind schon gegossen.</p>';
+    if (grown) html += `<p>${grown} Pflanze${grown > 1 ? 'n sind' : ' ist'} über Nacht gewachsen.</p>`;
+    if (ready) html += `<p>${ready} Pflanze${ready > 1 ? 'n sind' : ' ist'} erntereif!</p>`;
+    if (S.rain) html += '<p>Heute regnet es – deine Felder sind schon gegossen.</p>';
     html += `<div class="foot"><button class="btn" data-act="close">Tag ${S.day} beginnen</button></div>`;
     openDlg(html);
     $('fade').style.opacity = 0; fading = false;
@@ -831,10 +933,10 @@ const KMAP = { ArrowLeft: 'l', a: 'l', A: 'l', ArrowRight: 'r', d: 'r', D: 'r', 
 addEventListener('keydown', e => {
   if (e.key === 'Escape') { if (paused && !fading) closeDlg(); return; }
   if (KMAP[e.key]) { keys.add(KMAP[e.key]); e.preventDefault(); return; }
+  if (e.key === 'i' || e.key === 'I' || e.key === 'Tab') { e.preventDefault(); openInv(); return; }
   if (paused) return;
   if (e.key === ' ' || e.key === 'e' || e.key === 'E' || e.key === 'Enter') { e.preventDefault(); if (!e.repeat) act(...targetTile()); return; }
-  if (/^[1-9]$/.test(e.key)) selectSlot(+e.key - 1);
-  if (e.key === 'i' || e.key === 'I' || e.key === 'Tab') { e.preventDefault(); openInv(); }
+  if (/^[1-8]$/.test(e.key)) selectSlot(+e.key - 1);
 });
 addEventListener('keyup', e => { if (KMAP[e.key]) keys.delete(KMAP[e.key]); });
 addEventListener('blur', () => keys.clear());
@@ -853,7 +955,7 @@ C.addEventListener('click', e => {
   act(tx, ty);
 });
 $('helpBtn').addEventListener('click', () => { if (!fading) openDlg(helpHTML(false)); });
-$('invIcon').src = ICONURL.bag;
+$('invIcon').src = ICONURL.bag; $('heartIcon').src = ICONURL.heart;
 $('invBtn').addEventListener('click', openInv);
 // Joystick
 let joy = null;
