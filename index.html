@@ -545,7 +545,8 @@ for (let y = 0; y < ROWS; y++) { setT(0, y, 'T'); setT(COLS - 1, y, 'T'); }
 for (let x = 0; x < COLS - 1; x++) for (let y = 7; y <= 9; y++) setT(x, y, 'P');
 for (let x = 2; x <= 6; x++) for (let y = 2; y <= 5; y++) setT(x, y, 'H');
 for (let x = 17; x <= 21; x++) for (let y = 2; y <= 5; y++) setT(x, y, 'H');
-for (let x = 10; x <= 12; x++) { setT(x, 4, 'S'); setT(x, 5, 'S'); setT(x, 6, 'P'); }
+for (let x = 10; x <= 13; x++) { setT(x, 4, 'S'); setT(x, 5, 'S'); setT(x, 6, 'P'); }
+setT(4, 6, 'P'); setT(19, 6, 'P');
 setT(11, 11, 'F'); setT(12, 11, 'F'); setT(11, 12, 'F'); setT(12, 12, 'F');
 for (let x = 10; x <= 13; x++) for (let y = 10; y <= 13; y++) setT(x, y, 'P');
 setT(11, 11, 'F'); setT(12, 11, 'F'); setT(11, 12, 'F'); setT(12, 12, 'F');
@@ -957,11 +958,19 @@ function makeTown() {
   R(g, 299, 41, 26, 13, '#8a5a40'); R(g, 300, 42, 24, 11, '#fff6e8');
   R(g, 307, 45, 8, 6, '#ffffff'); R(g, 307, 45, 8, 1, '#c08a64'); R(g, 315, 46, 2, 3, '#ffffff'); R(g, 308, 46, 6, 1, '#a0582f'); heart(g, 318, 44, '#ff5f8f');
   // Gartenzäune mit Blumen vor den Häusern
-  const fence = (x, w) => { R(g, x, 104, w, 2, '#e8d8dc'); R(g, x, 104, w, 1, '#ffffff'); for (let i = x; i < x + w; i += 4) { R(g, i, 99, 3, 9, '#ffffff'); R(g, i + 1, 98, 1, 1, '#ffffff'); R(g, i + 2, 100, 1, 8, '#e8d8dc'); } R(g, x, 108, w, 1, 'rgba(60,20,40,.15)'); };
-  const bed = (x, w, cols) => { R(g, x, 97, w, 3, '#9a6a4a'); for (let i = 0; i < w - 2; i += 3) { R(g, x + 1 + i, 95, 2, 2, cols[(i / 3) % cols.length]); R(g, x + 1 + i, 97, 1, 1, '#5aa040'); } };
-  fence(33, 30); fence(81, 30); fence(273, 30); fence(321, 30);
+  const bed = (x, w, cols) => { R(g, x, 97, w, 3, '#b07a4c'); R(g, x, 97, w, 1, '#c48f5e');
+    for (let i = 0; i < w - 2; i += 4) { const c = cols[(i / 4) % cols.length]; R(g, x + 2 + i, 95, 1, 2, '#5aa040'); R(g, x + 1 + i, 94, 3, 1, c); R(g, x + 2 + i, 93, 1, 3, c); R(g, x + 2 + i, 94, 1, 1, '#ffd84a'); } };
+  const fence = (x, w, gateRight) => {
+    R(g, x, 110, w, 1, 'rgba(60,20,40,.15)');
+    R(g, x, 103, w, 2, '#ecdce2'); R(g, x, 107, w, 2, '#ecdce2');
+    for (let i = x + 3; i < x + w - 3; i += 4) { R(g, i, 101, 3, 9, '#fffafc'); R(g, i + 1, 100, 1, 1, '#fffafc'); R(g, i + 2, 101, 1, 9, '#ecdce2'); }
+    for (const px of [x, x + w - 4]) { R(g, px, 99, 4, 11, '#fffafc'); R(g, px + 3, 99, 1, 11, '#e2cad3'); R(g, px, 98, 4, 1, '#ff8fb8'); }
+    // Herzchen am Torpfosten
+    heart(g, gateRight ? x + w - 4 : x - 1, 101, '#ff8fb8');
+  };
   bed(34, 28, ['#ffe066', '#ffffff', '#c0a0e0']); bed(82, 28, ['#c0a0e0', '#ffe066', '#ffffff']);
   bed(274, 28, ['#ff8fb8', '#ffffff', '#8fd0b8']); bed(322, 28, ['#ffffff', '#ff8fb8', '#ffd27a']);
+  fence(32, 32, 1); fence(80, 32, 0); fence(272, 32, 1); fence(320, 32, 0);
   // Marktstand mit Obst
   { const x0 = 49, y0 = 178;
     R(g, x0 + 2, y0 + 29, 44, 3, 'rgba(60,20,40,.18)');
@@ -974,9 +983,10 @@ function makeTown() {
   // Rosenbeete
   for (const bx of [273, 307]) { R(g, bx, 181, 30, 14, '#b07a4c'); R(g, bx + 1, 182, 28, 12, '#c48f5e'); R(g, bx, 194, 30, 2, 'rgba(60,20,40,.18)');
     for (let i = 0; i < 9; i++) { const x = bx + 3 + (i % 5) * 5 + (i > 4 ? 2 : 0), y = 184 + (i > 4 ? 5 : 0); disc(g, x + 1, y + 2, 2, '#58ae55'); R(g, x, y, 3, 2, ['#ff5f8f', '#ffffff', '#ff8fb8', '#e0466e'][i % 4]); R(g, x + 1, y, 1, 1, '#ffd6e5'); } }
-  // Bank am Brunnen
-  R(g, 146, 196, 22, 3, '#c08a64'); R(g, 146, 196, 22, 1, '#d8a878'); R(g, 148, 199, 2, 4, '#8a5a40'); R(g, 164, 199, 2, 4, '#8a5a40'); R(g, 146, 190, 22, 2, '#a86d48');
-  g.save(); g.translate(160 - 288, 64 - 32); drawShop(g); g.restore();
+  // Bank am Brunnen, Blick aufs Wasser
+  R(g, 181, 219, 22, 2, 'rgba(60,20,40,.18)'); R(g, 181, 211, 22, 3, '#d8a878'); R(g, 181, 213, 22, 1, '#a86d48');
+  R(g, 183, 214, 2, 4, '#8a5a40'); R(g, 199, 214, 2, 4, '#8a5a40'); R(g, 181, 216, 22, 3, '#c08a64'); R(g, 181, 216, 22, 1, '#e0b88a');
+  g.save(); g.translate(168 - 288, 64 - 32); drawShop(g); g.restore();
   // Brunnen
   const fx = 192, fy = 192;
   disc(g, fx, fy + 2, 15, 'rgba(60,20,40,.18)'); disc(g, fx, fy, 15, '#b8a0a8'); disc(g, fx, fy, 13, '#e8d8dc'); disc(g, fx, fy, 11, '#7cc6ee'); disc(g, fx - 3, fy - 3, 4, '#a8dcf6');
