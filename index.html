@@ -897,12 +897,12 @@ function drawFarmHouse(g) {
   const TH = '#ecc878', TL = '#f6dc9a', TD = '#d4a654', TS = '#e0b864', TO = '#b8863a';
   R(g, x0 + 3, y0 + 62, 76, 3, 'rgba(60,20,40,.18)');
   // Wände: glatter rosa Putz, Steinsockel
-  R(g, x0 + 4, y0 + 28, 72, 34, '#fbe4ec'); R(g, x0 + 4, y0 + 28, 72, 2, '#f0c8d6');
-  R(g, x0 + 4, y0 + 28, 2, 34, '#f3d0dc'); R(g, x0 + 74, y0 + 28, 2, 34, '#f3d0dc');
+  R(g, x0 + 4, y0 + 28, 72, 34, '#fbe4ec'); R(g, x0 + 4, y0 + 28, 72, 2, '#f7dbe5');
+  R(g, x0 + 4, y0 + 28, 2, 34, '#f9e0e9'); R(g, x0 + 74, y0 + 28, 2, 34, '#f9e0e9');
   // Pastell-Ziegel
-  R(g, x0 + 4, y0 + 33, 72, 24, '#e8b4c6');
+  R(g, x0 + 4, y0 + 33, 72, 24, '#f3cddb');
   for (let y = y0 + 33, k = 0; y < y0 + 57; y += 4, k++) for (let x = x0 + 4 - (k % 2 ? 4 : 0); x < x0 + 76; x += 8) {
-    const xa = Math.max(x, x0 + 4), w = Math.min(x + 7, x0 + 76) - xa; if (w > 0) { R(g, xa, y, w, 3, '#f8d6e2'); R(g, xa, y, w, 1, '#fde8ef'); }
+    const xa = Math.max(x, x0 + 4), w = Math.min(x + 7, x0 + 76) - xa; if (w > 0) { R(g, xa, y, w, 3, '#fde7ef'); R(g, xa, y, w, 1, '#fff4f8'); }
   }
   R(g, x0 + 3, y0 + 57, 74, 6, '#d8c0c8');
   for (let i = 0; i < 12; i++) { R(g, x0 + 4 + i * 6, y0 + 58, 5, 2, '#eadbe0'); if (i < 11) R(g, x0 + 7 + i * 6, y0 + 61, 5, 1, '#eadbe0'); }
@@ -920,10 +920,10 @@ function drawFarmHouse(g) {
   }
   // saubere Traufkante mit gleichmäßigen Zipfeln
   R(g, x0 - 3, y0 + 30, 86, 1, TD); R(g, x0 - 3, y0 + 31, 86, 1, TO);
-  R(g, x0 + 4, y0 + 32, 72, 1, '#e8c0cf');
+  R(g, x0 + 4, y0 + 32, 72, 1, '#f0d2de');
   // Ziegelgiebel mit Fenster (Ziegel im selben Raster wie die Fassade)
   const cx = x0 + 40;
-  const brick = (x, y) => { const k = Math.floor((y - y0 - 33) / 4), ry = ((y - y0 - 33) % 4 + 4) % 4, bx = ((x - x0 - 4 + (k & 1 ? 4 : 0)) % 8 + 8) % 8; return ry === 3 || bx === 7 ? '#e8b4c6' : ry === 0 ? '#fde8ef' : '#f8d6e2'; };
+  const brick = (x, y) => { const k = Math.floor((y - y0 - 33) / 4), ry = ((y - y0 - 33) % 4 + 4) % 4, bx = ((x - x0 - 4 + (k & 1 ? 4 : 0)) % 8 + 8) % 8; return ry === 3 || bx === 7 ? '#f3cddb' : ry === 0 ? '#fff4f8' : '#fde7ef'; };
   for (let y = y0 + 3; y < y0 + 34; y++) {
     const half = Math.min(16, y - y0 - 2), xl = cx - half + (y < y0 + 18 ? 2 : y < y0 + 32 ? 1 : 0), xr = cx + half - (y < y0 + 18 ? 2 : y < y0 + 32 ? 1 : 0);
     for (let x = xl; x <= xr; x++) R(g, x, y, 1, 1, brick(x, y));
