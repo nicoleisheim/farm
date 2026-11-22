@@ -400,9 +400,10 @@ body.touch .slot .k{display:none}
 body.touch .slot .n{font-size:.5em;min-width:0;padding:.05em .25em;right:-.55em;bottom:-.55em;border-width:.1em}
 .slot .n{min-width:0}
 .slot .wl.du{left:.12em;right:.12em;bottom:.08em;height:.26em;background:#6a3a4a;box-shadow:none}
-.slot .wv{position:absolute;left:.1em;top:.15em;bottom:.5em;width:.26em;background:#6a3a4a;pointer-events:none;display:flex;align-items:flex-end}
-.slot .wv i{display:block;width:100%;background:#4fb3ff}
-.slot .n{z-index:2}
+.slot .wf{position:absolute;left:30%;width:40%;top:46%;height:24%;display:flex;align-items:flex-end;pointer-events:none}
+.slot .wf i{display:block;width:100%;background:rgba(79,179,255,.9);box-shadow:inset 0 .1em 0 #bfe6ff}
+.slot .n{z-index:2;top:-.45em;bottom:auto}
+body.touch .slot .n{top:-.55em;bottom:auto}
 </style>
 </head>
 <body>
@@ -1258,7 +1259,7 @@ function buildHotbar() {
   hb.style.display = v.length ? '' : 'none';
   v.forEach((bi, n) => {
     const id = S.bar[bi], d = document.createElement('div'); d.className = 'slot'; d.dataset.bi = bi;
-    d.innerHTML = `<span class="k">${n + 1}</span><img src="${ICONURL[iconOf(id)]}" alt=""><span class="n"></span>` + (id === 'can' ? '<span class="wv"><i></i></span>' : '') + (ITEM[id].dura ? '<span class="wl du"><i></i></span>' : '');
+    d.innerHTML = `<span class="k">${n + 1}</span><img src="${ICONURL[iconOf(id)]}" alt=""><span class="n"></span>` + (id === 'can' ? '<span class="wf"><i></i></span>' : '') + (ITEM[id].dura ? '<span class="wl du"><i></i></span>' : '');
     d.addEventListener('pointerdown', e => { e.preventDefault(); setSel(bi); });
     hb.appendChild(d);
   });
@@ -1296,7 +1297,7 @@ function updateHUD() {
       n.textContent = showN ? cnt(id) : '';
       n.style.display = showN ? '' : 'none';
       d.title = itemName(id);
-      if (id === 'can') d.querySelector('.wv i').style.height = (S.water / S.canCap * 100) + '%';
+      if (id === 'can') d.querySelector('.wf i').style.height = (S.water / S.canCap * 100) + '%';
       if (ITEM[id].dura) { const f = duraOf(id) / ITEM[id].dura, i = d.querySelector('.wl i'); i.style.width = Math.max(4, f * 100) + '%'; i.style.background = duraCol(f); }
     });
   }
