@@ -461,9 +461,9 @@ let touchMode = matchMedia('(pointer:coarse)').matches || ('ontouchstart' in win
 let padMode = navigator.userAgent.includes('SonnenhofApp');
 const tmode = () => touchMode && !padMode;
 // Anzeigegröße, selbst einstellbar in der Hilfe (Start-Taste / ?)
-let UIS = { bar: padMode ? .8 : 1, dlg: 1 };
+let UIS = { bar: padMode ? .8 : 1, top: padMode ? .7 : 1, dlg: 1 };
 try { Object.assign(UIS, JSON.parse(localStorage.getItem('sonnenhof-ui') || '{}')); } catch (e) {}
-function applyUI() { $('bottom').style.fontSize = UIS.bar * 100 + '%'; $('dlg').style.fontSize = UIS.dlg * 100 + '%'; }
+function applyUI() { $('bottom').style.fontSize = UIS.bar * 100 + '%'; $('topbar').style.fontSize = UIS.top * 100 + '%'; $('dlg').style.fontSize = UIS.dlg * 100 + '%'; }
 
 /* ---------- helpers ---------- */
 function R(g, x, y, w, h, c) { g.fillStyle = c; g.fillRect(x, y, w, h); }
@@ -1653,7 +1653,7 @@ function helpHTML(intro) {
   h += `<div class="ssec"><div class="ssech"><span>Steuerung</span></div>${ctl.map(([k, v]) => `<div class="kv"><kbd>${k}</kbd><span>${v}</span></div>`).join('')}</div>`;
   const steps = [['hoe', 'Gras mit der Hacke auflockern'], ['seed_ruebe', 'Samen säen'], ['can', 'Täglich gießen, am Teich auffüllen'], ['sickle', 'Reife Pflanzen mit der Sichel ernten'],
     ['stand', 'Ernte am Verkaufsstand auslegen'], ['board', 'Bestellungen am Auftragsbrett einpacken'], ['axe', 'Bäume fällen für Holz'], ['shopi', 'Samen und Setzlinge im Laden kaufen']];
-  if (!intro) h += `<div class="ssec"><div class="ssech"><span>Anzeige</span></div>${[['bar', 'Werkzeugleiste'], ['dlg', 'Fenster']].map(([k, n]) => `<div class="lrow"><span></span><div class="ln"><b>${n}</b><small>Größe anpassen</small></div><div class="qty"><button class="btn sq" data-act="ui:${k}:-1" ${UIS[k] > .5 ? '' : 'disabled'}>−</button><span class="qv">${Math.round(UIS[k] * 100)}%</span><button class="btn sq" data-act="ui:${k}:1" ${UIS[k] < 1.5 ? '' : 'disabled'}>+</button></div><span></span></div>`).join('')}</div>`;
+  if (!intro) h += `<div class="ssec"><div class="ssech"><span>Anzeige</span></div>${[['bar', 'Werkzeugleiste'], ['top', 'Datum und Hilfe-Knopf'], ['dlg', 'Fenster']].map(([k, n]) => `<div class="lrow"><span></span><div class="ln"><b>${n}</b><small>Größe anpassen</small></div><div class="qty"><button class="btn sq" data-act="ui:${k}:-1" ${UIS[k] > .5 ? '' : 'disabled'}>−</button><span class="qv">${Math.round(UIS[k] * 100)}%</span><button class="btn sq" data-act="ui:${k}:1" ${UIS[k] < 1.5 ? '' : 'disabled'}>+</button></div><span></span></div>`).join('')}</div>`;
   h += `<div class="ssec"><div class="ssech"><span>So geht's</span></div><div class="steps">${steps.map(([ic, t]) => `<div class="step"><img src="${ICONURL[ic]}" alt=""><span>${t}</span></div>`).join('')}</div></div>`;
   h += `<div class="ssec"><div class="ssech"><span>Gut zu wissen</span></div><div class="kv"><img src="${ICONURL.w_moon}" alt=""><span>Geh vor 2 Uhr nachts durch die Haustür ins Bett – sonst kippst du um. Gespeichert wird beim Schlafen.</span></div></div>`;
   return h + `<div class="foot">${intro ? '' : '<button class="btn red" data-act="new">Neues Spiel</button>'}<button class="btn primary" data-act="close">${intro ? "Los geht's!" : 'Weiter'}</button></div>`;
