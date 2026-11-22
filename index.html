@@ -2493,6 +2493,21 @@ function corners(x, y) {
   R(X, x, y, 4, 1, c); R(X, x, y, 1, 4, c); R(X, x + 12, y, 4, 1, c); R(X, x + 15, y, 1, 4, c);
   R(X, x, y + 15, 4, 1, c); R(X, x, y + 12, 1, 4, c); R(X, x + 12, y + 15, 4, 1, c); R(X, x + 15, y + 12, 1, 4, c);
 }
+let EDGE_TOP = null, EDGE_BOT = null;
+const EDGE_H = 96;
+function buildEdge() {
+  const mkE = (ty0, ty1, oy) => {
+    const [c, g] = mk(W, EDGE_H);
+    g.fillStyle = '#6fb84e'; g.fillRect(0, 0, W, EDGE_H);
+    for (let ty = ty0; ty <= ty1; ty++) for (let tx = -1; tx <= COLS; tx++) {
+      const jx = Math.round((hash(tx, ty, 41) - .5) * 8) + (ty & 1) * 8, jy = Math.round((hash(tx, ty, 42) - .5) * 6);
+      g.save(); g.translate(jx, jy + oy); drawTree(g, tx, ty); g.restore();
+    }
+    return c;
+  };
+  EDGE_TOP = mkE(-7, -1, EDGE_H);
+  EDGE_BOT = mkE(ROWS, ROWS + 6, -H - 8);
+}
 function render(t) {
   camX = Math.max(0, Math.min(W - VW, Math.round(S.px) - (VW >> 1)));
   // Unter der Werkzeugleiste darf die Kamera etwas weiter scrollen, damit nichts verdeckt bleibt
@@ -2511,8 +2526,8 @@ function render(t) {
   updateSoilLayer(); X.drawImage(SL, 0, 0);
   }
   // Waldrand unten weiterführen, wenn die Kamera über den Kartenrand hinaus schaut
-  for (let yy = -16; yy >= camY - 16; yy -= 16) { X.drawImage(farm ? BG : BG_T, 0, 0, W, 16, 0, yy, W, 16); if (farm) X.drawImage(TL, 0, 0, W, 16, 0, yy, W, 16); }
-  for (let yy = H; yy < camY + VH; yy += 16) { X.drawImage(farm ? BG : BG_T, 0, H - 16, W, 16, 0, yy, W, 16); if (farm) X.drawImage(TL, 0, H - 16, W, 16, 0, yy, W, 16); }
+  // Waldrand außerhalb der Karte: gemischte Bäume, versetzt
+  if (camY < 0 || camY + VH > H) { if (!EDGE_TOP) buildEdge(); if (camY < 0) X.drawImage(EDGE_TOP, 0, -EDGE_H); if (camY + VH > H) X.drawImage(EDGE_BOT, 0, H); }
   if (farm) for (const k in S.soil) if (S.soil[k].w && Math.floor(t * 1.5 + hash(...k.split(',').map(Number), 12) * 4) % 4 === 0) {
     const [tx, ty] = k.split(',').map(Number); R(X, tx * 16 + 3 + Math.floor(hash(tx, ty, 13) * 9), ty * 16 + 5 + Math.floor(hash(tx, ty, 14) * 7), 1, 1, '#b8dcf0');
   }
