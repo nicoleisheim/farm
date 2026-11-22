@@ -935,7 +935,7 @@ function drawFarmHouse(g) {
   // großes Rundfenster
   disc(g, cx, y0 + 19, 7, '#ffffff'); disc(g, cx, y0 + 19, 6, '#c4ecff'); R(g, cx - 4, y0 + 15, 3, 2, '#e0f6ff');
   R(g, cx, y0 + 13, 1, 13, '#ffffff'); R(g, cx - 6, y0 + 19, 13, 1, '#ffffff');
-  R(g, cx - 5, y0 + 27, 11, 1, '#eadde2');
+  R(g, cx - 5, y0 + 27, 11, 1, '#c08a64'); R(g, cx - 4, y0 + 27, 9, 1, '#e0a874');
   // Übergang Giebel – Haus: Holzbalken mit kleinen Konsolen
   R(g, cx - 11, y0 + 29, 23, 3, '#c08a64'); R(g, cx - 11, y0 + 29, 23, 1, '#e0a874'); R(g, cx - 11, y0 + 31, 23, 1, '#8a5a40');
   for (const x of [cx - 10, cx + 8]) { R(g, x, y0 + 32, 3, 2, '#a86d48'); R(g, x + 1, y0 + 34, 1, 1, '#a86d48'); }
@@ -969,7 +969,7 @@ function drawFarmHouse(g) {
       R(g, sx, y, 4, 12, '#f7bcd0'); R(g, sx, y, 4, 1, '#ffb3cf'); R(g, sx, y + 1, 4, 1, '#eb9cb9'); R(g, sx, y + 10, 4, 1, '#eb9cb9');
       for (let i = 0; i < 8; i++) R(g, L ? sx + 3 - Math.floor(i / 2.4) : sx + Math.floor(i / 2.4), y + 2 + i, 1, 1, '#eb9cb9');
     }
-    R(g, wx - 1, y + 12, 14, 2, '#eadde2'); R(g, wx - 1, y + 13, 14, 1, '#c9b2bc');
+    R(g, wx - 1, y + 12, 14, 2, '#c08a64'); R(g, wx - 1, y + 12, 14, 1, '#e0a874'); R(g, wx - 1, y + 13, 1, 1, '#a86d48'); R(g, wx + 12, y + 13, 1, 1, '#a86d48');
     R(g, wx - 1, y + 16, 14, 3, '#eab2c6'); R(g, wx - 1, y + 16, 14, 1, '#ffc2d8');
     [[1, '#f3a7c1'], [4, '#ffffff'], [7, '#ffe066'], [10, '#f3a7c1']].forEach(([d, c]) => { R(g, wx + d, y + 14, 2, 2, c); R(g, wx + d, y + 15, 1, 1, '#5aa040'); });
   }
