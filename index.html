@@ -540,14 +540,15 @@ for (let y = 0; y < ROWS; y++) { set(0, y, 'T'); set(COLS - 1, y, 'T'); }
 [[1,1],[22,1],[22,2],[1,13],[1,14],[2,14],[22,13],[21,14],[22,14],[16,1],[12,14]].forEach(([x,y]) => set(x, y, 'T'));
 for (let x = 2; x <= 6; x++) for (let y = 1; y <= 4; y++) set(x, y, 'H');
 for (let x = 18; x <= 20; x++) for (let y = 2; y <= 3; y++) set(x, y, 'S');
-set(11, 3, 'L'); set(11, 4, 'L'); set(12, 3, 'L'); set(12, 4, 'L');
-set(4, 5, 'P'); for (let x = 4; x <= 19; x++) set(x, 6, 'P'); set(19, 5, 'P'); set(19, 4, 'P'); set(11, 5, 'P'); set(12, 5, 'P');
+set(8, 3, 'L'); set(8, 4, 'L'); set(9, 3, 'L'); set(9, 4, 'L');
+set(4, 5, 'P'); for (let x = 4; x <= 19; x++) set(x, 6, 'P'); set(19, 5, 'P'); set(19, 4, 'P'); set(8, 5, 'P'); set(9, 5, 'P');
 // Der Laden ist jetzt in der Innenstadt: Platz frei machen, Weg nach Osten bis zum Tor
 for (let x = 18; x <= 20; x++) for (let y = 2; y <= 3; y++) set(x, y, 'G');
 set(19, 3, 'B'); set(20, 3, 'B'); set(19, 4, 'B'); set(20, 4, 'B'); set(19, 5, 'P'); set(20, 5, 'P');
 for (let x = 4; x <= 23; x++) set(x, 6, 'P');
 const GATE = [23, 6];
 const STX = 304, STY = 48; // Verkaufsstand (Kacheln 19–20 / 3–4)
+const BDX = 128, BDY = 48; // Auftragsbrett (Kacheln 8–9 / 3–4)
 const isEdge = (x, y) => x <= 0 || y <= 0 || x >= COLS - 1 || y >= ROWS - 1;
 // Innenstadt: eigene Karte
 const MAP_T = [];
@@ -872,7 +873,7 @@ function drawPondAnim(t) {
     P(-3, 0, 6, 1, '#c8ecfc'); P(-2, -2, 4, 2, '#ffe066'); P(1, -4, 2, 2, '#ffe066'); P(3, -3, 1, 1, '#ff9a3a'); P(2, -4, 1, 1, '#3a2030');
   }
 }
-const WINDOWS = [[43, 55, 10, 10], [91, 55, 10, 10], [68, 31, 9, 9], [208, 54, 5, 4]];
+const WINDOWS = [[43, 55, 10, 10], [91, 55, 10, 10], [68, 31, 9, 9], [BDX + 32, BDY + 6, 5, 4]];
 function drawFarmHouse(g) {
   const x0 = 32, y0 = 16;
   const TH = '#ecc878', TL = '#f6dc9a', TD = '#d4a654', TS = '#e0b864', TO = '#b8863a';
@@ -1162,7 +1163,7 @@ function drawStandAwning(g) {
   R(g, x0, y0 - 4, 1, 9, '#d9608c'); R(g, x0 + 31, y0 - 4, 1, 9, '#d9608c');
 }
 function drawCrate(g) {
-  const x0 = 176, y0 = 48;
+  const x0 = BDX, y0 = BDY;
   for (const px of [x0 + 1, x0 + 26]) R(g, px, y0 + 30, 5, 2, 'rgba(60,20,40,.18)');
   // Pfosten in den Holzfarben des Marktkarrens
   for (const px of [x0 + 2, x0 + 27]) {
@@ -1524,7 +1525,7 @@ function load() { try { const d = JSON.parse(localStorage.getItem(KEY)); if (d &
 let S = load();
 const firstRun = !S;
 if (!S) S = newState();
-for (const k of ['19,3', '20,3', '19,4', '20,4', '19,5', '20,5']) { delete S.soil[k]; delete S.trees[k]; }
+for (const k of ['19,3', '20,3', '19,4', '20,4', '19,5', '20,5', '8,3', '9,3', '8,4', '9,4', '8,5', '9,5']) { delete S.soil[k]; delete S.trees[k]; }
 TREES = S.trees; for (const k in TREES) { const [x, y] = k.split(',').map(Number); if (isEdge(x, y)) delete TREES[k]; } rebuildTrees();
 
 /* ---------- sound ---------- */
@@ -1818,7 +1819,7 @@ const wageOf = () => S.wage || 8;
 const paceOf = w => w <= 5 ? 'gemütlich' : w <= 9 ? 'normal' : w <= 13 ? 'flott' : 'sehr flott';
 const PAL_STAFF = { skin: '#ffe0cc', hair: '#5a3a2a', hairL: '#7a5440', dress: '#b8e0a0', dressD: '#8fc878', apron: '#ffffff', shoe: '#5a6a4a', bow: '#ff8fb8', tails: 1, hat: 0 };
 const lotteIcon = (() => { const [c, g] = mk(16, 16); drawPlayerSprite(pg, 'down', 0, PAL_STAFF); g.drawImage(PC, 0, -1); return c.toDataURL(); })();
-const CUST_PATH = [[388, 108], [152, 108], [152, 92]];
+const CUST_PATH = [[388, 108], [STX + 16, 108], [STX + 16, 92]];
 function standStock() { return SELLABLE.reduce((a, t) => a + (S.stand[t] || 0), 0); }
 function spawnCustomer() {
   custs.push({ x: CUST_PATH[0][0], y: CUST_PATH[0][1], wp: CUST_PATH.slice(1), st: 'in', t: 0, a: 0, dir: 'down', anim: 0, pal: PAL_VILLAGE[Math.floor(Math.random() * PAL_VILLAGE.length)] });
@@ -1880,14 +1881,14 @@ function drawStandGoods(t) {
   const IC = { ruebe: '#f1e4bb', kohl: '#8fd16a', kuerbis: '#e07b24', wood: '#b87a4a', berry: '#e0466e' };
   S.orders.forEach((o, k) => {
     if (k > 2) return;
-    const nx = 176 + 4 + k * 9, ny = 48 + 5 + (k % 2) * 2, ready = orderReady(o);
+    const nx = BDX + 4 + k * 9, ny = BDY + 5 + (k % 2) * 2, ready = orderReady(o);
     R(X, nx + 1, ny + 1, 6, 9, 'rgba(90,50,40,.25)');
     R(X, nx, ny, 6, 9, ready ? '#ffd6e5' : '#fffaf2'); R(X, nx, ny + 8, 6, 1, ready ? '#ffb3cf' : '#f0e0cc');
     R(X, nx + 2, ny + 2, 2, 2, IC[Object.keys(o.items)[0]] || '#ccc');
     R(X, nx + 1, ny + 5, 4, 1, '#c8a8b6'); R(X, nx + 1, ny + 7, 3, 1, '#c8a8b6');
     R(X, nx + 2, ny - 1, 2, 2, ready ? '#ff5f8f' : '#e0466e');
   });
-  if (S.orders.some(orderReady) && Math.floor(t * 2) % 2) heart(X, 190, 42, '#ff5f8f');
+  if (S.orders.some(orderReady) && Math.floor(t * 2) % 2) heart(X, BDX + 14, BDY - 6, '#ff5f8f');
 }
 function shopRow(img, name, info, price, id, single) {
   const d1 = S.gold < price || id === 'own' ? 'disabled' : '', d5 = S.gold < price * 5 ? 'disabled' : '';
