@@ -851,7 +851,55 @@ function drawPondAnim(t) {
     P(-3, 0, 6, 1, '#c8ecfc'); P(-2, -2, 4, 2, '#ffe066'); P(1, -4, 2, 2, '#ffe066'); P(3, -3, 1, 1, '#ff9a3a'); P(2, -4, 1, 1, '#3a2030');
   }
 }
-const WINDOWS = [[42, 55, 12, 10], [90, 55, 12, 10]];
+const WINDOWS = [[42, 57, 12, 10], [90, 57, 12, 10], [68, 30, 9, 6]];
+function drawFarmHouse(g) {
+  const x0 = 32, y0 = 16;
+  const TH = '#ecc878', TL = '#f6dc9a', TD = '#d4a654', TS = '#e0b864', TO = '#b8863a';
+  R(g, x0 + 3, y0 + 62, 76, 3, 'rgba(60,20,40,.18)');
+  // Wände: glatter rosa Putz, Steinsockel
+  R(g, x0 + 4, y0 + 28, 72, 34, '#fbe4ec'); R(g, x0 + 4, y0 + 28, 72, 2, '#f0c8d6');
+  R(g, x0 + 4, y0 + 28, 2, 34, '#f3d0dc'); R(g, x0 + 74, y0 + 28, 2, 34, '#f3d0dc');
+  R(g, x0 + 3, y0 + 57, 74, 6, '#d8c0c8');
+  for (let i = 0; i < 12; i++) { R(g, x0 + 4 + i * 6, y0 + 58, 5, 2, '#eadbe0'); if (i < 11) R(g, x0 + 7 + i * 6, y0 + 61, 5, 1, '#eadbe0'); }
+  // Schornstein
+  R(g, x0 + 58, y0 - 4, 9, 13, '#d8c0c8');
+  for (let r = 0; r < 4; r++) for (let i = 0; i < 2; i++) R(g, x0 + 58 + (r % 2) * 2 + i * 5, y0 - 3 + r * 3, 4, 2, '#eadbe0');
+  R(g, x0 + 57, y0 - 6, 11, 2, '#b89aa8'); R(g, x0 + 57, y0 - 6, 11, 1, '#cbb2bd');
+  // Strohdach in sauberen Lagen
+  for (let r = 0; r < 30; r++) {
+    const ins = Math.round(16 * (1 - Math.sin((r + 2) / 32 * Math.PI / 2))), xa = x0 - 3 + ins, w = 86 - ins * 2, rr = r % 5;
+    R(g, xa, y0 + r, w, 1, rr === 0 ? TL : rr === 4 ? TD : TH);
+    if (rr === 2 || rr === 3) for (let x = xa + 2 + ((r / 5 | 0) % 2) * 2; x < xa + w - 2; x += 4) R(g, x, y0 + r, 1, 1, TS);
+    R(g, xa, y0 + r, 1, 1, TO); R(g, xa + w - 1, y0 + r, 1, 1, TO);
+  }
+  R(g, x0 + 13, y0 - 1, 54, 1, TO);
+  // weiche Traufkante
+  for (let x = x0 - 3; x < x0 + 83; x++) { const k = (x - x0 + 3) % 8, d = k === 0 || k === 7 ? 0 : 1; R(g, x, y0 + 30, 1, 1 + d, TD); R(g, x, y0 + 31 + d, 1, 1, TO); }
+  // Gaube mit Augenbrauen-Bogen
+  disc(g, x0 + 40, y0 + 17, 9, TO); disc(g, x0 + 40, y0 + 17, 8, TL); R(g, x0 + 32, y0 + 17, 17, 7, TH);
+  disc(g, x0 + 40, y0 + 18, 5, '#ffffff'); R(g, x0 + 35, y0 + 18, 11, 5, '#ffffff');
+  disc(g, x0 + 40, y0 + 18, 4, '#c4ecff'); R(g, x0 + 36, y0 + 18, 9, 4, '#c4ecff'); R(g, x0 + 40, y0 + 14, 1, 8, '#ffffff'); R(g, x0 + 37, y0 + 15, 2, 1, '#ffffff');
+  R(g, x0 + 34, y0 + 22, 13, 2, '#e59ab5'); R(g, x0 + 34, y0 + 22, 13, 1, '#ffc2d8');
+  // Rundbogentür mit Rosenbogen
+  disc(g, x0 + 40, y0 + 46, 8, '#c8a8b6'); R(g, x0 + 32, y0 + 46, 17, 16, '#c8a8b6');
+  disc(g, x0 + 40, y0 + 46, 6, '#e86f9c'); R(g, x0 + 34, y0 + 46, 13, 16, '#e86f9c');
+  R(g, x0 + 37, y0 + 41, 1, 21, '#d9578c'); R(g, x0 + 40, y0 + 40, 1, 22, '#d9578c'); R(g, x0 + 43, y0 + 41, 1, 21, '#d9578c');
+  R(g, x0 + 44, y0 + 52, 2, 2, '#ffd84a'); R(g, x0 + 31, y0 + 62, 19, 2, '#eadbe0');
+  for (let a = 0; a <= 12; a++) { const an = Math.PI * a / 12, x = Math.round(x0 + 40 - Math.cos(an) * 10), y = Math.round(y0 + 46 - Math.sin(an) * 10); R(g, x, y, 1, 1, '#5aa040'); }
+  R(g, x0 + 30, y0 + 46, 1, 16, '#5aa040'); R(g, x0 + 50, y0 + 46, 1, 16, '#5aa040');
+  [[30, 58], [30, 51], [31, 43], [34, 38], [40, 36], [46, 38], [49, 43], [50, 51], [50, 58]].forEach(([a, b], i) => {
+    R(g, x0 + a - 1, y0 + b - 1, 3, 3, i % 2 ? '#ff8fb8' : '#ff5f8f'); R(g, x0 + a, y0 + b - 1, 1, 1, '#ffd6e5');
+    if (i % 2 === 0) R(g, x0 + a + (a < 40 ? -2 : 2), y0 + b + 1, 1, 1, '#7cc25e');
+  });
+  // Fenster mit Läden und Blumenkasten
+  for (const wx of [x0 + 9, x0 + 57]) {
+    R(g, wx, y0 + 40, 14, 12, '#c8a8b6'); R(g, wx + 1, y0 + 41, 12, 10, '#c4ecff');
+    R(g, wx + 6, y0 + 41, 2, 10, '#ffffff'); R(g, wx + 1, y0 + 45, 12, 1, '#ffffff'); R(g, wx + 2, y0 + 42, 2, 2, '#ffffff');
+    for (const sx of [wx - 3, wx + 14]) { R(g, sx, y0 + 40, 3, 12, '#ff8fb8'); R(g, sx, y0 + 43, 3, 1, '#e86f9c'); R(g, sx, y0 + 47, 3, 1, '#e86f9c'); }
+    R(g, wx - 1, y0 + 53, 16, 3, '#e59ab5'); R(g, wx - 1, y0 + 53, 16, 1, '#ffc2d8');
+    R(g, wx, y0 + 52, 14, 1, '#5aa040'); R(g, wx + 1, y0 + 51, 2, 2, '#ff6f9f'); R(g, wx + 6, y0 + 51, 2, 2, '#ffffff'); R(g, wx + 11, y0 + 51, 2, 2, '#ff6f9f');
+  }
+}
 function drawHouse(g, o) {
   o = o || {};
   const C = c => o[c] || c, x0 = 32, y0 = 16;
@@ -1286,7 +1334,7 @@ for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
   drawGrass(bg, x, y);
 }
 drawPaths(bg);
-drawHouse(bg); drawStand(bg); drawCrate(bg); drawSign(bg);
+drawFarmHouse(bg); drawStand(bg); drawCrate(bg); drawSign(bg);
 for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
   if (MAP[y][x] === 'U') drawBush(bg, x, y);
 }
