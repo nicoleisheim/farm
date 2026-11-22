@@ -1359,7 +1359,7 @@ function standHTML() {
   h += `<div class="ssec"><div class="ssech"><span>Aus dem Rucksack</span></div>`;
   if (bag.length) for (const t of bag) {
     const q = qOf(t), need = neededForOrders(t); n += q; sum += q * sellOf(t);
-    h += `<div class="lrow${q ? ' on' : ''}"><img src="${ICONURL[iconOf(t)]}" alt=""><div class="ln"><b>${ITEM[t].name}</b><small><span class="bagc"><img src="${ICONURL.bag}" alt="">${cnt(t)}</span>${need ? `<span class="res">${need} reserviert</span>` : ''}</small></div>
+    h += `<div class="lrow${q ? ' on' : ''}"><img src="${ICONURL[iconOf(t)]}" alt=""><div class="ln"><b>${ITEM[t].name}</b><small><span class="bagc"><img src="${ICONURL.bag}" alt="">${cnt(t)}</span></small></div>
       <div class="qty"><button class="btn sq" data-act="q:${t}:-1" ${q ? '' : 'disabled'}>−</button><span class="qv">${q}</span><button class="btn sq" data-act="q:${t}:1" ${q < cnt(t) ? '' : 'disabled'}>+</button></div>
       <button class="btn sq" data-act="qa:${t}">${q < cnt(t) ? 'Alle' : '0'}</button></div>`;
   }
@@ -1498,7 +1498,7 @@ function shopHTML() {
   h += '</div><div class="ssec"><div class="ssech"><span>Sonstiges</span></div>';
   h += shopRow(ICONURL.snack, 'Gartensalat', 'Füllt 40 Energie auf', 30, 'snack');
   if (S.canCap < 40) h += shopRow(ICONURL.can, 'Kupfer-Gießkanne', 'Fasst 40 statt 20 Füllungen', 400, 'can', true);
-  return h + '</div><div class="foot"><button class="btn primary" data-act="close">Tschüss!</button></div>';
+  return h + `</div><div class="sfoot"><div class="ssum">Dein Geld: <b>${S.gold.toLocaleString('de-DE')} Taler</b></div><div class="sbtns"><button class="btn primary" data-act="close">Tschüss!</button></div></div>`;
 }
 function buy(id, n) {
   let price;
