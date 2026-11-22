@@ -11,9 +11,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%}
+html,body{margin:0;height:100%;touch-action:none;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 body{background:radial-gradient(circle at 50% 30%,#6a3d5e,#26121f 75%);font-family:'Fredoka',ui-rounded,'Arial Rounded MT Bold','Nunito',system-ui,sans-serif;font-variant-numeric:tabular-nums;overflow:hidden;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:manipulation;overscroll-behavior:none}
-#app{position:fixed;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:14px}
+#app{position:fixed;top:0;left:0;width:100%;height:100%;touch-action:none;display:flex;align-items:center;justify-content:center;font-size:14px}
 #stage{position:relative;flex:none}
 #c{display:block;width:100%;height:100%;image-rendering:pixelated;image-rendering:crisp-edges;border-radius:6px;box-shadow:0 10px 40px rgba(0,0,0,.55);cursor:pointer;touch-action:none}
 .panel{background:#ffd9e7;border:.2em solid #7a4a2a;border-radius:.5em;box-shadow:inset 0 0 0 .14em #f5a3c3,inset 0 0 0 .28em #fff0f6,0 .2em 0 #3d220c;color:#5a2a35}
@@ -26,8 +26,10 @@ body{background:radial-gradient(circle at 50% 30%,#6a3d5e,#26121f 75%);font-fami
 #weather{margin-right:.3em}
 #gold{margin-top:.25em;display:flex;align-items:center;justify-content:flex-end;gap:.3em;font-weight:700;border-top:.12em dashed #ec9dbd;padding-top:.25em}
 #gold img{width:1.2em;height:1.2em;image-rendering:pixelated}
-#invBtn{font:inherit;font-weight:600;color:#5a2a35;display:flex;align-items:center;gap:.35em;height:2.3em;padding:0 .7em 0 .45em;cursor:pointer}
-#invBtn img{width:1.6em;height:1.6em;image-rendering:pixelated}
+#barRow{display:flex;align-items:center;gap:.4em}
+#invBtn{width:3.75em;height:3.75em;padding:0;border-radius:1.2em;cursor:pointer;display:flex;align-items:center;justify-content:center;flex:none;touch-action:manipulation}
+#invBtn img{width:2.2em;height:2.2em;image-rendering:pixelated;pointer-events:none}
+#invBtn:active{transform:translateY(.1em)}
 .inv{display:grid;grid-template-columns:repeat(6,1fr);gap:.35em;margin:.5em 0 .6em}
 .inv .slot{width:auto;height:auto;aspect-ratio:1}
 .inv .slot.empty{opacity:.4;cursor:default}
@@ -51,12 +53,12 @@ body{background:radial-gradient(circle at 50% 30%,#6a3d5e,#26121f 75%);font-fami
 .slot .k{position:absolute;left:.5em;top:.2em;font-size:.6em;line-height:1;font-weight:600;color:#e07aa2;pointer-events:none}
 .slot .wl{position:absolute;left:.5em;right:.5em;bottom:.3em;height:.28em;background:#6a3a4a;border-radius:.1em;overflow:hidden;pointer-events:none}
 .slot .wl i{display:block;height:100%;background:#4fb3ff}
-#hint{position:absolute;left:50%;bottom:4.4em;transform:translateX(-50%);padding:.2em .6em;font-size:.85em;font-weight:600;white-space:nowrap;display:none;pointer-events:none}
+#hint{position:absolute;left:50%;bottom:5.5em;transform:translateX(-50%);padding:.2em .6em;font-size:.85em;font-weight:600;white-space:nowrap;display:none;pointer-events:none}
 #hint kbd{font-family:inherit;background:#e0578c;color:#fff;border-radius:.2em;padding:0 .3em;margin-right:.3em}
-#toast{position:absolute;left:50%;bottom:6.4em;transform:translateX(-50%) translateY(.4em);padding:.35em .8em;font-weight:600;width:max-content;max-width:94%;text-align:center;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none}
+#toast{position:absolute;left:50%;bottom:7.6em;transform:translateX(-50%) translateY(.4em);padding:.35em .8em;font-weight:600;width:max-content;max-width:94%;text-align:center;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 #shade{position:absolute;inset:0;background:rgba(60,15,40,.5);display:none;align-items:center;justify-content:center;z-index:20}
-#dlg{width:min(94%,31em);max-height:92%;overflow:auto;padding:.9em 1.2em 1em;-webkit-overflow-scrolling:touch}
+#dlg{width:min(94%,31em);max-height:92%;overflow:auto;touch-action:pan-y;overscroll-behavior:contain;padding:.9em 1.2em 1em;-webkit-overflow-scrolling:touch}
 #dlg h2{margin:0 0 .35em;font-size:1.35em;font-weight:600;color:#c4527e}
 #dlg p{margin:.35em 0;line-height:1.35}
 #dlg .sub{opacity:.8;margin-top:0}
@@ -101,6 +103,7 @@ body.port #ebar{height:.6em}
 body.port #efill{top:0;right:auto;height:100%;width:var(--e,100%)}
 body.port .slot{width:2.8em;height:2.8em}
 body.port #hotbar{gap:.22em;padding:.3em}
+body.port #invBtn{width:3.55em;height:3.55em}
 body.port #hotbar{flex:none}
 body.port #ctrl{position:static;width:100%;max-width:24em;flex:1;min-height:0;align-items:center;padding:0 .8em}
 body.port #joy{width:7em;height:7em}
@@ -113,7 +116,7 @@ body.port #toast{bottom:2.7em}
   <div id="stage">
     <canvas id="c" width="384" height="256"></canvas>
     <div id="topbar">
-      <div id="tl"><button id="helpBtn" class="panel" title="Hilfe & Steuerung">?</button><button id="invBtn" class="panel" title="Rucksack (I)"><img id="invIcon" alt=""><span>Rucksack</span></button></div>
+      <div id="tl"><button id="helpBtn" class="panel" title="Hilfe & Steuerung">?</button></div>
       <div id="clock" class="panel">
         <div id="date"></div>
         <div><span id="weather"></span><span id="time"></span></div>
@@ -123,7 +126,7 @@ body.port #toast{bottom:2.7em}
     <div id="hint" class="panel"></div>
     <div id="toast" class="panel"></div>
     <div id="bottom">
-      <div id="hotbar" class="panel"></div>
+      <div id="barRow"><div id="hotbar" class="panel"></div><button id="invBtn" class="panel" title="Rucksack (I)" aria-label="Rucksack"><img id="invIcon" alt=""></button></div>
       <div id="energy" class="panel" title="Energie"><div id="elabel">♥</div><div id="ebar"><div id="efill"></div></div></div>
     </div>
   </div>
@@ -175,7 +178,7 @@ const SLOTS = [
 ];
 const SEASONS = ['Frühling', 'Sommer', 'Herbst', 'Winter'];
 const WDAYS = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
-const SOLID = new Set(['T', 'H', 'S', 'B', 'U']);
+const SOLID = new Set(['T', 'H', 'S', 'B', 'U', 'W']);
 const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
 const DOOR = [4, 4];
 
@@ -190,6 +193,7 @@ for (let x = 2; x <= 6; x++) for (let y = 1; y <= 4; y++) set(x, y, 'H');
 for (let x = 18; x <= 20; x++) for (let y = 2; y <= 3; y++) set(x, y, 'S');
 set(8, 4, 'B');
 for (let x = 17; x <= 21; x++) for (let y = 10; y <= 13; y++) set(x, y, 'W');
+set(17, 10, 'G'); set(21, 10, 'G'); set(17, 13, 'G'); set(21, 13, 'G');
 set(4, 5, 'P'); for (let x = 4; x <= 19; x++) set(x, 6, 'P'); set(19, 5, 'P'); set(19, 4, 'P'); set(8, 5, 'P');
 [[11,2],[14,2],[22,6],[22,7],[1,8],[15,14]].forEach(([x,y]) => set(x, y, 'U'));
 const tileAt = (x, y) => (x < 0 || y < 0 || x >= COLS || y >= ROWS) ? 'T' : MAP[y][x];
@@ -249,53 +253,54 @@ function drawBush(g, tx, ty) {
   disc(g, x0 + 8, y0 + 9, 6, '#4d9f4f'); disc(g, x0 + 7, y0 + 8, 5, '#68bb5f'); R(g, x0 + 5, y0 + 6, 2, 1, '#93d982');
   [[10, 7], [4, 10], [9, 11], [6, 6], [12, 10]].forEach(([a, b]) => { R(g, x0 + a, y0 + b, 2, 2, '#ff8fb8'); R(g, x0 + a, y0 + b, 1, 1, '#fff'); });
 }
-const POND = { cx: 312, cy: 192, rx: 38, ry: 29 };
-function pondR(a) { return 1 + .035 * Math.sin(2 * a + .6) + .02 * Math.cos(3 * a); }
-function pondD(x, y) { const dx = (x - POND.cx) / POND.rx, dy = (y - POND.cy) / POND.ry; return Math.hypot(dx, dy) / pondR(Math.atan2(dy, dx)); }
-function pondPt(a, d) { const r = pondR(a) * d; return [Math.round(POND.cx + Math.cos(a) * POND.rx * r), Math.round(POND.cy + Math.sin(a) * POND.ry * r)]; }
+const PSTEP = [4, 2, 1, 1];
+function pondPix(x, y) {
+  const tx = Math.floor(x / 16), ty = Math.floor(y / 16), lx = x - tx * 16, ly = y - ty * 16;
+  const hx = lx < 8 ? -1 : 1, hy = ly < 8 ? -1 : 1, cx = lx < 8 ? lx : 15 - lx, cy = ly < 8 ? ly : 15 - ly;
+  const W_ = (a, b) => tileAt(a, b) === 'W';
+  const nH = W_(tx + hx, ty), nV = W_(tx, ty + hy);
+  if (W_(tx, ty)) return !(!nH && !nV && cy < 4 && cx < PSTEP[cy]);
+  return nH && nV && W_(tx + hx, ty + hy) && cy < 4 && cx < PSTEP[cy];
+}
+const PB = [266, 154, 358, 230];
 function drawPond(g) {
-  for (let y = POND.cy - POND.ry - 5; y <= POND.cy + POND.ry + 5; y++)
-    for (let x = POND.cx - POND.rx - 5; x <= POND.cx + POND.rx + 5; x++) {
-      const d = pondD(x + .5, y + .5); let c = null;
-      if (d < 1.03 && d >= .985) c = 'rgba(120,80,60,.18)';
-      else if (d < .985 && d >= .87) c = hash(x, y, 1) < .15 ? '#ead0b4' : '#f6e2cb';
-      else if (d < .87 && d >= .83) c = '#ffffff';
-      else if (d < .83) {
-        const top = y < POND.cy && d > .68;
-        c = top ? '#7cc0e6' : d > .6 ? '#a3dcf5' : d > .35 ? '#8fd2f2' : '#7ec7ee';
+  const wet = (x, y) => pondPix(x, y);
+  for (let y = PB[1]; y <= PB[3]; y++) for (let x = PB[0]; x <= PB[2]; x++) {
+    let c = null;
+    if (wet(x, y)) {
+      if (!wet(x, y - 1) || !wet(x, y - 2)) c = '#5aa9dc';
+      else if (!wet(x, y - 3)) c = '#6bb8e6';
+      else if (!wet(x, y + 1) || !wet(x + 1, y) || !wet(x - 1, y)) c = '#b4e4fa';
+      else c = (x + y * 3) % 23 === 0 ? '#8fd0f2' : '#7cc6ee';
+    } else {
+      let n1 = false, n2 = false;
+      for (let dy = -2; dy <= 2 && !n1; dy++) for (let dx = -2; dx <= 2; dx++) {
+        if (!wet(x + dx, y + dy)) continue;
+        if (Math.abs(dx) <= 1 && Math.abs(dy) <= 1) { n1 = true; break; } n2 = true;
       }
-      if (c) { g.fillStyle = c; g.fillRect(x, y, 1, 1); }
+      if (n1) c = hash(x, y, 4) < .12 ? '#ead0b4' : '#f6e2cb';
+      else if (n2) c = '#d9b896';
     }
+    if (c) { g.fillStyle = c; g.fillRect(x, y, 1, 1); }
+  }
   // Ufersteine
-  [0.3, 1.1, 1.9, 3.4, 4.3, 5.2].forEach((a, i) => {
-    const [x, y] = pondPt(a, .93);
-    R(g, x - 2, y - 1, 4, 3, i % 2 ? '#e8d6dc' : '#dcc6cf'); R(g, x - 1, y - 1, 2, 1, '#fff6f8'); R(g, x - 2, y + 2, 4, 1, '#c9aeb9');
+  [[300, 158], [327, 158], [271, 197], [353, 185], [312, 225], [289, 225]].forEach(([x, y], i) => {
+    R(g, x - 2, y - 1, 5, 3, i % 2 ? '#e8d6dc' : '#dcc6cf'); R(g, x - 1, y - 1, 2, 1, '#fff6f8'); R(g, x - 2, y + 2, 5, 1, '#b99aa6');
   });
-  // Seerosenblätter
-  [[300, 186, 1], [325, 199, 0], [296, 203, 1], [322, 180, 0]].forEach(([x, y, f]) => {
-    disc(g, x, y, 3, '#6cbf5a'); R(g, x, y - 3, 1, 3, '#a3dcf5'); R(g, x - 2, y - 1, 2, 1, '#8fd67a');
-    if (f) { R(g, x - 1, y - 1, 3, 2, '#ff9ec4'); R(g, x, y - 2, 1, 1, '#ffc2dc'); R(g, x, y - 1, 1, 1, '#ffe066'); }
+  // Seerosen
+  [[300, 186, 1], [326, 199, 0], [294, 204, 1], [322, 180, 0]].forEach(([x, y, f]) => {
+    disc(g, x, y, 3, '#4f9a3a'); disc(g, x, y - 1, 3, '#6cbf5a'); R(g, x, y - 4, 1, 3, '#7cc6ee'); R(g, x - 2, y - 2, 2, 1, '#8fd67a');
+    if (f) { R(g, x - 1, y - 2, 3, 2, '#ff9ec4'); R(g, x, y - 3, 1, 1, '#ffc2dc'); R(g, x, y - 2, 1, 1, '#ffe066'); }
   });
   // Schilf
-  [[2.55, 0], [2.75, 1], [2.95, 0], [5.75, 1], [5.95, 0]].forEach(([a, k]) => {
-    const [x, y] = pondPt(a, .95), h = 9 + k * 3;
-    R(g, x, y - h, 1, h, '#5aa040'); R(g, x + 2, y - h + 3, 1, h - 3, '#6cb54e');
-    R(g, x, y - h - 1, 1, 4, '#a0623a'); R(g, x + 2, y - h + 2, 1, 3, '#a0623a'); R(g, x - 1, y - 4, 1, 3, '#7cc25e');
+  [[268, 190, 11], [271, 194, 8], [340, 173, 10], [344, 170, 13], [347, 174, 8]].forEach(([x, y, h]) => {
+    R(g, x, y - h, 1, h, '#5aa040'); R(g, x, y - h - 1, 1, 4, '#a0623a'); R(g, x + 1, y - 4, 1, 3, '#7cc25e'); R(g, x - 1, y - 3, 1, 2, '#6cb54e');
   });
 }
 function drawPondAnim(t) {
-  for (let i = 0; i < 6; i++) {
-    const x = POND.cx - 24 + Math.round((t * 5 + i * 19) % 48), y = POND.cy - 14 + i * 6;
-    if (pondD(x, y) < .7 && pondD(x + 3, y) < .7 && Math.sin(t * 1.3 + i) > -.2) R(X, x, y, 3, 1, '#e2f6ff');
-  }
-  for (let i = 0; i < 2; i++) {
-    const cyc = (t + i * 2.2) / 4.4, n = Math.floor(cyc), ph = cyc - n;
-    const cx = POND.cx - 18 + hash(n, i, 9) * 36, cy = POND.cy - 10 + hash(n, i, 10) * 20, r = 1 + ph * 9;
-    X.fillStyle = `rgba(255,255,255,${(1 - ph) * .8})`;
-    for (let k = 0; k < 20; k++) {
-      const a = k / 20 * Math.PI * 2, x = Math.round(cx + Math.cos(a) * r), y = Math.round(cy + Math.sin(a) * r * .55);
-      if (pondD(x, y) < .8) X.fillRect(x, y, 1, 1);
-    }
+  for (let i = 0; i < 7; i++) {
+    const x = PB[0] + 10 + Math.round((t * 4 + i * 23) % 72), y = PB[1] + 12 + (i * 9) % 54;
+    if (Math.sin(t * 1.4 + i * 2) > 0 && pondPix(x - 1, y) && pondPix(x + 4, y) && pondPix(x, y - 3)) R(X, x, y, 3, 1, '#e2f6ff');
   }
 }
 const WINDOWS = [[42, 55, 12, 10], [90, 55, 12, 10]];
@@ -410,8 +415,13 @@ function cropStage(c) { const N = CROPS[c.t].days; return c.d >= N ? 4 : Math.mi
 const ICON = {}, ICONURL = {};
 function icon(name, fn) { const [c, g] = mk(16, 16); fn(g); ICON[name] = c; ICONURL[name] = c.toDataURL(); }
 icon('hoe', g => {
-  for (let i = 0; i < 10; i++) { R(g, 3 + i, 13 - i, 2, 1, '#8a5a2b'); R(g, 3 + i, 14 - i, 1, 1, '#6b3f1a'); }
-  R(g, 10, 2, 5, 3, '#8f99a3'); R(g, 10, 2, 5, 1, '#c8d0d8'); R(g, 13, 5, 2, 2, '#8f99a3');
+  // Stiel
+  for (let i = 0; i < 9; i++) { R(g, 2 + i, 12 - i, 2, 2, '#d39a5a'); R(g, 3 + i, 13 - i, 1, 1, '#a86d36'); }
+  R(g, 2, 13, 2, 2, '#a86d36'); R(g, 3, 10, 2, 2, '#ff8fb8'); R(g, 4, 9, 1, 1, '#ffc2dc');
+  // Kopf
+  R(g, 10, 2, 4, 3, '#6f7b88'); R(g, 10, 2, 4, 1, '#9aa6b2');
+  R(g, 12, 5, 3, 6, '#b8c3ce'); R(g, 12, 5, 1, 6, '#e3eaf0'); R(g, 14, 5, 1, 6, '#7f8b97');
+  R(g, 12, 11, 3, 1, '#f4f8fb'); R(g, 13, 4, 2, 1, '#6f7b88');
 });
 icon('can', g => {
   R(g, 3, 6, 9, 7, '#7d8a96'); R(g, 3, 6, 9, 1, '#a9b6c2'); R(g, 3, 12, 9, 1, '#5d6873'); R(g, 4, 5, 7, 1, '#5d6873');
@@ -543,28 +553,36 @@ let paused = false;
 function openDlg(html) { delete $('dlg').dataset.inv; $('dlg').innerHTML = html; $('dlg').scrollTop = 0; $('shade').style.display = 'flex'; paused = true; keys.clear(); joyReset(); }
 function closeDlg() { $('shade').style.display = 'none'; paused = false; }
 
+function owned(sl) { return sl.kind === 'seed' ? S.seeds[sl.crop] > 0 : sl.kind === 'snack' ? S.snacks > 0 : true; }
+function visSlots() { return SLOTS.map((_, i) => i).filter(i => owned(SLOTS[i])); }
+let hbKey = '';
 function buildHotbar() {
-  const hb = $('hotbar'); hb.innerHTML = '';
-  SLOTS.forEach((s, i) => {
-    const d = document.createElement('div'); d.className = 'slot'; d.dataset.i = i;
-    d.innerHTML = `<span class="k">${i + 1}</span><img src="${ICONURL[s.icon]}" alt=""><span class="n"></span>` + (s.kind === 'can' ? '<span class="wl"><i></i></span>' : '');
-    d.addEventListener('click', () => selectSlot(i));
+  const hb = $('hotbar'), v = visSlots(); hb.innerHTML = ''; hbKey = v.join(','); hudCache = '';
+  v.forEach((si, n) => {
+    const sl = SLOTS[si], d = document.createElement('div'); d.className = 'slot'; d.dataset.si = si;
+    d.innerHTML = `<span class="k">${n + 1}</span><img src="${ICONURL[sl.icon]}" alt=""><span class="n"></span>` + (sl.kind === 'can' ? '<span class="wl"><i></i></span>' : '');
+    d.addEventListener('click', () => setSel(si));
     hb.appendChild(d);
   });
 }
-function slotName(s) { return s.kind === 'seed' ? CROPS[s.crop].seed : s.name; }
-function selectSlot(i) {
-  S.sel = (i + SLOTS.length) % SLOTS.length; snd('sel');
-  const s = SLOTS[S.sel];
+function slotName(sl) { return sl.kind === 'seed' ? CROPS[sl.crop].seed : sl.name; }
+function setSel(si) {
+  if (!owned(SLOTS[si])) return;
+  S.sel = si; snd('sel');
+  const sl = SLOTS[si];
   let extra = '';
-  if (s.kind === 'seed') extra = ` (${S.seeds[s.crop]})`;
-  if (s.kind === 'can') extra = ` (${S.water}/${S.canCap})`;
-  if (s.kind === 'snack') extra = ` (${S.snacks})`;
-  toast(slotName(s) + extra);
+  if (sl.kind === 'seed') extra = ` (${S.seeds[sl.crop]})`;
+  if (sl.kind === 'can') extra = ` (${S.water}/${S.canCap})`;
+  if (sl.kind === 'snack') extra = ` (${S.snacks})`;
+  toast(slotName(sl) + extra);
 }
+function selectSlot(n) { const v = visSlots(); if (n >= 0 && n < v.length) setSel(v[n]); }
+function cycleSlot(dir) { const v = visSlots(), i = v.indexOf(S.sel); setSel(v[((i < 0 ? 0 : i) + dir + v.length) % v.length]); }
 let hudCache = '';
 function updateHUD() {
   const sd = (S.day - 1) % 28 + 1, season = SEASONS[Math.floor((S.day - 1) / 28) % 4];
+  if (!owned(SLOTS[S.sel])) S.sel = 0;
+  if (visSlots().join(',') !== hbKey) buildHotbar();
   const sig = [S.day, Math.floor(S.time / 10), S.gold, Math.round(S.energy), S.water, S.sel, S.rain, JSON.stringify(S.seeds), JSON.stringify(S.produce), S.snacks, S.canCap].join('|');
   if (sig !== hudCache) {
     hudCache = sig;
@@ -575,11 +593,10 @@ function updateHUD() {
     const p = S.energy / S.maxEnergy;
     $('efill').style.setProperty('--e', (p * 100) + '%');
     $('efill').style.background = p > .5 ? '#ff7fae' : p > .25 ? '#ffb84d' : '#e0503a';
-    [...$('hotbar').children].forEach((d, i) => {
-      const s = SLOTS[i]; d.classList.toggle('sel', i === S.sel);
+    [...$('hotbar').children].forEach(d => {
+      const si = +d.dataset.si, s = SLOTS[si]; d.classList.toggle('sel', si === S.sel);
       const n = d.querySelector('.n');
       n.textContent = s.kind === 'seed' ? S.seeds[s.crop] : s.kind === 'snack' ? S.snacks : '';
-      d.style.opacity = (s.kind === 'seed' && !S.seeds[s.crop]) || (s.kind === 'snack' && !S.snacks) ? .55 : 1;
       d.title = slotName(s);
       if (s.kind === 'can') d.querySelector('.wl i').style.width = (S.water / S.canCap * 100) + '%';
     });
@@ -611,12 +628,12 @@ function helpHTML(intro) {
     <li><b>Joystick</b> (links) – laufen</li>
     <li><b>A-Knopf</b> (rechts) – Werkzeug benutzen / interagieren</li>
     <li>Gegenstand in der Leiste antippen – auswählen</li>
-    <li><b>Rucksack</b> (oben links) – alle Gegenstände ansehen</li>
+    <li><b>Rucksack</b> (neben der Leiste) – alle Gegenstände ansehen</li>
     <li>Feld direkt neben dir antippen – dort handeln</li>
   </ul>` : `<ul>
     <li><kbd>WASD</kbd> / Pfeiltasten – laufen</li>
     <li><kbd>Leertaste</kbd> oder <kbd>E</kbd> – Werkzeug benutzen / interagieren</li>
-    <li><kbd>1</kbd>–<kbd>7</kbd> oder Mausrad – Gegenstand wählen</li>
+    <li>Zahlentasten oder Mausrad – Gegenstand wählen</li>
     <li><kbd>I</kbd> – Rucksack öffnen</li>
     <li>Klick auf ein Feld direkt neben dir – dort handeln</li>
   </ul>`}
@@ -684,7 +701,7 @@ $('dlg').addEventListener('click', e => {
   else if (a === 'sleep') { closeDlg(); endDay(false); }
   else if (a.startsWith('buy:')) { const [, id, n] = a.split(':'); buy(id, +n); }
   else if (a.startsWith('inv:')) { invSel = a.slice(4); snd('sel'); $('dlg').innerHTML = invHTML(); }
-  else if (a.startsWith('take:')) { closeDlg(); selectSlot(+a.slice(5)); }
+  else if (a.startsWith('take:')) { closeDlg(); setSel(+a.slice(5)); }
   else if (a.startsWith('eat:')) eatItem(a.slice(4));
   else if (a === 'new') $('dlg').innerHTML = `<h2>Neues Spiel?</h2><p>Dein ganzer Fortschritt geht verloren.</p><div class="foot"><button class="btn" data-act="close">Abbrechen</button><button class="btn red" data-act="newc">Ja, neu anfangen</button></div>`;
   else if (a === 'newc') { S = newState(); save(); parts.length = 0; closeDlg(); toast('Ein neuer Anfang!'); }
@@ -712,7 +729,7 @@ function act(tx, ty) {
   const k = tx + ',' + ty, s = S.soil[k], t = tileAt(tx, ty), tool = SLOTS[S.sel];
   actT = .25; actTool = null; actTile = [tx, ty];
   const ripe = s && s.c && s.c.d >= CROPS[s.c.t].days;
-  if (ripe && tool.kind !== 'sickle') { toast(touchMode ? 'Zum Ernten die Sichel wählen' : 'Zum Ernten die Sichel nehmen (Taste 3)'); return; }
+  if (ripe && tool.kind !== 'sickle') { toast(touchMode ? 'Zum Ernten die Sichel wählen' : 'Zum Ernten die Sichel nehmen'); return; }
   if (tx === DOOR[0] && ty === DOOR[1]) {
     openDlg(`<h2>Schlafen gehen?</h2><p>Der Tag endet. Gegossene Pflanzen wachsen über Nacht, und alles in der Versandkiste wird verkauft.</p><div class="foot"><button class="btn" data-act="close">Noch nicht</button><button class="btn" data-act="sleep">Gute Nacht 🌙</button></div>`);
     return;
@@ -724,6 +741,7 @@ function act(tx, ty) {
     if (!n) { toast('Leg hier deine Ernte rein – sie wird über Nacht verkauft.'); return; }
     snd('ship'); toast(`${n} Stück in die Versandkiste gelegt`); return;
   }
+  if (!owned(tool)) return;
   if (tool.kind === 'sickle') {
     actTool = 'sickle';
     const d = DIRS[S.dir], side = [[0, 0], [d[1], d[0]], [-d[1], -d[0]]], got = {};
@@ -815,12 +833,12 @@ addEventListener('keydown', e => {
   if (KMAP[e.key]) { keys.add(KMAP[e.key]); e.preventDefault(); return; }
   if (paused) return;
   if (e.key === ' ' || e.key === 'e' || e.key === 'E' || e.key === 'Enter') { e.preventDefault(); if (!e.repeat) act(...targetTile()); return; }
-  if (/^[1-7]$/.test(e.key)) selectSlot(+e.key - 1);
+  if (/^[1-9]$/.test(e.key)) selectSlot(+e.key - 1);
   if (e.key === 'i' || e.key === 'I' || e.key === 'Tab') { e.preventDefault(); openInv(); }
 });
 addEventListener('keyup', e => { if (KMAP[e.key]) keys.delete(KMAP[e.key]); });
 addEventListener('blur', () => keys.clear());
-C.addEventListener('wheel', e => { e.preventDefault(); if (!paused) selectSlot(S.sel + (e.deltaY > 0 ? 1 : -1)); }, { passive: false });
+C.addEventListener('wheel', e => { e.preventDefault(); if (!paused && !e.ctrlKey) cycleSlot(e.deltaY > 0 ? 1 : -1); }, { passive: false });
 let mouseTile = null;
 function evTile(e) { const r = C.getBoundingClientRect(); return [Math.floor(((e.clientX - r.left) / r.width * VW + camX) / 16), Math.floor(((e.clientY - r.top) / r.height * VH + camY) / 16)]; }
 function inReach(tx, ty) { const [px, py] = playerTile(); return Math.abs(tx - px) <= 1 && Math.abs(ty - py) <= 1 && !(tx === px && ty === py); }
@@ -861,6 +879,17 @@ const AB = $('abtn');
 AB.addEventListener('pointerdown', e => { e.preventDefault(); AB.classList.add('down'); if (!paused) act(...targetTile()); });
 ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => AB.addEventListener(ev, () => AB.classList.remove('down')));
 addEventListener('contextmenu', e => { if (touchMode) e.preventDefault(); });
+// Zoomen verhindern: Pinch (iOS), Doppeltippen, Strg+Mausrad, Strg +/-
+['gesturestart', 'gesturechange', 'gestureend'].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), { passive: false }));
+document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
+let lastTouchEnd = 0;
+document.addEventListener('touchend', e => {
+  const now = Date.now();
+  if (now - lastTouchEnd < 350 && !e.target.closest('button,.slot,[data-act]')) e.preventDefault();
+  lastTouchEnd = now;
+}, { passive: false });
+addEventListener('wheel', e => { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
+addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && ['+', '-', '=', '0'].includes(e.key)) e.preventDefault(); });
 addEventListener('touchstart', () => { if (!touchMode) { touchMode = true; fit(); } }, { passive: true });
 
 /* ---------- Tierchen ---------- */
@@ -906,8 +935,8 @@ function drawFly(c, glow) {
 
 /* ---------- update ---------- */
 let animT = 0, moving = false;
-function blocked(x, y) { const t = tileAt(Math.floor(x / 16), Math.floor(y / 16)); return t === 'W' ? pondD(x, y) < .93 : SOLID.has(t); }
-function isWater(tx, ty) { return tileAt(tx, ty) === 'W' && pondD(tx * 16 + 8, ty * 16 + 8) < 1.1; }
+function blocked(x, y) { return SOLID.has(tileAt(Math.floor(x / 16), Math.floor(y / 16))); }
+function isWater(tx, ty) { return tileAt(tx, ty) === 'W'; }
 function tryMove(dx, dy) {
   const nx = S.px + dx, ny = S.py + dy;
   if (blocked(nx - 5, ny - 5) || blocked(nx + 5, ny - 5) || blocked(nx - 5, ny - 1) || blocked(nx + 5, ny - 1)) return;

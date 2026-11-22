@@ -13,7 +13,7 @@ Ein kleines, gemütliches Farm-Spiel im Pixel-Look – inspiriert von Stardew Va
 |---|---|
 | WASD / Pfeiltasten | Laufen |
 | Leertaste / E | Werkzeug benutzen, interagieren |
-| 1–7 / Mausrad | Gegenstand wählen |
+| Zahlentasten / Mausrad | Gegenstand wählen |
 | I / Tab | Rucksack öffnen |
 | Klick auf Nachbarfeld | Dort handeln |
 | Esc | Dialog schließen |
@@ -24,7 +24,7 @@ Ein kleines, gemütliches Farm-Spiel im Pixel-Look – inspiriert von Stardew Va
 - **A-Knopf** (rechts unten) – Werkzeug benutzen, interagieren
 - Gegenstand in der Leiste antippen – auswählen
 - Feld direkt neben der Figur antippen – dort handeln
-- **Rucksack** (oben links) – Inventar öffnen
+- **Rucksack** (neben der Werkzeugleiste) – Inventar öffnen
 
 Im Hochformat liegen Steuerung und Werkzeugleiste unter dem Spielfeld, und die Kamera folgt der Figur. Im Querformat sitzen Joystick und A-Knopf links und rechts neben dem Spielfeld.
 
