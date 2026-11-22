@@ -5,6 +5,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#26121f">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Sonnenhof – Ein kleines Farmspiel</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2509,13 +2511,40 @@ fit(); if (document.fonts) document.fonts.ready.then(fit);
 buildHotbar();
 if (firstRun) openDlg(helpHTML(true));
 let last = performance.now();
+/* ---------- Gamepad (z. B. Retroid Pocket) ---------- */
+const padPrev = [], padKeys = new Set();
+function pollPad() {
+  const gp = navigator.getGamepads ? [...navigator.getGamepads()].find(g => g) : null;
+  if (!gp) return;
+  const b = i => !!(gp.buttons[i] && gp.buttons[i].pressed), ax = gp.axes[0] || 0, ay = gp.axes[1] || 0;
+  const want = new Set();
+  if (b(14) || ax < -.4) want.add('l'); if (b(15) || ax > .4) want.add('r');
+  if (b(12) || ay < -.4) want.add('u'); if (b(13) || ay > .4) want.add('d');
+  for (const k of padKeys) if (!want.has(k)) { keys.delete(k); padKeys.delete(k); }
+  for (const k of want) if (!keys.has(k)) { keys.add(k); padKeys.add(k); }
+  const hit = i => b(i) && !padPrev[i];
+  if (paused) {
+    if (hit(1) && !fading) closeDlg();
+    if ((hit(2) || hit(3)) && $('dlg').dataset.inv && !fading) closeDlg();
+    const ry = gp.axes[3] || 0; if (Math.abs(ry) > .3) $('dlg').scrollTop += ry * 14;
+  } else {
+    if (hit(0)) act(...targetTile());
+    if (hit(2) || hit(3)) openInv();
+    if (hit(4) || hit(6)) cycleSlot(-1);
+    if (hit(5) || hit(7)) cycleSlot(1);
+    if (hit(9) && !fading) openDlg(helpHTML(false));
+  }
+  gp.buttons.forEach((x, i) => padPrev[i] = x.pressed);
+}
 function loop(now) {
+  pollPad();
   const dt = Math.min(.05, (now - last) / 1000); last = now;
   update(dt); render(now / 1000); updateHUD();
   requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);
 })();
+if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 </script>
 </body>
 </html>

@@ -57,3 +57,13 @@ Im Hochformat liegen Steuerung und Werkzeugleiste unter dem Spielfeld, und die K
 - Soundeffekte per Web Audio API
 - Spielstand im `localStorage` des Browsers
 - Schrift: [VT323](https://fonts.google.com/specimen/VT323) über Google Fonts
+
+## Auf dem Retroid Pocket / Android spielen
+
+**Steuerung mit Tasten:** Steuerkreuz oder linker Stick laufen · untere Taste benutzen · rechte Taste Fenster schließen · linke/obere Taste Rucksack · Schultertasten Gegenstand wechseln · Start Hilfe · rechter Stick scrollt in Fenstern.
+
+**Als App installieren:** Die Seite in Chrome öffnen → Menü → „App installieren“ bzw. „Zum Startbildschirm hinzufügen“. Nach dem ersten Laden läuft das Spiel auch offline.
+
+**Als APK:** Auf [pwabuilder.com](https://www.pwabuilder.com) die Adresse der GitHub-Seite eingeben → „Package for stores“ → Android → herunterladen. Im ZIP liegt eine `.apk` zum Testen, die man auf dem Gerät installieren kann.
+
+Dafür müssen neben `index.html` auch `manifest.webmanifest`, `sw.js`, `icon-192.png` und `icon-512.png` im Repository liegen.
