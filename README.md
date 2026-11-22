@@ -66,4 +66,4 @@ Im Hochformat liegen Steuerung und Werkzeugleiste unter dem Spielfeld, und die K
 
 **Als APK:** Auf [pwabuilder.com](https://www.pwabuilder.com) die Adresse der GitHub-Seite eingeben → „Package for stores“ → Android → herunterladen. Im ZIP liegt eine `.apk` zum Testen, die man auf dem Gerät installieren kann.
 
-Dafür müssen neben `index.html` auch `manifest.webmanifest`, `sw.js`, `icon-192.png` und `icon-512.png` im Repository liegen.
+Dafür müssen neben `index.html` auch `manifest.json`, `sw.js`, `icon-192.png` und `icon-512.png` im Repository liegen.
