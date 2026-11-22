@@ -500,6 +500,7 @@ const CROPS = {
 };
 const ITEM = {
   hoe: { name: 'Hacke', kind: 'hoe', tool: 1, dura: 60, price: 80, desc: 'Lockert Gras zu Ackerboden auf. Kostet 2 Energie.' },
+  bucket: { name: 'Melkeimer', kind: 'bucket', tool: 1, desc: 'Zum Melken der Kühe. Vor eine Kuh stellen und A drücken.' },
   can: { name: 'Gießkanne', kind: 'can', tool: 1, dura: 80, price: 100, desc: 'Gießt aufgelockerten Boden. Am Teich auffüllen.' },
   sickle: { name: 'Sichel', kind: 'sickle', tool: 1, dura: 50, price: 60, desc: 'Erntet eine reife Pflanze auf dem Feld vor dir.' },
   axe: { name: 'Axt', kind: 'axe', tool: 1, dura: 40, price: 120, desc: 'Fällt Bäume (3 Schläge, 5–8 Holz) und entfernt Baumstümpfe (2 Holz).' },
@@ -1451,6 +1452,10 @@ icon('milk', g => {
   const B = ['......pp......', '.....pPPp.....', '......oo......', '.....oWWo.....', '....oWWWWo....', '....oWWWWo....', '....oPPPPo....', '....oWWWWo....', '....oWWWWo....', '....oWWWWo....', '....odddWo....', '.....oooo.....'];
   B.forEach((r, j) => [...r].forEach((ch, i) => { const c = { p: '#d9608c', P: '#ff8fb8', o: '#8cc6e2', W: '#ffffff', d: '#e2f2fa' }[ch]; if (c) R(g, i + 1, j + 2, 1, 1, c); }));
 });
+icon('bucket', g => {
+  const B = ['....oooooo....', '...o......o...', '..o........o..', '.PPPPPPPPPPPP.', '.pWWWWWWWWWWp.', '..pWWWWWWWWp..', '..pWWWWWWWWp..', '..pPPPPPPPPp..', '..pWWWWWWWWp..', '...pWWWWWWp...', '...pppppppp...'];
+  B.forEach((r, j) => [...r].forEach((ch, i) => { const c = { o: '#6f6470', P: '#ee8fb0', p: '#7d8a99', W: '#cfdbe6' }[ch]; if (c) R(g, i + 1, j + 3, 1, 1, c); }));
+});
 icon('cow', g => g.drawImage(COWSPR[0], 0, 0, 20, 13, -3, 2, 20, 13));
 icon('coin', g => { disc(g, 8, 8, 6, '#9c6b12'); disc(g, 8, 8, 5, '#f2c13a'); R(g, 7, 5, 2, 6, '#d29a1e'); R(g, 5, 5, 2, 1, '#fff0a8'); });
 
@@ -1564,7 +1569,7 @@ function migrate2(d) {
     for (const c of ['bar', 'bag']) { const i = d[c].indexOf(null); if (i >= 0) { d[c][i] = id; break; } }
   }
   d.dura = d.dura || {};
-  d.cows = d.cows || []; d.stand = d.stand || {}; d.sold = d.sold || {}; d.soldGold = d.soldGold || 0; d.trees = d.trees || {};
+  d.cows = d.cows || []; if (d.cows.length && !(d.bar || []).includes('bucket') && !(d.bag || []).includes('bucket')) { const c = (d.bar || []).includes(null) ? d.bar : d.bag, i = c ? c.indexOf(null) : -1; if (i >= 0) { c[i] = 'bucket'; d.items = d.items || {}; d.items.bucket = 1; } } d.stand = d.stand || {}; d.sold = d.sold || {}; d.soldGold = d.soldGold || 0; d.trees = d.trees || {};
   if (!d.orders) d.orders = [{ id: 'o1', who: 'Frau Lind', items: { ruebe: 3 }, packed: {}, days: 4, reward: 200 }];
   if (d.shipped) { for (const t in d.shipped) if (d.shipped[t]) d.stand[t] = (d.stand[t] || 0) + d.shipped[t]; delete d.shipped; }
   return d;
@@ -1686,7 +1691,7 @@ function updateHUD() {
   if (!paused) {
     const [tx, ty] = targetTile(), t = tileAt(tx, ty), s = S.soil[tx + ',' + ty], tool = { kind: held() ? ITEM[held()].kind : '' };
     if (LOC === 'town') h = t === 'S' ? 'Einkaufen' : t === 'N' ? 'Plaudern' : tx <= 0 ? 'Zur Farm' : '';
-    else if (cowNear() >= 0) h = S.cows[cowNear()].m ? 'Schon gemolken' : 'Melken';
+    else if (cowNear() >= 0) h = S.cows[cowNear()].m ? 'Schon gemolken' : tool.kind === 'bucket' ? 'Melken' : 'Melkeimer wählen';
     else if (s && s.c && s.c.d >= CROPS[s.c.t].days) h = tool.kind === 'sickle' ? CROPS[s.c.t].name + ' ernten' : 'Sichel wählen zum Ernten';
     else if (tx === DOOR[0] && ty === DOOR[1]) h = 'Schlafen gehen';
     else if (t === 'S') h = 'Einkaufen';
@@ -1748,7 +1753,6 @@ function invHTML() {
     let d = it.desc;
     if (id === 'can') d += ` Füllstand ${S.water}/${S.canCap}.`;
     h += `<div class="ssec detail"><img src="${ICONURL[iconOf(id)]}" alt=""><div class="t"><b>${itemName(id)}</b>${it.tool ? '' : ` <small>×${cnt(id)}</small>`}<br><small>${d}</small>${it.eat ? `<br><small>Essen: +${it.eat} Energie</small>` : ''}${it.dura ? `<div class="dura"><span>Haltbarkeit</span>${duraBar(id, 'obar')}<b>${duraOf(id)}/${it.dura}</b></div>` : ''}<div class="acts">`;
-    h += `<button class="btn" data-act="mv" ${free ? '' : 'disabled'}>${other === 'bar' ? 'In die Leiste' : 'In den Rucksack'}</button>`;
     if (it.eat) h += `<button class="btn" data-act="eat" ${S.energy >= S.maxEnergy ? 'disabled' : ''}>Essen</button>`;
     h += `</div><small class="tip">Tipp: Danach ein freies Feld ${padMode ? 'auswählen' : 'antippen'}, um es dorthin zu legen.</small></div></div>`;
   } else h += `<div class="ssec detail empty"><small>${padMode ? 'Wähle einen Gegenstand aus und drück A, um ihn anzusehen oder zu verschieben.' : 'Tippe auf einen Gegenstand, um ihn anzusehen oder zu verschieben.'}</small></div>`;
@@ -1960,6 +1964,7 @@ function shopHTML() {
   h += shopRow(ICONURL.sap_cherry, 'Kirschbaum-Setzling', '4 Tage bis zum Kirschbaum', 60, 'sap-cherry');
   h += shopRow(ICONURL.sap_berry, 'Beerenstrauch', 'Beeren alle 2 Tage', 50, 'sap-berry');
   h += '</div><div class="ssec"><div class="ssech"><span>Tiere</span></div>';
+  h += slotOf('bucket') ? '' : shopRow(ICONURL.bucket, 'Melkeimer', 'Zum Melken deiner Kühe', 120, 'bucket', true);
   h += S.cows.length < COW_MAX ? shopRow(ICONURL.cow, 'Kuh', `${S.cows.length}/${COW_MAX} auf der Weide · täglich 1 Milch`, COW_PRICE, 'cow', true) : `<div class="lrow"><img src="${ICONURL.cow}" alt=""><div class="ln"><b>Kuh</b><small>Die Weide ist voll (${COW_MAX}/${COW_MAX}).</small></div></div>`;
   h += '</div><div class="ssec"><div class="ssech"><span>Sonstiges</span></div>';
   h += shopRow(ICONURL.snack, 'Gartensalat', '+40 Energie', 30, 'snack');
@@ -1976,9 +1981,10 @@ function buy(id, n) {
     if (!addItem(t, 1)) return;
     S.gold -= pr; if (!S.dura) S.dura = {}; if (!had) S.dura[t] = ITEM[t].dura; snd('coin'); $('dlg').innerHTML = shopHTML(); return;
   }
-  price = id.startsWith('seed-') ? CROPS[id.slice(5)].buy : { snack: 30, can: 400, cow: COW_PRICE, 'sap-green': 40, 'sap-cherry': 60, 'sap-berry': 50 }[id];
+  price = id.startsWith('seed-') ? CROPS[id.slice(5)].buy : { snack: 30, can: 400, cow: COW_PRICE, bucket: 120, 'sap-green': 40, 'sap-cherry': 60, 'sap-berry': 50 }[id];
   if (S.gold < price * n) { snd('err'); return; }
   if (id === 'cow') { if (S.cows.length >= COW_MAX) return; S.cows.push({ m: false }); toast('Deine neue Kuh wartet auf der Weide!'); }
+  else if (id === 'bucket') { if (slotOf('bucket') || !addItem('bucket', 1)) return; toast('Melkeimer gekauft!'); }
   else if (id === 'can') { S.canCap = 40; S.water = 40; }
   else if (!addItem(id, n)) return;
   S.gold -= price * n;
@@ -2064,7 +2070,7 @@ function act(tx, ty) {
     return;
   }
   const ci = cowNear();
-  if (ci >= 0) { milkCow(ci); return; }
+  if (ci >= 0) { if (kind === 'bucket' || S.cows[ci].m) milkCow(ci); else { toast(slotOf('bucket') ? 'Wähle den Melkeimer, um zu melken.' : 'Zum Melken brauchst du einen Melkeimer aus dem Dorfladen.'); snd('err'); } return; }
   if (inPast(tx * 16 + 8, ty * 16 + 8) && ['hoe', 'seed', 'sapling'].includes(kind)) { toast('Das ist die Kuhweide.'); snd('err'); return; }
   const bush = TREES[k];
   if (bush && bush.s === 'bush' && bush.ripe && kind !== 'shovel') {
