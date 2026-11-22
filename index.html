@@ -13,7 +13,7 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%}
 body{background:radial-gradient(circle at 50% 30%,#6a3d5e,#26121f 75%);font-family:'Pixelify Sans',ui-monospace,monospace;overflow:hidden;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:manipulation;overscroll-behavior:none}
-#app{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;font-size:14px}
+#app{position:fixed;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:14px}
 #stage{position:relative;flex:none}
 #c{display:block;width:100%;height:100%;image-rendering:pixelated;image-rendering:crisp-edges;border-radius:6px;box-shadow:0 10px 40px rgba(0,0,0,.55);cursor:pointer;touch-action:none}
 .panel{background:#ffd9e7;border:.2em solid #7a4a2a;border-radius:.5em;box-shadow:inset 0 0 0 .14em #f5a3c3,inset 0 0 0 .28em #fff0f6,0 .2em 0 #3d220c;color:#5a2a35}
@@ -73,9 +73,9 @@ body{background:radial-gradient(circle at 50% 30%,#6a3d5e,#26121f 75%);font-fami
 #ctrl{display:none;position:absolute;left:0;right:0;bottom:0;justify-content:space-between;align-items:flex-end;padding:1em max(1em,env(safe-area-inset-right)) max(1em,env(safe-area-inset-bottom)) max(1em,env(safe-area-inset-left));pointer-events:none;z-index:3}
 #ctrl>*{pointer-events:auto}
 body.touch #ctrl{display:flex}
-#joy{width:8em;height:8em;border-radius:50%;background:radial-gradient(circle,rgba(255,227,238,.55),rgba(255,143,184,.4));border:.25em solid #fff;box-shadow:0 .25em .7em rgba(120,30,70,.35);position:relative;touch-action:none;flex:none}
-#knob{position:absolute;left:50%;top:50%;width:3.4em;height:3.4em;margin:-1.7em 0 0 -1.7em;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe3ee,#ff8fb8 60%,#f06a9e);border:.22em solid #fff;box-shadow:0 .2em .5em rgba(120,30,70,.45);pointer-events:none}
-#abtn{width:4.6em;height:4.6em;border-radius:50%;font:inherit;font-weight:700;font-size:1.3em;background:radial-gradient(circle at 35% 30%,#ffe3ee,#ff8fb8 60%,#f06a9e);border:.22em solid #fff;color:#fff;text-shadow:0 .08em 0 #c4527e;box-shadow:0 .3em .7em rgba(120,30,70,.45);touch-action:none;flex:none}
+#joy{width:6.6em;height:6.6em;border-radius:50%;background:radial-gradient(circle,rgba(255,227,238,.55),rgba(255,143,184,.4));border:.25em solid #fff;box-shadow:0 .25em .7em rgba(120,30,70,.35);position:relative;touch-action:none;flex:none}
+#knob{position:absolute;left:50%;top:50%;width:2.8em;height:2.8em;margin:-1.4em 0 0 -1.4em;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe3ee,#ff8fb8 60%,#f06a9e);border:.22em solid #fff;box-shadow:0 .2em .5em rgba(120,30,70,.45);pointer-events:none}
+#abtn{width:3.4em;height:3.4em;border-radius:50%;font:inherit;font-weight:700;font-size:1.2em;background:radial-gradient(circle at 35% 30%,#ffe3ee,#ff8fb8 60%,#f06a9e);border:.22em solid #fff;color:#fff;text-shadow:0 .08em 0 #c4527e;box-shadow:0 .3em .7em rgba(120,30,70,.45);touch-action:none;flex:none}
 #abtn.down{transform:translateY(.12em) scale(.96);box-shadow:0 .1em .3em rgba(120,30,70,.45);background:radial-gradient(circle at 35% 30%,#ffd0e2,#ff7aa8 60%,#e85a92)}
 /* Handy hochkant */
 body.port #app{flex-direction:column;justify-content:flex-start;align-items:stretch;padding-top:env(safe-area-inset-top)}
@@ -89,14 +89,15 @@ body.touch #time{font-size:1.2em}
 body.touch #gold{margin:0;border:0;padding:0}
 body.touch #basket .lbl{display:none}
 body.touch #topbar{padding:.4em}
-body.port #bottom{position:static;flex:1;flex-direction:column;align-items:center;justify-content:flex-start;gap:.55em;padding:.55em .6em max(.6em,env(safe-area-inset-bottom))}
-body.port #energy{position:static;width:100%;max-width:24em;height:auto;flex-direction:row;padding:.35em .6em;gap:.5em}
+body.port #bottom{position:static;flex:1;min-height:0;flex-direction:column;align-items:center;justify-content:flex-start;gap:.4em;padding:.45em .6em max(.5em,env(safe-area-inset-bottom))}
+body.port #energy{position:static;width:100%;max-width:24em;height:auto;flex-direction:row;padding:.2em .6em;gap:.5em;flex:none}
 body.port #elabel{order:0}
-body.port #ebar{height:.8em}
+body.port #ebar{height:.6em}
 body.port #efill{top:0;right:auto;height:100%;width:var(--e,100%)}
-body.port .slot{width:3.3em;height:3.3em}
-body.port #ctrl{position:static;width:100%;max-width:26em;flex:1;align-items:center;padding:0 .6em}
-body.port #joy{width:9em;height:9em}
+body.port .slot{width:3.1em;height:3.1em}
+body.port #hotbar{flex:none}
+body.port #ctrl{position:static;width:100%;max-width:24em;flex:1;min-height:0;align-items:center;padding:0 .8em}
+body.port #joy{width:7em;height:7em}
 body.port #hint{bottom:.5em}
 body.port #toast{bottom:2.7em}
 </style>
@@ -940,30 +941,36 @@ function render(t) {
 
 /* ---------- layout & loop ---------- */
 function fit() {
-  const iw = innerWidth, ih = innerHeight, port = touchMode && ih > iw;
+  const vv = window.visualViewport;
+  const iw = Math.round(vv ? vv.width : innerWidth), ih = Math.round(vv ? vv.height : innerHeight), port = touchMode && ih > iw;
   document.body.classList.toggle('touch', touchMode);
   document.body.classList.toggle('port', port);
   const app = $('app'), stage = $('stage'), top = $('topbar'), bot = $('bottom'), ctrl = $('ctrl');
+  app.style.height = ih + 'px';
   let s;
   if (port) {
-    const fs = Math.min(17, iw / 25);
+    const fs = Math.min(16, iw / 26);
     app.style.fontSize = fs + 'px';
     app.insertBefore(top, stage); stage.after(bot); bot.appendChild(ctrl);
     VW = 240; s = iw / VW;
-    const free = ih - top.offsetHeight - fs * 17.5;
-    VH = Math.max(150, Math.min(H, Math.floor(free / s)));
+    const cs = getComputedStyle(bot), gap = parseFloat(cs.rowGap) || 0;
+    const need = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom) + gap * 2 +
+      $('hotbar').offsetHeight + $('energy').offsetHeight + Math.max($('joy').offsetHeight, $('abtn').offsetHeight) + fs * .6;
+    VH = Math.max(96, Math.min(H, Math.floor((ih - top.offsetHeight - need) / s)));
     stage.style.width = iw + 'px'; stage.style.height = VH * s + 'px';
   } else {
     stage.insertBefore(top, $('hint')); stage.appendChild(bot); app.insertBefore(ctrl, $('fade'));
     VW = W; VH = H;
     s = Math.min(iw / W, ih / H) * .97;
     if (s >= 2 && !touchMode) s = Math.floor(s);
-    app.style.fontSize = (touchMode ? Math.max(11, Math.min(16, s * 4.6)) : Math.max(9, Math.min(18, s * 4.6))) + 'px';
+    app.style.fontSize = (touchMode ? Math.max(10, Math.min(15, s * 4.3)) : Math.max(9, Math.min(18, s * 4.6))) + 'px';
     stage.style.width = W * s + 'px'; stage.style.height = H * s + 'px';
   }
   if (C.width !== VW || C.height !== VH) { C.width = VW; C.height = VH; X.imageSmoothingEnabled = false; }
 }
-addEventListener('resize', fit); addEventListener('orientationchange', () => setTimeout(fit, 200)); fit();
+addEventListener('resize', fit); addEventListener('orientationchange', () => setTimeout(fit, 200));
+if (window.visualViewport) visualViewport.addEventListener('resize', fit);
+fit(); if (document.fonts) document.fonts.ready.then(fit);
 buildHotbar();
 if (firstRun) openDlg(helpHTML(true));
 let last = performance.now();
