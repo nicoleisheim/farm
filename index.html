@@ -534,7 +534,7 @@ for (let x = 2; x <= 6; x++) for (let y = 1; y <= 4; y++) set(x, y, 'H');
 for (let x = 18; x <= 20; x++) for (let y = 2; y <= 3; y++) set(x, y, 'S');
 set(8, 3, 'B'); set(9, 3, 'B'); set(8, 4, 'B'); set(9, 4, 'B');
 set(11, 3, 'L'); set(11, 4, 'L'); set(12, 3, 'L'); set(12, 4, 'L');
-set(4, 5, 'P'); for (let x = 4; x <= 19; x++) set(x, 6, 'P'); set(19, 5, 'P'); set(19, 4, 'P'); set(8, 5, 'P'); set(9, 5, 'P'); set(11, 5, 'P');
+set(4, 5, 'P'); for (let x = 4; x <= 19; x++) set(x, 6, 'P'); set(19, 5, 'P'); set(19, 4, 'P'); set(8, 5, 'P'); set(9, 5, 'P'); set(11, 5, 'P'); set(12, 5, 'P');
 // Der Laden ist jetzt in der Innenstadt: Platz frei machen, Weg nach Osten bis zum Tor
 for (let x = 18; x <= 20; x++) for (let y = 2; y <= 3; y++) set(x, y, 'G');
 set(19, 4, 'G'); set(19, 5, 'G');
@@ -1014,7 +1014,22 @@ function drawSign(g) {
   R(g, x0 + 1, y0 + 1, 13, 6, '#6a3a2a'); R(g, x0 + 2, y0 + 2, 11, 4, '#e0a874');
   R(g, x0 + 4, y0 + 3, 6, 2, '#f08a3a'); R(g, x0 + 10, y0 + 2, 1, 4, '#f08a3a'); R(g, x0 + 11, y0 + 3, 1, 2, '#f08a3a');
 }
-let BG_T = null;
+let BG_T = null, LIT_T = null;
+// Nachtfenster: Glas wird warm gelb, Rahmen, Sprossen und Gardinen bleiben sichtbar
+function makeLit(src, rects) {
+  const c = document.createElement('canvas'); c.width = src.width; c.height = src.height;
+  const g = c.getContext('2d'); g.drawImage(src, 0, 0);
+  const GL = { 'c4ecff': [255, 214, 122], 'e0f6ff': [255, 232, 160], 'ffffff': null };
+  for (const [x, y, w, h] of rects) {
+    const d = g.getImageData(x, y, w, h), a = d.data;
+    for (let i = 0; i < a.length; i += 4) {
+      const k = ((a[i] << 16) | (a[i + 1] << 8) | a[i + 2]).toString(16).padStart(6, '0'), v = GL[k];
+      if (v) { a[i] = v[0]; a[i + 1] = v[1]; a[i + 2] = v[2]; }
+    }
+    g.putImageData(d, x, y);
+  }
+  return c;
+}
 function cherryTree(g, tx, ty) {
   const x0 = tx * 16, y0 = ty * 16, P = ['#e47fa8', '#f7a6c8', '#ffcfe2', '#ffffff'];
   R(g, x0 + 3, y0 + 14, 10, 2, 'rgba(60,20,40,.18)'); R(g, x0 + 6, y0 + 10, 4, 5, '#8a5a40'); R(g, x0 + 6, y0 + 10, 1, 5, '#a8735a');
@@ -1094,6 +1109,7 @@ function makeTown() {
     R(g, ox + 3, oy + 18, 10, 2, 'rgba(0,0,0,.25)');
     if (n.d === 'left') { g.save(); g.translate(ox + 16, oy); g.scale(-1, 1); g.drawImage(pc, 0, 0); g.restore(); } else g.drawImage(pc, ox, oy);
   });
+  LIT_T = makeLit(BG_T, TWIN);
 }
 function goTown() { LOC = 'town'; if (!BG_T) makeTown(); S.px = 22; S.py = 8 * 16 + 13; S.dir = 'right'; S.time += 10; fadeT = .35; snd('sel'); toast('Innenstadt'); }
 function goFarm() { LOC = 'farm'; S.px = GATE[0] * 16 - 2; S.py = GATE[1] * 16 + 13; S.dir = 'left'; S.time += 10; fadeT = .35; snd('sel'); toast('Sonnenhof'); }
@@ -1385,6 +1401,7 @@ for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
   if (MAP[y][x] === 'U') drawBush(bg, x, y);
 }
 drawPond(bg);
+const LIT = makeLit(BG, WINDOWS);
 
 /* ---------- player sprite ---------- */
 const [PC, pg] = mk(16, 20);
@@ -2437,7 +2454,7 @@ function render(t) {
     if (!farm) for (const [lx, ly] of TOWN_LAMPS) { X.fillStyle = `rgba(255,210,120,${dark * .5})`; X.fillRect(lx * 16 + 2 - camX, ly * 16 - 8 - camY, 12, 12); X.fillStyle = `rgba(255,230,160,${Math.min(1, dark * 2)})`; X.fillRect(lx * 16 + 6 - camX, ly * 16 - 2 - camY, 4, 4); }
     for (const [wx, wy, w, h] of (farm ? WINDOWS : TWIN)) {
       const x = wx - camX, y = wy - camY;
-      X.fillStyle = `rgba(255,200,90,${Math.min(1, dark * 2)})`; X.fillRect(x, y, w, h);
+      X.globalAlpha = Math.min(1, dark * 2.2); X.drawImage(farm ? LIT : LIT_T, wx, wy, w, h, x, y, w, h); X.globalAlpha = 1;
       X.fillStyle = `rgba(255,190,80,${dark * .35})`; X.fillRect(x - 3, y + h, w + 6, 6);
     }
     if (farm && S.time > 1200 && !S.rain) drawFireflies();
