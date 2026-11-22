@@ -281,6 +281,61 @@ body.port #ctrl{position:static;width:100%;max-width:24em;flex:1;min-height:0;al
 body.port #joy{width:7em;height:7em}
 body.port #hint{bottom:.5em}
 body.port #toast{bottom:2.7em}
+/* ===== Fenster-Design: rosa Pixel-Rahmen ===== */
+#dlg{background:none;border:1em solid transparent;border-image:var(--t-dwin) 4 fill / 1em stretch;border-radius:0;box-shadow:none;filter:drop-shadow(0 .3em 0 rgba(60,15,40,.45));padding:.3em .75em .7em;image-rendering:pixelated;color:#5a2a35}
+#dlg img{image-rendering:pixelated}
+#dlg h2{display:flex;align-items:center;gap:.4em;width:max-content;max-width:100%;margin:.1em auto .55em;border:.55em solid transparent;border-image:var(--t-dban) 4 fill / .55em stretch;color:#fff;text-shadow:0 .12em 0 #a0365e;font-size:1.15em;font-weight:600;padding:0 .35em;line-height:1.5}
+#dlg h2 img{width:1.6em;height:1.6em;flex:none;filter:drop-shadow(0 .1em 0 rgba(122,42,74,.5))}
+#dlg h2 span{white-space:normal}
+#dlg .lead{margin:.1em 0;line-height:1.4}
+#dlg .sinfo{font-size:.8em;opacity:.85;text-align:center;justify-content:center;gap:.2em 1em;margin:-.15em 0 .45em}
+#dlg .ssec{background:none;border:.5em solid transparent;border-image:var(--t-dsec) 4 fill / .5em stretch;border-radius:0;padding:.05em .3em .1em;margin:.45em 0}
+#dlg .ssec.ready{border-image-source:var(--t-dsecok)}
+#dlg .ssec.warn{border-image-source:var(--t-dsecwarn)}
+#dlg .ssech{border-bottom:0;background:linear-gradient(90deg,#f2b6cb 50%,transparent 0) left bottom/.5em .14em repeat-x;padding-bottom:.35em;margin-bottom:.15em;color:#c4527e}
+#dlg .ssec.ready .ssech{color:#3f8a37;background-image:linear-gradient(90deg,#b8e0a0 50%,transparent 0)}
+#dlg .srow,#dlg .orow,#dlg .shrow,#dlg .kv{border-bottom:0;background:linear-gradient(90deg,#f7d3e0 50%,transparent 0) left bottom/.5em .12em repeat-x;border-radius:0}
+#dlg .srow:last-child,#dlg .orow:last-child,#dlg .shrow:last-child,#dlg .kv:last-child{background-image:none}
+#dlg .srow.on{background-color:#fff0f6}
+#dlg .ssec.ready .orow{background-image:linear-gradient(90deg,#d6eec9 50%,transparent 0)}
+#dlg .shrow{display:grid;grid-template-columns:2.2em minmax(0,1fr) auto auto;align-items:center;gap:.5em;padding:.4em 0}
+#dlg .shrow img,#dlg .kv img{width:2.1em;height:2.1em;flex:none}
+#dlg .shbtns{display:flex;gap:.3em}
+#dlg .price{display:flex;align-items:center;gap:.25em;font-weight:600;min-width:2.8em;justify-content:flex-end}
+#dlg .p-coin{width:1em;height:1em}
+#dlg .kv{display:flex;align-items:center;gap:.55em;padding:.35em 0;line-height:1.3}
+#dlg .kv span{flex:1}
+#dlg .kv b{white-space:nowrap}
+#dlg .kv.muted{opacity:.7}
+#dlg .kv kbd{flex:none;min-width:7.2em;text-align:center;background:none;color:#7a2a4a;border:.35em solid transparent;border-image:var(--t-dchip) 4 fill / .35em stretch;border-radius:0;padding:0 .2em;font-size:.85em;font-weight:600}
+#dlg .steps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.35em .6em;padding:.3em 0}
+#dlg .step{display:flex;align-items:center;gap:.45em;font-size:.88em;line-height:1.25}
+#dlg .step img{width:1.9em;height:1.9em;flex:none}
+#dlg .chip{background:none;border:.3em solid transparent;border-image:var(--t-dchip) 4 fill / .3em stretch;border-radius:0;padding:0 .25em;font-size:.8em}
+#dlg .chip.ok{border-image-source:var(--t-dchipok)}
+#dlg .chip.hot{border-image-source:var(--t-dchiphot)}
+#dlg .obar{border-radius:0;background:#fbe6ee;box-shadow:0 0 0 .12em #f0b2c8;height:.5em;margin:.3em .12em .25em}
+#dlg .obar i{border-radius:0;box-shadow:inset 0 .14em 0 rgba(255,255,255,.45)}
+#dlg .ssec.ready .obar{box-shadow:0 0 0 .12em #9fd486}
+#dlg .sfoot{background:#fff7fa;margin:.5em -.75em -.7em;padding:.6em .75em .7em;border-top:0;bottom:-.7em;box-shadow:0 -.14em 0 #f2b6cb}
+#dlg .foot{margin-top:.6em}
+#dlg .btn{background:none;border:.42em solid transparent;border-image:var(--t-dbtn) 4 fill / .42em stretch;border-radius:0;box-shadow:none;padding:0 .4em;line-height:1.55;color:#7a2a4a;font-weight:600}
+#dlg .btn:hover:not(:disabled){background:none;filter:brightness(1.04)}
+#dlg .btn:active:not(:disabled){transform:translateY(.12em);box-shadow:none}
+#dlg .btn.primary{border-image-source:var(--t-btn);color:#fff;text-shadow:0 .1em 0 #a0365e}
+#dlg .btn.red{border-image-source:var(--t-btnred);color:#fff;text-shadow:0 .1em 0 #8a2a3a}
+#dlg .btn:disabled{opacity:1;border-image-source:var(--t-btnoff);color:#c9a0b0;text-shadow:none}
+#dlg .btn.sq{width:auto;min-width:2em;padding:0 .15em}
+#dlg .inv{gap:.3em;margin:.35em 0 .2em}
+#dlg .inv .slot{background:none;border:.38em solid transparent;border-image:var(--t-slot) 4 fill / .38em stretch;border-radius:0;box-shadow:none;transform:none}
+#dlg .inv .slot.sel{border-image-source:var(--t-slotsel)}
+#dlg .inv .slot.empty{border-image-source:var(--t-slotempty)}
+#dlg .inv .slot img{width:100%;height:100%}
+#dlg .slot .n,#dlg .card .cc{border-radius:0;border:.12em solid #f0b2c8}
+#dlg .detail{display:flex;gap:.6em;align-items:flex-start;min-height:4.6em;padding:.1em .3em}
+#dlg .detail.empty{align-items:center;justify-content:center}
+#dlg .detail .t b{color:#c4527e}
+@media (max-width:420px){#dlg .steps{grid-template-columns:1fr}#dlg .kv kbd{min-width:6.4em}}
 </style>
 </head>
 <body>
@@ -867,6 +922,17 @@ frame('btnoff', '#c9a0b0', '#f3dbe3', '#fbeef3', '#e8ccd6');
 frame('tag', '#c9a87e', '#ffffff', null, '#efe2cc');
 frame('rim', '#7a4a2a', 'rgba(0,0,0,0)', null, null, ['#c98a5a', '#e0a874', '#a86d48']);
 frame('green', '#3f8a37', '#d8f5c8', '#effbe8', '#b8e0a0');
+frame('dwin', '#7a2a4a', '#fff7fa', null, null, ['#ff8fb8', '#ffc2dc', '#e0578c']);
+frame('dban', '#7a2a4a', '#ff8fb8', '#ffc2dc', '#e0578c');
+frame('dsec', '#f0b2c8', '#ffffff', '#ffffff', '#fbe6ee');
+frame('dsecok', '#9fd486', '#f4fcef', '#ffffff', '#e0f3d6');
+frame('dsecwarn', '#f0a090', '#fff4f0', '#ffffff', '#fbe0da');
+frame('dbtn', '#a0365e', '#ffe6ef', '#ffffff', '#f7b9cf');
+frame('btnred', '#8a2a3a', '#ff8a96', '#ffc0c8', '#e0606e');
+frame('dchip', '#f0b2c8', '#fff0f5', '#ffffff', null);
+frame('dchipok', '#9fd486', '#effbe8', '#ffffff', null);
+frame('dchiphot', '#f0a090', '#fff0ec', '#ffffff', null);
+frame('slotempty', '#f5cddb', '#fff8fb', null, null);
 tex('awn', 16, 11, g => {
   R(g, 0, 0, 16, 2, '#a86d48'); R(g, 0, 0, 16, 1, '#e0a874');
   R(g, 0, 2, 8, 6, '#ff8fb8'); R(g, 8, 2, 8, 6, '#ffffff'); R(g, 0, 2, 8, 1, '#ffb3cf'); R(g, 7, 2, 1, 6, '#f07ca6'); R(g, 15, 2, 1, 6, '#f0e4ea');
@@ -898,6 +964,24 @@ tex('cork', 16, 16, g => {
 });
 tex('pin', 7, 7, g => { disc(g, 3, 3, 3, '#ff4f8b'); R(g, 2, 1, 2, 1, '#ffc2dc'); R(g, 1, 2, 1, 1, '#ffc2dc'); R(g, 3, 6, 1, 1, '#8a8a8a'); });
 tex('coin', 8, 8, g => { disc(g, 4, 4, 3, '#9c6b12'); disc(g, 4, 4, 2, '#f2c13a'); R(g, 3, 2, 1, 1, '#fff0a8'); });
+icon('stand', g => {
+  for (let i = 0; i < 4; i++) R(g, 1 + i * 4, 2, 4, 4, i % 2 ? '#ffffff' : '#ff8fb8');
+  R(g, 1, 6, 2, 1, '#ff8fb8'); R(g, 9, 6, 2, 1, '#ff8fb8'); R(g, 5, 6, 2, 1, '#e8d8e0'); R(g, 13, 6, 2, 1, '#e8d8e0'); R(g, 0, 1, 16, 1, '#a86d48');
+  R(g, 2, 7, 1, 7, '#a86d48'); R(g, 13, 7, 1, 7, '#a86d48');
+  R(g, 1, 10, 14, 5, '#d39a64'); R(g, 1, 10, 14, 1, '#f2c79a'); R(g, 1, 14, 14, 1, '#8a5a40');
+  R(g, 4, 8, 2, 2, '#e07b24'); R(g, 7, 8, 2, 2, '#8fd16a'); R(g, 10, 8, 2, 2, '#f1e4bb');
+});
+icon('board', g => {
+  R(g, 3, 9, 2, 6, '#8a5a40'); R(g, 11, 9, 2, 6, '#8a5a40');
+  R(g, 1, 1, 14, 10, '#7a4a2a'); R(g, 2, 2, 12, 8, '#d6a06a');
+  R(g, 3, 3, 4, 5, '#fffaf0'); R(g, 9, 4, 4, 4, '#d8f5c8'); R(g, 4, 3, 1, 1, '#ff4f8b'); R(g, 10, 4, 1, 1, '#ff4f8b');
+  R(g, 4, 5, 2, 1, '#c9a87e'); R(g, 10, 6, 2, 1, '#9fd486');
+});
+icon('shopi', g => {
+  R(g, 2, 6, 12, 9, '#f6d2a8'); R(g, 2, 14, 12, 1, '#a06e52');
+  for (let i = 0; i < 4; i++) R(g, 1 + i * 4, 2, 4, 4, i % 2 ? '#ffffff' : '#ff8fb8');
+  R(g, 0, 1, 16, 1, '#d9608c'); R(g, 6, 9, 4, 6, '#ff9fc0'); R(g, 3, 8, 2, 3, '#c4ecff'); R(g, 11, 8, 2, 3, '#c4ecff');
+});
 function seedBag(g, a, b) {
   R(g, 4, 3, 8, 11, '#d9b27a'); R(g, 4, 3, 8, 2, '#b98f55'); R(g, 5, 2, 6, 1, '#b98f55');
   R(g, 3, 5, 1, 8, '#c79f66'); R(g, 12, 5, 1, 8, '#c79f66'); R(g, 4, 14, 8, 1, '#9c7444');
@@ -1150,25 +1234,21 @@ function fmtTime(t) {
 
 /* ---------- dialogs ---------- */
 function helpHTML(intro) {
-  return `<h2>${intro ? 'Willkommen auf dem Sonnenhof!' : 'Hilfe & Steuerung'}</h2>
-  ${intro ? '<p>Du hast den kleinen Hof deines Großvaters geerbt. Das Feld liegt brach – Zeit, etwas daraus zu machen!</p>' : ''}
-  ${touchMode ? `<ul>
-    <li><b>Joystick</b> (links) – laufen</li>
-    <li><b>A-Knopf</b> (rechts) – Werkzeug benutzen / interagieren</li>
-    <li>Gegenstand in der Leiste antippen – auswählen</li>
-    <li><b>Rucksack</b> (neben der Leiste) – alle Gegenstände ansehen</li>
-    <li>Feld direkt neben dir antippen – dort handeln</li>
-  </ul>` : `<ul>
-    <li><kbd>WASD</kbd> / Pfeiltasten – laufen</li>
-    <li><kbd>Leertaste</kbd> oder <kbd>E</kbd> – Werkzeug benutzen / interagieren</li>
-    <li>Zahlentasten oder Mausrad – Gegenstand wählen</li>
-    <li><kbd>I</kbd> – Rucksack öffnen</li>
-    <li>Klick auf ein Feld direkt neben dir – dort handeln</li>
-  </ul>`}
-  <p><b>So geht's:</b> Mit der <b>Hacke</b> Gras auflockern, <b>Samen</b> säen, täglich mit der <b>Gießkanne</b> gießen (am Teich auffüllen). Reife Pflanzen erntest du mit der <b>Sichel</b>, die Ernte legst du am <b>Verkaufsstand</b> neben dem Haus aus – tagsüber kaufen Leute aus dem Dorf davon. Am <b>Auftragsbrett</b> daneben warten Bestellungen, die du in die Lieferkiste packst. Mit der <b>Axt</b> fällst du Bäume für Holz, mit der <b>Schaufel</b> entfernst du Felder. Im <b>Laden</b> rechts oben gibt's Samen.</p>
-  <p>Geh vor 2 Uhr nachts ins Bett (Haustür) – sonst kippst du um. Gespeichert wird beim Schlafen.</p>
-  <div class="foot">${intro ? '' : '<button class="btn red" data-act="new">Neues Spiel</button>'}<button class="btn" data-act="close">${intro ? "Los geht's!" : 'Weiter'}</button></div>`;
+  const ctl = touchMode ? [
+    ['Joystick', 'laufen'], ['A-Knopf', 'Werkzeug benutzen, mit Dingen reden'], ['Leiste antippen', 'Gegenstand wählen'], ['Rucksack-Knopf', 'Inventar öffnen'], ['Feld antippen', 'direkt daneben handeln']
+  ] : [
+    ['WASD / Pfeile', 'laufen'], ['Leertaste / E', 'Werkzeug benutzen, mit Dingen reden'], ['1–8 / Mausrad', 'Gegenstand wählen'], ['I', 'Rucksack öffnen'], ['Klick', 'auf ein Feld direkt daneben']
+  ];
+  let h = T(intro ? 'heart' : 'heart', intro ? 'Willkommen auf dem Sonnenhof!' : 'Hilfe');
+  if (intro) h += '<p class="lead">Du hast den kleinen Hof deines Großvaters geerbt. Das Feld liegt brach – Zeit, etwas daraus zu machen!</p>';
+  h += `<div class="ssec"><div class="ssech"><span>Steuerung</span></div>${ctl.map(([k, v]) => `<div class="kv"><kbd>${k}</kbd><span>${v}</span></div>`).join('')}</div>`;
+  const steps = [['hoe', 'Gras mit der Hacke auflockern'], ['seed_ruebe', 'Samen säen'], ['can', 'Täglich gießen, am Teich auffüllen'], ['sickle', 'Reife Pflanzen mit der Sichel ernten'],
+    ['stand', 'Ernte am Verkaufsstand auslegen'], ['board', 'Bestellungen am Auftragsbrett einpacken'], ['axe', 'Bäume fällen für Holz'], ['shopi', 'Samen und Setzlinge im Laden kaufen']];
+  h += `<div class="ssec"><div class="ssech"><span>So geht's</span></div><div class="steps">${steps.map(([ic, t]) => `<div class="step"><img src="${ICONURL[ic]}" alt=""><span>${t}</span></div>`).join('')}</div></div>`;
+  h += `<div class="ssec"><div class="ssech"><span>Gut zu wissen</span></div><div class="kv"><img src="${ICONURL.w_moon}" alt=""><span>Geh vor 2 Uhr nachts durch die Haustür ins Bett – sonst kippst du um. Gespeichert wird beim Schlafen.</span></div></div>`;
+  return h + `<div class="foot">${intro ? '' : '<button class="btn red" data-act="new">Neues Spiel</button>'}<button class="btn primary" data-act="close">${intro ? "Los geht's!" : 'Weiter'}</button></div>`;
 }
+const T = (ic, txt) => `<h2>${ic ? `<img src="${ICONURL[ic]}" alt="">` : ''}<span>${txt}</span></h2>`;
 let invSel = null;
 function slotHTML(c, i) {
   const id = S[c][i], sel = invSel && invSel[0] === c && invSel[1] === i;
@@ -1176,19 +1256,19 @@ function slotHTML(c, i) {
   return `<div class="slot${sel ? ' sel' : ''}" data-act="slot:${c}:${i}" title="${itemName(id)}"><img src="${ICONURL[iconOf(id)]}" alt="">${ITEM[id].tool ? '' : `<span class="n">${cnt(id)}</span>`}</div>`;
 }
 function invHTML() {
-  let h = `<h2>Rucksack</h2><p class="sub">Geld: <b>${S.gold.toLocaleString('de-DE')}g</b> · Energie: <b>${Math.round(S.energy)}/${S.maxEnergy}</b></p>`;
-  h += `<div class="invlbl">Werkzeugleiste</div><div class="inv">${S.bar.map((_, i) => slotHTML('bar', i)).join('')}</div>`;
-  h += `<div class="invlbl">Rucksack</div><div class="inv">${S.bag.map((_, i) => slotHTML('bag', i)).join('')}</div>`;
+  let h = T('bag', 'Rucksack') + `<div class="sinfo"><span>Geld: <b>${S.gold.toLocaleString('de-DE')}g</b></span><span>Energie: <b>${Math.round(S.energy)}/${S.maxEnergy}</b></span></div>`;
+  h += `<div class="ssec"><div class="ssech"><span>Werkzeugleiste</span></div><div class="inv">${S.bar.map((_, i) => slotHTML('bar', i)).join('')}</div></div>`;
+  h += `<div class="ssec"><div class="ssech"><span>Rucksack</span></div><div class="inv">${S.bag.map((_, i) => slotHTML('bag', i)).join('')}</div></div>`;
   const id = invSel ? S[invSel[0]][invSel[1]] : null;
   if (id) {
     const it = ITEM[id], other = invSel[0] === 'bar' ? 'bag' : 'bar', free = S[other].includes(null);
     let d = it.desc;
     if (id === 'can') d += ` Füllstand ${S.water}/${S.canCap}.`;
-    h += `<div class="detail"><img src="${ICONURL[iconOf(id)]}" alt=""><div class="t"><b>${itemName(id)}</b>${it.tool ? '' : ` <small>×${cnt(id)}</small>`}<br><small>${d}</small>${it.eat ? `<br><small>Essen: +${it.eat} Energie</small>` : ''}<div class="acts">`;
+    h += `<div class="ssec detail"><img src="${ICONURL[iconOf(id)]}" alt=""><div class="t"><b>${itemName(id)}</b>${it.tool ? '' : ` <small>×${cnt(id)}</small>`}<br><small>${d}</small>${it.eat ? `<br><small>Essen: +${it.eat} Energie</small>` : ''}<div class="acts">`;
     h += `<button class="btn" data-act="mv" ${free ? '' : 'disabled'}>${other === 'bar' ? 'In die Leiste' : 'In den Rucksack'}</button>`;
     if (it.eat) h += `<button class="btn" data-act="eat" ${S.energy >= S.maxEnergy ? 'disabled' : ''}>Essen</button>`;
     h += `</div><small class="tip">Tipp: Danach ein freies Feld antippen, um es dorthin zu legen.</small></div></div>`;
-  } else h += `<div class="detail empty"><small>Tippe auf einen Gegenstand, um ihn anzusehen oder zu verschieben.</small></div>`;
+  } else h += `<div class="ssec detail empty"><small>Tippe auf einen Gegenstand, um ihn anzusehen oder zu verschieben.</small></div>`;
   return h + '<div class="foot"><button class="btn" data-act="close">Schließen</button></div>';
 }
 function rerenderInv() { const sc = $('dlg').scrollTop; $('dlg').innerHTML = invHTML(); $('dlg').scrollTop = sc; }
@@ -1227,7 +1307,7 @@ function neededForOrders(id) { return S.orders.reduce((a, o) => a + Math.max(0, 
 function standHTML() {
   const bag = SELLABLE.filter(t => cnt(t) > 0), on = SELLABLE.filter(t => S.stand[t] > 0);
   const onVal = on.reduce((a, t) => a + S.stand[t] * sellOf(t), 0);
-  let h = `<h2>Verkaufsstand</h2><div class="sinfo"><span>Kundschaft kommt von 8 bis 18 Uhr</span><span>Heute verkauft: <b>${S.soldGold.toLocaleString('de-DE')}g</b></span></div>`;
+  let h = `${T('stand', 'Verkaufsstand')}<div class="sinfo"><span>Kundschaft kommt von 8 bis 18 Uhr</span><span>Heute verkauft: <b>${S.soldGold.toLocaleString('de-DE')}g</b></span></div>`;
   // Abschnitt 1: Am Stand
   h += `<div class="ssec"><div class="ssech"><span>Am Stand ausgelegt</span>${on.length ? `<b>${onVal.toLocaleString('de-DE')}g</b>` : ''}</div>`;
   if (on.length) for (const t of on) h += `<div class="srow"><img src="${ICONURL[iconOf(t)]}" alt=""><div class="sname"><b>${ITEM[t].name}</b><small>${S.stand[t]} Stück · ${(S.stand[t] * sellOf(t)).toLocaleString('de-DE')}g</small></div><span></span><button class="btn" data-act="back:${t}">Zurücknehmen</button></div>`;
@@ -1264,7 +1344,7 @@ function genOrder() {
 const orderReady = o => Object.keys(o.items).every(t => (o.packed[t] || 0) >= o.items[t]);
 function ordersHTML() {
   const readySum = S.orders.filter(orderReady).reduce((a, o) => a + o.reward, 0);
-  let h = `<h2>Auftragsbrett</h2><div class="sinfo"><span>Fertig gepackte Lieferungen werden nachts abgeholt und bezahlt.</span></div>`;
+  let h = `${T('board', 'Auftragsbrett')}<div class="sinfo"><span>Fertig gepackte Lieferungen werden nachts abgeholt und bezahlt.</span></div>`;
   if (!S.orders.length) h += '<div class="ssec"><div class="sempty">Gerade keine Bestellungen. Schau morgen wieder vorbei!</div></div>';
   for (const o of S.orders) {
     const r = orderReady(o);
@@ -1350,17 +1430,20 @@ function drawStandGoods(t) {
 }
 function shopRow(img, name, info, price, id, single) {
   const d1 = S.gold < price ? 'disabled' : '', d5 = S.gold < price * 5 ? 'disabled' : '';
-  return `<div class="row"><img src="${img}" alt=""><div class="info"><b>${name}</b><small>${info}</small></div><span class="price">${price}g</span>
-    <button class="btn" data-act="buy:${id}:1" ${d1}>Kaufen</button>${single ? '' : `<button class="btn" data-act="buy:${id}:5" ${d5}>×5</button>`}</div>`;
+  return `<div class="shrow"><img src="${img}" alt=""><div class="sname"><b>${name}</b><small>${info}</small></div><span class="price"><span class="p-coin"></span>${price}</span>
+    <div class="shbtns"><button class="btn" data-act="buy:${id}:1" ${d1}>Kaufen</button>${single ? '' : `<button class="btn" data-act="buy:${id}:5" ${d5}>×5</button>`}</div></div>`;
 }
 function shopHTML() {
-  let h = `<h2>Dorfladen</h2><p class="sub">Dein Geld: <b>${S.gold.toLocaleString('de-DE')}g</b></p>`;
+  let h = T('shopi', 'Dorfladen') + `<div class="sinfo"><span>Willkommen! Schau dich ruhig um.</span><span>Dein Geld: <b>${S.gold.toLocaleString('de-DE')}g</b></span></div>`;
+  h += '<div class="ssec"><div class="ssech"><span>Samen</span></div>';
   for (const t in CROPS) { const c = CROPS[t]; h += shopRow(ICONURL['seed_' + t], c.seed, `Reif nach ${c.days} Tagen · ${c.name} bringt ${c.sell}g`, c.buy, 'seed-' + t); }
-  h += shopRow(ICONURL.snack, 'Gartensalat', 'Füllt 40 Energie auf', 30, 'snack');
+  h += '</div><div class="ssec"><div class="ssech"><span>Setzlinge</span></div>';
   h += shopRow(ICONURL.sap_green, 'Baumsetzling', 'Wird in 4 Tagen zu einem Baum', 40, 'sap-green');
   h += shopRow(ICONURL.sap_cherry, 'Kirschbaum-Setzling', 'Wird in 4 Tagen zu einem Kirschbaum', 60, 'sap-cherry');
+  h += '</div><div class="ssec"><div class="ssech"><span>Sonstiges</span></div>';
+  h += shopRow(ICONURL.snack, 'Gartensalat', 'Füllt 40 Energie auf', 30, 'snack');
   if (S.canCap < 40) h += shopRow(ICONURL.can, 'Kupfer-Gießkanne', 'Fasst 40 statt 20 Füllungen', 400, 'can', true);
-  return h + '<div class="foot"><button class="btn" data-act="close">Tschüss!</button></div>';
+  return h + '</div><div class="foot"><button class="btn primary" data-act="close">Tschüss!</button></div>';
 }
 function buy(id, n) {
   let price;
@@ -1399,7 +1482,7 @@ $('dlg').addEventListener('click', e => {
   else if (a.startsWith('back:')) { const t = a.slice(5), m = S.stand[t]; if (m && addItem(t, m)) { S.stand[t] = 0; snd('plant'); toast(`${m}× ${ITEM[t].name} zurückgenommen`); } rerenderShip(); }
   else if (a === 'eat') eatItem();
   else if (a === 'hold') { const bi = invSel[1]; closeDlg(); setSel(bi); }
-  else if (a === 'new') $('dlg').innerHTML = `<h2>Neues Spiel?</h2><p>Dein ganzer Fortschritt geht verloren.</p><div class="foot"><button class="btn" data-act="close">Abbrechen</button><button class="btn red" data-act="newc">Ja, neu anfangen</button></div>`;
+  else if (a === 'new') $('dlg').innerHTML = `${T('heart', 'Neues Spiel?')}<div class="ssec warn"><p class="lead">Dein ganzer Fortschritt geht verloren – Hof, Geld und Rucksack.</p></div><div class="foot"><button class="btn" data-act="close">Abbrechen</button><button class="btn red" data-act="newc">Ja, neu anfangen</button></div>`;
   else if (a === 'newc') { S = newState(); TREES = S.trees; rebuildTrees(); custs.length = 0; save(); parts.length = 0; closeDlg(); toast('Ein neuer Anfang!'); }
 });
 
@@ -1427,7 +1510,7 @@ function act(tx, ty) {
   const ripe = s && s.c && s.c.d >= CROPS[s.c.t].days;
   if (ripe && kind !== 'sickle') { toast('Zum Ernten die Sichel nehmen'); return; }
   if (tx === DOOR[0] && ty === DOOR[1]) {
-    openDlg(`<h2>Schlafen gehen?</h2><p>Der Tag endet. Gegossene Pflanzen wachsen über Nacht, und alles in der Versandkiste wird verkauft.</p><div class="foot"><button class="btn" data-act="close">Noch nicht</button><button class="btn" data-act="sleep">Gute Nacht</button></div>`);
+    openDlg(`${T('w_moon', 'Schlafen gehen?')}<div class="ssec"><div class="kv"><img src="${ICONURL.seed_ruebe}" alt=""><span>Gegossene Pflanzen wachsen über Nacht.</span></div><div class="kv"><img src="${ICONURL.board}" alt=""><span>Fertige Lieferungen werden abgeholt und bezahlt.</span></div><div class="kv"><img src="${ICONURL.heart}" alt=""><span>Du wachst mit voller Energie auf. Der Tag wird gespeichert.</span></div></div><div class="foot"><button class="btn" data-act="close">Noch nicht</button><button class="btn primary" data-act="sleep">Gute Nacht</button></div>`);
     return;
   }
   if (t === 'H') { toast('Die Haustür ist in der Mitte.'); return; }
@@ -1536,17 +1619,17 @@ function endDay(passedOut) {
     let lines = '';
     for (const t of SELLABLE) {
       const n = S.sold[t]; if (!n) continue;
-      lines += `<div class="sumline"><span>${n}× ${ITEM[t].name}</span><span>${(n * sellOf(t)).toLocaleString('de-DE')}g</span></div>`;
+      lines += `<div class="kv"><img src="${ICONURL[iconOf(t)]}" alt=""><span>${n}× ${ITEM[t].name}</span><b>${(n * sellOf(t)).toLocaleString('de-DE')}g</b></div>`;
     }
     const income = S.soldGold; S.sold = {}; S.soldGold = 0; custs.length = 0;
     // Lieferungen
     let dl = '';
     for (const o of S.orders.slice()) {
-      if (orderReady(o)) { S.gold += o.reward; S.earned += o.reward; dl += `<div class="sumline"><span>Lieferung an ${o.who}</span><span>+${o.reward}g</span></div>`; S.orders.splice(S.orders.indexOf(o), 1); continue; }
+      if (orderReady(o)) { S.gold += o.reward; S.earned += o.reward; dl += `<div class="kv"><img src="${ICONURL.board}" alt=""><span>Lieferung an ${o.who}</span><b>+${o.reward.toLocaleString('de-DE')}g</b></div>`; S.orders.splice(S.orders.indexOf(o), 1); continue; }
       o.days--;
       if (o.days <= 0) {
         for (const t in o.packed) if (o.packed[t]) addItem(t, o.packed[t]);
-        dl += `<div class="sumline"><span>Bestellung von ${o.who} abgelaufen</span><span>–</span></div>`;
+        dl += `<div class="kv muted"><img src="${ICONURL.board}" alt=""><span>Bestellung von ${o.who} abgelaufen – Ware ist zurück im Rucksack</span><b>–</b></div>`;
         S.orders.splice(S.orders.indexOf(o), 1);
       }
     }
@@ -1576,16 +1659,20 @@ function endDay(passedOut) {
     S.time = 360; S.warned = false; S.px = 72; S.py = 93; S.dir = 'down';
     save();
     const ready = Object.values(S.soil).filter(s => s.c && s.c.d >= CROPS[s.c.t].days).length;
-    let html = `<h2>${passedOut ? 'Du bist vor Erschöpfung umgekippt …' : 'Ein neuer Morgen'}</h2>`;
-    if (passedOut) html += `<p>Ein Nachbar hat dich nach Hause gebracht. Für die Hilfe fehlen dir <b>${lost}g</b>, und du bist nicht ganz ausgeruht.</p>`;
-    html += lines ? `<p><b>Gestern am Stand verkauft:</b></p>${lines}<div class="sumline total"><span>Einnahmen</span><span>${income.toLocaleString('de-DE')}g</span></div>` : '<p>Gestern wurde am Stand nichts verkauft.</p>';
-    if (dl) html += `<p><b>Lieferungen:</b></p>${dl}`;
-    if (fresh.length) html += `<p>Neue Bestellung${fresh.length > 1 ? 'en' : ''} von ${fresh.join(', ')} am Auftragsbrett.</p>`;
-    if (regrow) html += '<p>Ein Setzling ist zu einem Baum herangewachsen.</p>';
-    if (grown) html += `<p>${grown} Pflanze${grown > 1 ? 'n sind' : ' ist'} über Nacht gewachsen.</p>`;
-    if (ready) html += `<p>${ready} Pflanze${ready > 1 ? 'n sind' : ' ist'} erntereif!</p>`;
-    if (S.rain) html += '<p>Heute regnet es – deine Felder sind schon gegossen.</p>';
-    html += `<div class="foot"><button class="btn" data-act="close">Tag ${S.day} beginnen</button></div>`;
+    const sd = (S.day - 1) % 28 + 1, season = SEASONS[Math.floor((S.day - 1) / 28) % 4];
+    let html = T(passedOut ? 'w_moon' : 'w_sun', passedOut ? 'Umgekippt …' : 'Ein neuer Morgen');
+    html += `<div class="sinfo"><span>${WDAYS[(S.day - 1) % 7]}. ${sd}. ${season} · Tag ${S.day}</span><span>Kasse: <b>${S.gold.toLocaleString('de-DE')}g</b></span></div>`;
+    if (passedOut) html += `<div class="ssec warn"><p class="lead">Ein Nachbar hat dich nach Hause gebracht. Für die Hilfe fehlen dir <b>${lost}g</b>, und du bist nicht ganz ausgeruht.</p></div>`;
+    html += `<div class="ssec"><div class="ssech"><span>Gestern am Stand verkauft</span>${income ? `<b>+${income.toLocaleString('de-DE')}g</b>` : ''}</div>${lines || '<div class="sempty">Gestern wurde am Stand nichts verkauft.</div>'}</div>`;
+    if (dl) html += `<div class="ssec"><div class="ssech"><span>Lieferungen</span></div>${dl}</div>`;
+    let farm = '';
+    if (S.rain) farm += `<div class="kv"><img src="${ICONURL.w_rain}" alt=""><span>Heute regnet es – deine Felder sind schon gegossen.</span></div>`;
+    if (grown) farm += `<div class="kv"><img src="${ICONURL.seed_ruebe}" alt=""><span>${grown} Pflanze${grown > 1 ? 'n sind' : ' ist'} über Nacht gewachsen.</span></div>`;
+    if (ready) farm += `<div class="kv"><img src="${ICONURL.sickle}" alt=""><span>${ready} Pflanze${ready > 1 ? 'n sind' : ' ist'} erntereif!</span></div>`;
+    if (regrow) farm += `<div class="kv"><img src="${ICONURL.sap_green}" alt=""><span>Ein Setzling ist zu einem Baum herangewachsen.</span></div>`;
+    if (fresh.length) farm += `<div class="kv"><img src="${ICONURL.board}" alt=""><span>Neue Bestellung${fresh.length > 1 ? 'en' : ''} von ${fresh.join(', ')}.</span></div>`;
+    if (farm) html += `<div class="ssec"><div class="ssech"><span>Auf dem Hof</span></div>${farm}</div>`;
+    html += `<div class="foot"><button class="btn primary" data-act="close">Tag ${S.day} beginnen</button></div>`;
     openDlg(html);
     $('fade').style.opacity = 0; fading = false;
   }, 700);
