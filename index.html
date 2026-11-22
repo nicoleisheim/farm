@@ -533,7 +533,7 @@ for (let y = 0; y < ROWS; y++) { set(0, y, 'T'); set(COLS - 1, y, 'T'); }
 for (let x = 2; x <= 6; x++) for (let y = 1; y <= 4; y++) set(x, y, 'H');
 for (let x = 18; x <= 20; x++) for (let y = 2; y <= 3; y++) set(x, y, 'S');
 set(8, 3, 'B'); set(9, 3, 'B'); set(8, 4, 'B'); set(9, 4, 'B');
-set(11, 3, 'L'); set(11, 4, 'L');
+set(11, 3, 'L'); set(11, 4, 'L'); set(12, 3, 'L'); set(12, 4, 'L');
 set(4, 5, 'P'); for (let x = 4; x <= 19; x++) set(x, 6, 'P'); set(19, 5, 'P'); set(19, 4, 'P'); set(8, 5, 'P'); set(9, 5, 'P'); set(11, 5, 'P');
 // Der Laden ist jetzt in der Innenstadt: Platz frei machen, Weg nach Osten bis zum Tor
 for (let x = 18; x <= 20; x++) for (let y = 2; y <= 3; y++) set(x, y, 'G');
@@ -851,7 +851,7 @@ function drawPondAnim(t) {
     P(-3, 0, 6, 1, '#c8ecfc'); P(-2, -2, 4, 2, '#ffe066'); P(1, -4, 2, 2, '#ffe066'); P(3, -3, 1, 1, '#ff9a3a'); P(2, -4, 1, 1, '#3a2030');
   }
 }
-const WINDOWS = [[42, 57, 12, 10], [90, 57, 12, 10], [68, 30, 9, 6]];
+const WINDOWS = [[42, 57, 12, 10], [90, 57, 12, 10], [68, 30, 9, 6], [208, 55, 3, 4]];
 function drawFarmHouse(g) {
   const x0 = 32, y0 = 16;
   const TH = '#ecc878', TL = '#f6dc9a', TD = '#d4a654', TS = '#e0b864', TO = '#b8863a';
@@ -1120,15 +1120,31 @@ function drawStandAwning(g) {
 }
 function drawCrate(g) {
   const x0 = 176, y0 = 48;
-  // Auftragsbrett
-  R(g, x0 + 3, y0 + 2, 2, 18, '#8a5a40'); R(g, x0 + 11, y0 + 2, 2, 18, '#8a5a40');
-  R(g, x0 + 1, y0 + 1, 14, 11, '#a86d48'); R(g, x0 + 2, y0 + 2, 12, 9, '#d8a878'); R(g, x0 + 1, y0, 14, 1, '#c48a5e');
-  // Kiste
-  R(g, x0 + 2, y0 + 30, 13, 2, 'rgba(60,20,40,.18)');
-  R(g, x0 + 1, y0 + 19, 14, 12, '#c98a5a'); R(g, x0 + 1, y0 + 19, 14, 1, '#e8b07a');
-  R(g, x0 + 1, y0 + 23, 14, 1, '#a86d48'); R(g, x0 + 1, y0 + 27, 14, 1, '#a86d48');
-  R(g, x0 + 1, y0 + 19, 1, 12, '#a86d48'); R(g, x0 + 14, y0 + 19, 1, 12, '#a86d48');
-  R(g, x0 + 5, y0 + 24, 6, 3, '#ffb3cf'); R(g, x0 + 6, y0 + 25, 4, 1, '#fff');
+  R(g, x0 + 1, y0 + 30, 31, 3, 'rgba(60,20,40,.18)');
+  // Pfosten
+  for (const px of [x0 + 2, x0 + 27]) { R(g, px, y0 - 3, 3, 34, '#8a5a40'); R(g, px, y0 - 3, 1, 34, '#a86d48'); R(g, px + 2, y0 - 3, 1, 34, '#6a3a2a'); }
+  // Holzschindeldach
+  R(g, x0 + 1, y0 - 12, 30, 1, '#6a3a2a');
+  for (let r = 0; r < 9; r++) {
+    const ins = Math.max(0, 4 - r), xa = x0 - 3 + ins, w = 38 - ins * 2, band = (r / 3) | 0, rr = r % 3;
+    R(g, xa, y0 - 11 + r, w, 1, rr === 0 ? '#c08a64' : rr === 1 ? '#a86d48' : '#7a4a3a');
+    if (rr < 2) for (let x = xa + 3 + (band % 2) * 3; x < xa + w - 1; x += 6) R(g, x, y0 - 11 + r, 1, 1, '#8a5a40');
+    R(g, xa, y0 - 11 + r, 1, 1, '#5a3428'); R(g, xa + w - 1, y0 - 11 + r, 1, 1, '#5a3428');
+  }
+  R(g, x0 - 3, y0 - 2, 38, 2, '#ff8fb8'); R(g, x0 - 3, y0 - 2, 38, 1, '#ffb3cf');
+  for (let x = x0 - 2; x < x0 + 35; x += 4) R(g, x, y0, 2, 1, '#ff8fb8');
+  // Brett aus Holzplanken
+  R(g, x0 + 1, y0 + 1, 30, 20, '#6a3a2a'); R(g, x0 + 2, y0 + 2, 28, 18, '#c08a64');
+  for (let y = y0 + 2; y < y0 + 20; y += 6) { R(g, x0 + 2, y, 28, 1, '#d8a074'); R(g, x0 + 2, y + 5, 28, 1, '#a86d48'); }
+  for (const [nx, ny] of [[3, 3], [28, 3], [3, 18], [28, 18]]) R(g, x0 + nx, y0 + ny, 1, 1, '#e8d8c8');
+  // Laterne
+  R(g, x0 + 30, y0 + 2, 4, 1, '#3a2a34'); R(g, x0 + 33, y0 + 2, 1, 3, '#3a2a34');
+  R(g, x0 + 31, y0 + 5, 5, 1, '#3a2a34'); R(g, x0 + 31, y0 + 6, 5, 6, '#3a2a34'); R(g, x0 + 32, y0 + 7, 3, 4, '#ffe6a0'); R(g, x0 + 32, y0 + 7, 1, 1, '#fff8d8'); R(g, x0 + 32, y0 + 12, 3, 1, '#3a2a34');
+  // Bank mit Herz
+  R(g, x0 + 4, y0 + 22, 25, 8, '#e0a874'); R(g, x0 + 4, y0 + 22, 25, 2, '#f6cf9c');
+  R(g, x0 + 4, y0 + 26, 25, 1, '#c88e5c'); R(g, x0 + 4, y0 + 29, 25, 1, '#8a5a40');
+  R(g, x0 + 4, y0 + 22, 1, 8, '#a86d48'); R(g, x0 + 28, y0 + 22, 1, 8, '#a86d48');
+  heart(g, x0 + 14, y0 + 25, '#ff8fb8');
 }
 function drawStump(g, tx, ty) {
   const x0 = tx * 16, y0 = ty * 16;
@@ -1808,13 +1824,18 @@ function drawStandGoods(t) {
     R(X, bx + 1, by + 1, 2, 2, col); R(X, bx + 3, by + 1, 2, 2, col); R(X, bx + 2, by, 2, 2, col);
     i++;
   }
-  // Notizzettel am Auftragsbrett
+  // Bestellzettel am Auftragsbrett
+  const IC = { ruebe: '#f1e4bb', kohl: '#8fd16a', kuerbis: '#e07b24', wood: '#b87a4a', berry: '#e0466e' };
   S.orders.forEach((o, k) => {
     if (k > 2) return;
-    const nx = 176 + 3 + k * 4, ny = 48 + 3 + (k % 2);
-    R(X, nx, ny, 3, 5, orderReady(o) ? '#d8f5c8' : '#fff7ec'); R(X, nx + 1, ny, 1, 1, '#ff5f8f');
+    const nx = 176 + 4 + k * 9, ny = 48 + 5 + (k % 2) * 2, ready = orderReady(o);
+    R(X, nx + 1, ny + 1, 6, 9, 'rgba(90,50,40,.25)');
+    R(X, nx, ny, 6, 9, ready ? '#ffd6e5' : '#fffaf2'); R(X, nx, ny + 8, 6, 1, ready ? '#ffb3cf' : '#f0e0cc');
+    R(X, nx + 2, ny + 2, 2, 2, IC[Object.keys(o.items)[0]] || '#ccc');
+    R(X, nx + 1, ny + 5, 4, 1, '#c8a8b6'); R(X, nx + 1, ny + 7, 3, 1, '#c8a8b6');
+    R(X, nx + 2, ny - 1, 2, 2, ready ? '#ff5f8f' : '#e0466e');
   });
-  if (S.orders.some(orderReady) && Math.floor(t * 2) % 2) heart(X, 181, 63, '#ff5f8f');
+  if (S.orders.some(orderReady) && Math.floor(t * 2) % 2) heart(X, 190, 73, '#ff5f8f');
 }
 function shopRow(img, name, info, price, id, single) {
   const d1 = S.gold < price || id === 'own' ? 'disabled' : '', d5 = S.gold < price * 5 ? 'disabled' : '';
