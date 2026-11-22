@@ -64,6 +64,4 @@ Im Hochformat liegen Steuerung und Werkzeugleiste unter dem Spielfeld, und die K
 
 **Als App installieren:** Die Seite in Chrome öffnen → Menü → „App installieren“ bzw. „Zum Startbildschirm hinzufügen“. Nach dem ersten Laden läuft das Spiel auch offline.
 
-**Als APK:** Auf [pwabuilder.com](https://www.pwabuilder.com) die Adresse der GitHub-Seite eingeben → „Package for stores“ → Android → herunterladen. Im ZIP liegt eine `.apk` zum Testen, die man auf dem Gerät installieren kann.
-
-Dafür müssen neben `index.html` auch `manifest.json`, `sw.js`, `icon-192.png` und `icon-512.png` im Repository liegen.
+**Als APK (automatisch):** Die Datei `.github/workflows/apk.yml` baut bei jedem Hochladen eine fertige Android-App. Nach ein paar Minuten liegt sie unter **Releases → „Sonnenhof APK“ → `Sonnenhof.apk`**. Die APK ist immer gleich signiert, deshalb lassen sich neue Versionen einfach drüber installieren, und der Spielstand bleibt erhalten. In der App steuern die Tasten des Geräts das Spiel, die Zurück-Taste schließt Fenster.
