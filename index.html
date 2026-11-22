@@ -541,7 +541,7 @@ const appeal = id => Math.pow(sellOf(id) / priceOf(id), 2);
 const priceTag = id => { const r = priceOf(id) / sellOf(id); return r <= .75 ? 'sehr schnell' : r < .95 ? 'schnell' : r <= 1.05 ? 'normal' : r <= 1.3 ? 'langsam' : 'sehr langsam'; };
 const SEASONS = ['Frühling', 'Sommer', 'Herbst', 'Winter'];
 const WDAYS = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
-const SOLID = new Set(['T', 'H', 'S', 'B', 'U', 'W', 'L', 'X', 'Y', 'F', 'O', 'N']);
+const SOLID = new Set(['T', 'H', 'S', 'B', 'U', 'W', 'L', 'X', 'Y', 'F', 'O', 'N', 'K']);
 let LOC = 'farm', fadeT = 0;
 const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
 const DOOR = [4, 4];
@@ -552,7 +552,7 @@ for (let y = 0; y < ROWS; y++) MAP.push(new Array(COLS).fill('G'));
 const set = (x, y, c) => { if (x >= 0 && y >= 0 && x < COLS && y < ROWS) MAP[y][x] = c; };
 for (let x = 0; x < COLS; x++) { set(x, 0, 'T'); set(x, ROWS - 1, 'T'); }
 for (let y = 0; y < ROWS; y++) { set(0, y, 'T'); set(COLS - 1, y, 'T'); }
-[[1,1],[22,1],[22,2],[1,13],[1,14],[2,14],[22,13],[21,14],[22,14],[16,1],[12,14]].forEach(([x,y]) => set(x, y, 'T'));
+[[1,1],[22,1],[22,2],[1,13],[1,14],[2,14],[22,13],[21,14],[22,14],[12,14]].forEach(([x,y]) => set(x, y, 'T'));
 for (let x = 2; x <= 6; x++) for (let y = 1; y <= 4; y++) set(x, y, 'H');
 for (let x = 18; x <= 20; x++) for (let y = 2; y <= 3; y++) set(x, y, 'S');
 set(8, 3, 'L'); set(8, 4, 'L'); set(9, 3, 'L'); set(9, 4, 'L');
@@ -561,6 +561,10 @@ set(4, 5, 'P'); for (let x = 4; x <= 19; x++) set(x, 6, 'P'); set(19, 5, 'P'); s
 for (let x = 18; x <= 20; x++) for (let y = 2; y <= 3; y++) set(x, y, 'G');
 set(19, 3, 'B'); set(20, 3, 'B'); set(19, 4, 'B'); set(20, 4, 'B'); set(19, 5, 'P'); set(20, 5, 'P');
 for (let x = 4; x <= 23; x++) set(x, 6, 'P');
+// Lagerhaus zwischen Auftragsbrett und Verkaufsstand (Kacheln 13–16 / 2–4), Weg zur Tür
+for (let x = 13; x <= 16; x++) for (let y = 2; y <= 4; y++) set(x, y, 'K');
+set(14, 5, 'P'); set(15, 5, 'P');
+const STO = { x0: 208, y0: 32 };
 const GATE = [23, 6];
 // Land zum Dazukaufen: drei Stücke im Süden (Reihen 15–22), bis zum Kauf Wald
 const LAND = [{ id: 'sw', name: 'Südwiese West', x0: 1, x1: 7, price: 1000 }, { id: 'sm', name: 'Südwiese Mitte', x0: 8, x1: 15, price: 1500 }, { id: 'so', name: 'Südwiese Ost', x0: 16, x1: 22, price: 2000 }];
@@ -577,13 +581,13 @@ function applyLand(owned) {
 }
 const STX = 304, STY = 48; // Verkaufsstand (Kacheln 19–20 / 3–4)
 const BDX = 128, BDY = 48; // Auftragsbrett (Kacheln 8–9 / 3–4)
-// Kuhweide (Kacheln 12–17 / 2–5) mit Holzzaun, Tor unten zum Weg
-const PAST = { x0: 186, y0: 38, x1: 282, y1: 92, g0: 226, g1: 242 }, COW_MAX = 4, COW_PRICE = 500;
+// Kuhweide unten links neben dem Feld, Holzzaun, Tor oben
+const PAST = { x0: 52, y0: 196, x1: 148, y1: 240, g0: 92, g1: 108 }, COW_MAX = 4, COW_PRICE = 500;
 const inPast = (x, y) => x > PAST.x0 && x < PAST.x1 && y > PAST.y0 && y < PAST.y1;
 function fenceAt(x, y) {
   const P = PAST, inX = x >= P.x0 - 3 && x <= P.x1 + 3, inY = y >= P.y0 - 2 && y <= P.y1 + 2;
-  if (inX && Math.abs(y - P.y0) <= 2) return true;
-  if (inX && Math.abs(y - P.y1) <= 2 && !(x > P.g0 && x < P.g1)) return true;
+  if (inX && Math.abs(y - P.y0) <= 2 && !(x > P.g0 && x < P.g1)) return true;
+  if (inX && Math.abs(y - P.y1) <= 2) return true;
   return inY && (Math.abs(x - P.x0) <= 3 || Math.abs(x - P.x1) <= 3);
 }
 const isEdge = (x, y) => x <= 0 || y <= 0 || x >= COLS - 1 || y >= ROWS - 1 || lockedAt(x, y);
@@ -653,12 +657,12 @@ function drawGrass(g, tx, ty) {
   }
 }
 const isPT = (a, b) => tileAt(a, b) === 'P';
-const connT = (a, b) => { const t = tileAt(a, b); return t === 'P' || t === 'H' || t === 'S' || t === 'B' || t === 'L' || t === 'F'; };
+const connT = (a, b) => { const t = tileAt(a, b); return t === 'P' || t === 'H' || t === 'S' || t === 'B' || t === 'L' || t === 'F' || t === 'K'; };
 function pathPix(x, y) {
   const tx = Math.floor(x / 16), ty = Math.floor(y / 16), lx = x - tx * 16, ly = y - ty * 16;
   const hx = lx < 8 ? -1 : 1, hy = ly < 8 ? -1 : 1, cx = lx < 8 ? lx : 15 - lx, cy = ly < 8 ? ly : 15 - ly;
   const tt = tileAt(tx, ty);
-  if ((tt === 'B' || tt === 'L' || tt === 'H' || tt === 'S') && isPT(tx, ty + 1) && ly >= (tt === 'L' ? 12 : 9)) {
+  if ((tt === 'B' || tt === 'L' || tt === 'H' || tt === 'S' || tt === 'K') && isPT(tx, ty + 1) && ly >= (tt === 'L' ? 12 : 9)) {
     const l = isPT(tx - 1, ty + 1) || tileAt(tx - 1, ty) === tt, r = isPT(tx + 1, ty + 1) || tileAt(tx + 1, ty) === tt;
     const k = tt === 'L' ? [2, 1, 0, 0][ly - 12] : 1; // Auftragsbrett: Weg endet mit runden Ecken unter den Pfosten
     return (l || lx >= k) && (r || lx <= 15 - k);
@@ -667,7 +671,7 @@ function pathPix(x, y) {
   return isPT(tx + hx, ty) && isPT(tx, ty + hy) && isPT(tx + hx, ty + hy) && cy < 4 && cx < [4, 2, 1, 1][cy];
 }
 function drawPaths(g) {
-  const bld = (x, y) => { const t = tileAt(Math.floor(x / 16), Math.floor(y / 16)); return t === 'H' || t === 'S' || t === 'B' || t === 'F'; };
+  const bld = (x, y) => { const t = tileAt(Math.floor(x / 16), Math.floor(y / 16)); return t === 'H' || t === 'S' || t === 'B' || t === 'F' || t === 'K'; };
   const edge = (x, y) => [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => !pathPix(x + dx, y + dy) && !bld(x + dx, y + dy));
   const P = new Uint8Array(W * H);
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (pathPix(x, y)) P[y * W + x] = edge(x, y) ? 2 : 1;
@@ -910,7 +914,7 @@ function drawPondAnim(t) {
     P(-3, 0, 6, 1, '#c8ecfc'); P(-2, -2, 4, 2, '#ffe066'); P(1, -4, 2, 2, '#ffe066'); P(3, -3, 1, 1, '#ff9a3a'); P(2, -4, 1, 1, '#3a2030');
   }
 }
-const WINDOWS = [[43, 55, 10, 10], [91, 55, 10, 10], [68, 31, 9, 9], [BDX + 32, BDY + 6, 5, 4]];
+const WINDOWS = [[43, 55, 10, 10], [91, 55, 10, 10], [68, 31, 9, 9], [BDX + 32, BDY + 6, 5, 4], [216, 55, 10, 10], [254, 55, 10, 10]];
 function drawFarmHouse(g) {
   const x0 = 32, y0 = 16;
   const TH = '#dcae62', TL = '#e8c47e', TD = '#c0904a', TS = '#cfa056', TO = '#a07032';
@@ -1078,6 +1082,47 @@ function drawStand(g) {
   const px = (x, y, rows, pal) => rows.forEach((r, j) => [...r].forEach((ch, i) => { if (pal[ch]) R(g, x + i, y + j, 1, 1, pal[ch]); }));
   for (const wx of [x0 + 3, x0 + 21]) px(wx, y0 + 24, ['..ooooo..', '.oLLLLLo.', 'oL..s..Lo', 'oL..s..Lo', 'oLsshssLo', 'oD..s..Do', 'oD..s..Do', '.oDDDDDo.', '..ooooo..'], { o: '#6a3a2a', L: '#e0a874', D: '#c08a64', s: '#a86d48', h: '#ff8fb8' });
 }
+function drawStore(g) {
+  // Lagerhaus im Stil des Farmhauses: Strohdach, helle rosa Ziegel, Holz-Scheunentor
+  const x0 = STO.x0, y0 = STO.y0, cx = x0 + 32;
+  const TH = '#dcae62', TL = '#e8c47e', TD = '#c0904a', TS = '#cfa056', TO = '#a07032';
+  R(g, x0 + 2, y0 + 47, 62, 3, 'rgba(60,20,40,.18)');
+  // Mauerwerk
+  R(g, x0 + 4, y0 + 14, 56, 28, '#f3cddb');
+  for (let y = y0 + 14, k = 0; y < y0 + 42; y += 4, k++) for (let x = x0 + 4 - (k % 2 ? 4 : 0); x < x0 + 60; x += 8) {
+    const xa = Math.max(x, x0 + 4), w = Math.min(x + 7, x0 + 60) - xa; if (w > 0) { R(g, xa, y, w, 3, '#fde7ef'); R(g, xa, y, w, 1, '#fff4f8'); }
+  }
+  R(g, x0 + 3, y0 + 42, 58, 6, '#d8c0c8');
+  for (let i = 0; i < 9; i++) { R(g, x0 + 4 + i * 6, y0 + 43, 5, 2, '#eadbe0'); if (i < 8) R(g, x0 + 7 + i * 6, y0 + 46, 5, 1, '#eadbe0'); }
+  // Strohdach in Lagen
+  const rows = 22;
+  for (let r = 0; r < rows; r++) {
+    const ins = Math.max(0, Math.round((rows - 1 - r) * 8 / rows)), xa = x0 - 2 + ins, w = 68 - ins * 2, y = y0 - 10 + r, rr = r % 4;
+    R(g, xa, y, w, 1, rr === 0 ? TL : rr === 3 ? TD : TH);
+    if (rr === 1 || rr === 2) for (let x = xa + 2 + (r % 2) * 2; x < xa + w - 2; x += 4) R(g, x, y, 1, 1, TS);
+    R(g, xa, y, 1, 1, TO); R(g, xa + w - 1, y, 1, 1, TO);
+  }
+  R(g, x0 + 6, y0 - 11, 52, 1, TO); R(g, x0 - 2, y0 + 12, 68, 1, TD); R(g, x0 - 2, y0 + 13, 68, 1, TO); R(g, x0 + 4, y0 + 14, 56, 1, '#f0d2de');
+  // Heuluke im Dach
+  R(g, cx - 6, y0 - 6, 12, 11, '#c08a64'); R(g, cx - 5, y0 - 5, 10, 9, '#eb9cb9'); R(g, cx - 5, y0 - 5, 10, 1, '#f3a7c1'); R(g, cx, y0 - 5, 1, 9, '#d8819f');
+  R(g, cx - 5, y0 - 1, 10, 1, '#ffffff'); R(g, cx - 6, y0 + 5, 12, 1, '#a86d48');
+  R(g, cx - 3, y0 - 3, 2, 2, '#e8c47e'); R(g, cx + 2, y0 + 1, 2, 2, '#e8c47e');
+  // Scheunentor mit Holzrahmen und weißen Streben
+  R(g, cx - 11, y0 + 20, 22, 23, '#c08a64'); R(g, cx - 11, y0 + 20, 22, 1, '#e0a874'); R(g, cx - 11, y0 + 20, 1, 23, '#e0a874'); R(g, cx + 10, y0 + 21, 1, 22, '#a86d48');
+  for (const dx of [-9, 1]) {
+    const x = cx + dx; R(g, x, y0 + 22, 8, 21, '#eb9cb9');
+    R(g, x + 3, y0 + 23, 1, 19, '#d8819f'); R(g, x + 5, y0 + 23, 1, 19, '#d8819f');
+    R(g, x, y0 + 22, 8, 1, '#ffffff'); R(g, x, y0 + 42, 8, 1, '#ffffff'); R(g, x, y0 + 22, 1, 21, '#ffffff'); R(g, x + 7, y0 + 22, 1, 21, '#ffffff'); R(g, x, y0 + 32, 8, 1, '#ffffff');
+  }
+  R(g, cx - 1, y0 + 31, 1, 3, '#ffd84a'); R(g, cx + 1, y0 + 31, 1, 3, '#ffd84a');
+  R(g, cx - 12, y0 + 43, 25, 2, '#c08a64'); R(g, cx - 12, y0 + 43, 25, 1, '#e0a874');
+  // Fenster wie am Haus, mit Holzbrett
+  for (const wx of [x0 + 7, x0 + 45]) {
+    R(g, wx, y0 + 22, 12, 12, '#ffffff'); R(g, wx + 1, y0 + 23, 10, 10, '#c4ecff'); R(g, wx + 1, y0 + 23, 10, 4, '#e0f6ff');
+    R(g, wx + 5, y0 + 23, 2, 10, '#ffffff'); R(g, wx + 1, y0 + 27, 10, 2, '#ffffff');
+    R(g, wx - 1, y0 + 34, 14, 2, '#c08a64'); R(g, wx - 1, y0 + 34, 14, 1, '#e0a874');
+  }
+}
 function drawFence(g) {
   // Holzzaun mit Kreuzstreben: Pfosten gleichmäßig verteilt, je Feld ein sauberes X zwischen zwei Latten
   const P = PAST, L = '#e0a874', M = '#c08a64', D = '#a86d48';
@@ -1093,7 +1138,7 @@ function drawFence(g) {
   for (const x of [P.x0, P.x1]) { R(g, x, P.y0 - 9, 3, P.y1 - P.y0, M); R(g, x, P.y0 - 9, 1, P.y1 - P.y0, L); R(g, x + 2, P.y0 - 9, 1, P.y1 - P.y0, D); }
   const n = Math.round((P.y1 - P.y0) / 12);
   for (let k = 1; k < n; k++) { const y = P.y0 + Math.round(k * (P.y1 - P.y0) / n); post(P.x0, y); post(P.x1, y); }
-  seg(P.x0, P.x1, P.y0); seg(P.x0, P.g0 - 3, P.y1); seg(P.g1, P.x1, P.y1);
+  seg(P.x0, P.g0 - 3, P.y0); seg(P.g1, P.x1, P.y0); seg(P.x0, P.x1, P.y1);
 }
 
 function drawSign(g) {
@@ -1471,6 +1516,11 @@ icon('bucket', g => {
   const B = ['....oooooo....', '...o......o...', '..o........o..', '.PPPPPPPPPPPP.', '.pWWWWWWWWWWp.', '..pWWWWWWWWp..', '..pWWWWWWWWp..', '..pPPPPPPPPp..', '..pWWWWWWWWp..', '...pWWWWWWp...', '...pppppppp...'];
   B.forEach((r, j) => [...r].forEach((ch, i) => { const c = { o: '#6f6470', P: '#ee8fb0', p: '#7d8a99', W: '#cfdbe6' }[ch]; if (c) R(g, i + 1, j + 3, 1, 1, c); }));
 });
+icon('store', g => {
+  for (let r = 0; r < 6; r++) R(g, 3 - Math.min(r, 2), 1 + r, 10 + Math.min(r, 2) * 2, 1, r % 3 === 2 ? '#c0904a' : '#dcae62');
+  R(g, 2, 7, 12, 8, '#f3cddb'); R(g, 2, 7, 12, 1, '#fde7ef'); R(g, 5, 9, 6, 6, '#eb9cb9'); R(g, 5, 9, 6, 1, '#ffffff'); R(g, 5, 9, 1, 6, '#ffffff'); R(g, 10, 9, 1, 6, '#ffffff'); R(g, 8, 9, 1, 6, '#d8819f');
+  R(g, 1, 15, 14, 1, '#d8c0c8');
+});
 icon('land', g => {
   R(g, 1, 9, 14, 6, '#8fd16a'); R(g, 1, 9, 14, 1, '#b5e6a0'); R(g, 1, 14, 14, 1, '#6cb04f');
   R(g, 3, 4, 1, 6, '#c08a64'); R(g, 12, 4, 1, 6, '#c08a64'); R(g, 2, 5, 12, 2, '#fff4e6'); R(g, 2, 5, 12, 1, '#ffffff'); R(g, 2, 7, 12, 1, '#c08a64');
@@ -1499,7 +1549,7 @@ function buildFarmBG() {
   const prev = LOC; LOC = 'farm'; bg.clearRect(0, 0, W, H);
   for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) drawGrass(bg, x, y);
   drawPaths(bg);
-  drawFarmHouse(bg); drawStand(bg); drawCrate(bg); drawSign(bg); drawFence(bg);
+  drawFarmHouse(bg); drawStand(bg); drawCrate(bg); drawSign(bg); drawFence(bg); drawStore(bg);
   for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) if (MAP[y][x] === 'U') drawBush(bg, x, y);
   drawPond(bg);
   LIT = makeLit(BG, WINDOWS); EDGE_TOP = EDGE_BOT = null; LOC = prev;
@@ -1565,7 +1615,7 @@ function drawPlayerSprite(g, dir, f, pal) {
 const KEY = 'sonnenhof-v1';
 function newState() {
   const bar = ['hoe', 'can', 'sickle', 'axe', 'shovel', 'seed-ruebe', 'snack', null];
-  return { land: [], cows: [], day: 1, time: 360, gold: 150, energy: 100, maxEnergy: 100, water: 20, canCap: 20, rain: false,
+  return { land: [], cows: [], store: {}, day: 1, time: 360, gold: 150, energy: 100, maxEnergy: 100, water: 20, canCap: 20, rain: false,
     items: { hoe: 1, can: 1, sickle: 1, axe: 1, shovel: 1, 'seed-ruebe': 15, snack: 2 }, dura: {}, bar, bag: Array(BAG_N).fill(null),
     stand: {}, sold: {}, soldGold: 0, trees: {}, orders: [{ id: 'o1', who: 'Frau Lind', items: { ruebe: 3 }, packed: {}, days: 4, reward: 200 }], soil: {}, sel: 0, px: 72, py: 93, dir: 'down', warned: false, earned: 0 };
 }
@@ -1590,7 +1640,7 @@ function migrate2(d) {
     for (const c of ['bar', 'bag']) { const i = d[c].indexOf(null); if (i >= 0) { d[c][i] = id; break; } }
   }
   d.dura = d.dura || {};
-  d.land = d.land || []; d.cows = d.cows || []; if (d.cows.length && !(d.bar || []).includes('bucket') && !(d.bag || []).includes('bucket')) { const c = (d.bar || []).includes(null) ? d.bar : d.bag, i = c ? c.indexOf(null) : -1; if (i >= 0) { c[i] = 'bucket'; d.items = d.items || {}; d.items.bucket = 1; } } d.stand = d.stand || {}; d.sold = d.sold || {}; d.soldGold = d.soldGold || 0; d.trees = d.trees || {};
+  d.land = d.land || []; d.store = d.store || {}; if (d.trees) delete d.trees['16,1']; d.cows = d.cows || []; if (d.cows.length && !(d.bar || []).includes('bucket') && !(d.bag || []).includes('bucket')) { const c = (d.bar || []).includes(null) ? d.bar : d.bag, i = c ? c.indexOf(null) : -1; if (i >= 0) { c[i] = 'bucket'; d.items = d.items || {}; d.items.bucket = 1; } } d.stand = d.stand || {}; d.sold = d.sold || {}; d.soldGold = d.soldGold || 0; d.trees = d.trees || {};
   if (!d.orders) d.orders = [{ id: 'o1', who: 'Frau Lind', items: { ruebe: 3 }, packed: {}, days: 4, reward: 200 }];
   if (d.shipped) { for (const t in d.shipped) if (d.shipped[t]) d.stand[t] = (d.stand[t] || 0) + d.shipped[t]; delete d.shipped; }
   return d;
@@ -1639,7 +1689,7 @@ function toast(m) {
   clearTimeout(toastTimer); toastTimer = setTimeout(() => e.classList.remove('show'), 1700 + Math.max(0, m.length - 25) * 40);
 }
 let paused = false;
-function openDlg(html) { delete $('dlg').dataset.inv; delete $('dlg').dataset.orders; $('dlg').classList.remove('standdlg', 'pixdlg'); $('dlg').innerHTML = html; $('dlg').scrollTop = 0; $('shade').style.display = 'flex'; paused = true; keys.clear(); joyReset();  if (padMode) setTimeout(() => { if (paused) dlgNav('d'); }, 30); }
+function openDlg(html) { delete $('dlg').dataset.inv; delete $('dlg').dataset.orders; delete $('dlg').dataset.store; $('dlg').classList.remove('standdlg', 'pixdlg'); $('dlg').innerHTML = html; $('dlg').scrollTop = 0; $('shade').style.display = 'flex'; paused = true; keys.clear(); joyReset();  if (padMode) setTimeout(() => { if (paused) dlgNav('d'); }, 30); }
 function closeDlg() { $('shade').style.display = 'none'; paused = false; }
 
 const cnt = id => (id && S.items[id]) || 0;
@@ -1719,6 +1769,7 @@ function updateHUD() {
     else if (t === 'S') h = 'Einkaufen';
     else if (tx === GATE[0] && ty === GATE[1]) h = 'Zur Innenstadt';
     else if (t === 'B') h = 'Verkaufsstand';
+    else if (t === 'K') h = 'Lagerhaus';
     else if (t === 'L') h = S.orders.length ? `Lieferungen (${S.orders.length})` : 'Lieferungen';
     else if (t === 'T' && tool.kind === 'axe' && !isEdge(tx, ty)) h = 'Baum fällen';
     else if (t === 'X' && tool.kind === 'axe') h = 'Stumpf entfernen';
@@ -1839,7 +1890,23 @@ function standHTML() {
   h += `<div class="sfoot"><div class="ssum">${put ? `Am Stand: <b>${onN} Stück</b> · ${onVal.toLocaleString('de-DE')} Taler` : 'Günstiger = schneller verkauft'}</div><div class="sbtns"><button class="btn" data-act="close">Schließen</button></div></div>`;
   return h;
 }
-function rerenderShip() { const sc = $('dlg').scrollTop; $('dlg').innerHTML = $('dlg').dataset.orders ? ordersHTML() : standHTML(); $('dlg').scrollTop = sc; }
+let storeTab = 'in';
+function storeHTML() {
+  const inn = storeTab === 'in', ids = inn ? Object.keys(ITEM).filter(t => !ITEM[t].tool && cnt(t) > 0) : Object.keys(S.store).filter(t => S.store[t] > 0);
+  const total = Object.values(S.store).reduce((a, b) => a + b, 0);
+  let h = T('store', 'Lagerhaus');
+  h += `<div class="sinfo"><span>Im Lager: <b>${total} Stück</b></span><span>Platz ohne Ende</span></div>`;
+  h += `<div class="vtabs"><button class="btn${inn ? ' primary' : ''}" data-act="sttab:in">Einlagern</button><button class="btn${inn ? '' : ' primary'}" data-act="sttab:out">Herausholen</button></div><div class="ssec">`;
+  if (!ids.length) h += `<div class="sempty">${inn ? 'Du hast nichts zum Einlagern dabei.' : 'Das Lager ist leer.'}</div>`;
+  for (const t of ids) {
+    const n = inn ? cnt(t) : S.store[t];
+    h += `<div class="lrow vb"><img src="${ICONURL[iconOf(t)]}" alt=""><div class="ln"><b>${ITEM[t].name}</b><small>${inn ? `Rucksack: ${n} · Lager: ${S.store[t] || 0}` : `Lager: ${n} · Rucksack: ${cnt(t)}`}</small></div>
+      <button class="btn" data-act="${inn ? 'sin' : 'sout'}:${t}:1">1</button><button class="btn" data-act="${inn ? 'sin' : 'sout'}:${t}:all">Alle</button></div>`;
+  }
+  h += '</div><div class="sfoot"><div class="ssum">Gegenstände sicher aufbewahren</div><div class="sbtns"><button class="btn" data-act="close">Schließen</button></div></div>';
+  return h;
+}
+function rerenderShip() { const sc = $('dlg').scrollTop; $('dlg').innerHTML = $('dlg').dataset.store ? storeHTML() : $('dlg').dataset.orders ? ordersHTML() : standHTML(); $('dlg').scrollTop = sc; }
 
 /* ---------- Lieferungen ---------- */
 const WHO = ['Frau Lind', 'Opa Karl', 'Café Kirschblüte', 'Bäckerei Mehlstaub', 'Mia vom Hügel', 'Herr Brombeer', 'Oma Rosi', 'Gasthaus Zum Häschen'];
@@ -2051,6 +2118,13 @@ $('dlg').addEventListener('click', e => {
     for (const t of SELLABLE) { const q = qOf(t); if (q) { S.stand[t] = (S.stand[t] || 0) + q; useItem(t, q); n += q; } }
     shipQ = {}; snd('ship'); toast(`${n} Stück am Stand ausgelegt`); rerenderShip();
   }
+  else if (a.startsWith('sttab:')) { storeTab = a.slice(6); snd('sel'); rerenderShip(); }
+  else if (a.startsWith('sin:') || a.startsWith('sout:')) {
+    const [k, t, q] = a.split(':');
+    if (k === 'sin') { const m = q === 'all' ? cnt(t) : Math.min(1, cnt(t)); if (m) { useItem(t, m); S.store[t] = (S.store[t] || 0) + m; snd('plant'); } }
+    else { const m = q === 'all' ? S.store[t] : Math.min(1, S.store[t] || 0); if (m && addItem(t, m)) { S.store[t] -= m; if (!S.store[t]) delete S.store[t]; snd('plant'); } }
+    rerenderShip();
+  }
   else if (a.startsWith('stab:')) { standTab = a.slice(5); snd('sel'); rerenderShip(); }
   else if (a.startsWith('put1:')) { const t = a.slice(5); if (cnt(t) > 0) { useItem(t, 1); S.stand[t] = (S.stand[t] || 0) + 1; snd('plant'); } rerenderShip(); }
   else if (a.startsWith('putall:')) { const t = a.slice(7), m = cnt(t); if (m) { useItem(t, m); S.stand[t] = (S.stand[t] || 0) + m; snd('ship'); toast(`${m}× ${ITEM[t].name} ausgelegt`); } rerenderShip(); }
@@ -2118,6 +2192,7 @@ function act(tx, ty) {
   if (t === 'S') { openDlg(shopHTML()); return; }
   if (t === 'B') { shipQ = {}; standTab = 'put'; openDlg(standHTML()); return; }
   if (t === 'L') { openDlg(ordersHTML()); $('dlg').dataset.orders = 1; return; }
+  if (t === 'K') { storeTab = 'in'; openDlg(storeHTML()); $('dlg').dataset.store = 1; return; }
   if (bush && bush.s === 'bush' && !bush.ripe && kind !== 'shovel') { toast(bush.d < 3 ? 'Der Strauch wächst noch.' : 'Noch keine reifen Beeren.'); return; }
   if (!id) { toast('Du hast nichts in der Hand.'); return; }
   if (kind === 'sickle') {
