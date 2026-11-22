@@ -278,7 +278,9 @@ body.port #invBtn{width:min(3.55em,12.2vw);height:min(3.55em,12.2vw)}
 body.port #barRow{gap:min(.4em,1.2vw)}
 body.port #hotbar{flex:none}
 body.port #ctrl{position:static;width:100%;max-width:24em;flex:1;min-height:0;align-items:center;padding:0 .8em}
-body.port #joy{width:7em;height:7em}
+body.port #joy{width:8.6em;height:8.6em}
+body.port #knob{width:3.4em;height:3.4em;margin:-1.7em 0 0 -1.7em}
+body.port #abtn{width:4.2em;height:4.2em}
 body.port #hint{bottom:.5em}
 body.port #toast{bottom:2.7em}
 /* ===== Fenster-Design: rosa Pixel-Rahmen ===== */
@@ -395,7 +397,8 @@ body.touch #gold{background:none}
 #hint kbd{border-radius:0}
 #dlg .foot{position:sticky;bottom:-.7em;z-index:2;background:#fff7fa;margin:.6em -.75em -.7em;padding:.6em .75em .7em;box-shadow:0 -.14em 0 #f2b6cb}
 body.touch .slot .k{display:none}
-body.touch .slot .n{font-size:.6em;right:-.2em;bottom:-.2em}
+body.touch .slot .n{font-size:.5em;min-width:0;padding:.05em .25em;right:-.55em;bottom:-.55em;border-width:.1em}
+.slot .n{min-width:0}
 </style>
 </head>
 <body>
@@ -1290,7 +1293,7 @@ function updateHUD() {
       n.style.display = showN ? '' : 'none';
       d.title = itemName(id);
       if (id === 'can') d.querySelector('.wl i').style.width = (S.water / S.canCap * 100) + '%';
-      else if (ITEM[id].dura) { const f = duraOf(id) / ITEM[id].dura, i = d.querySelector('.wl i'); i.parentNode.style.display = f >= 1 ? 'none' : ''; i.style.width = Math.max(4, f * 100) + '%'; i.style.background = duraCol(f); }
+      else if (ITEM[id].dura) { const f = duraOf(id) / ITEM[id].dura, i = d.querySelector('.wl i'); i.parentNode.style.display = f > .5 ? 'none' : ''; i.style.width = Math.max(4, f * 100) + '%'; i.style.background = duraCol(f); }
     });
   }
   // interaction hint
