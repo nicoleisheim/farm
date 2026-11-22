@@ -199,6 +199,21 @@ body{background:radial-gradient(circle at 50% 30%,#6a3d5e,#26121f 75%);font-fami
 .btn.primary{background:#ff7fae;color:#fff;border-color:#a0365e;box-shadow:0 .15em 0 #a0365e}
 .btn.primary:hover:not(:disabled){background:#ff92bc}
 .sub.warn{color:#c4527e;font-size:.8em;margin:.4em 0 0}
+.sinfo{display:flex;justify-content:space-between;gap:.3em 1em;flex-wrap:wrap;font-size:.8em;opacity:.85;margin:-.1em 0 .5em}
+.ssec{background:#fff0f6;border-radius:.8em;padding:.45em .6em .3em;margin:.5em 0;border:.12em solid #f5c0d4}
+.ssech{display:flex;justify-content:space-between;align-items:baseline;font-size:.82em;font-weight:600;color:#c4527e;padding-bottom:.3em;border-bottom:.1em dashed #ec9dbd;margin-bottom:.15em}
+.srow{display:grid;grid-template-columns:2.2em minmax(0,1fr) auto auto;align-items:center;gap:.5em;padding:.4em 0;border-bottom:.1em dashed #f5c0d4}
+.srow:last-child{border-bottom:0}
+.srow.on{background:linear-gradient(90deg,rgba(255,143,184,.14),transparent);border-radius:.5em}
+.srow img{width:2.2em;height:2.2em;image-rendering:pixelated}
+.sname{display:flex;flex-direction:column;line-height:1.2;min-width:0}
+.sname small{opacity:.75;font-size:.78em}
+.sname small.sneed{opacity:1;color:#c4527e}
+.btn.sall{min-width:3.9em;padding:.3em .4em}
+.sempty{font-size:.82em;opacity:.65;padding:.6em 0;text-align:center}
+.sfoot{position:sticky;bottom:-1em;background:#ffd9e7;margin:.4em -1.2em -1em;padding:.6em 1.2em .9em;border-top:.12em solid #f5a3c3;display:flex;align-items:center;justify-content:space-between;gap:.5em;flex-wrap:wrap}
+.ssum{font-size:.85em}
+.sbtns{display:flex;gap:.5em;margin-left:auto}
 .order{background:#fff0f6;border-radius:.7em;padding:.55em .7em;margin:.5em 0;border:.12em solid #f5c0d4}
 .order.done{background:#effbe8;border-color:#b8e0a0}
 .ohead{display:flex;justify-content:space-between;align-items:center;gap:.5em;margin-bottom:.25em}
@@ -311,7 +326,7 @@ const ITEM = {
   hoe: { name: 'Hacke', kind: 'hoe', tool: 1, desc: 'Lockert Gras zu Ackerboden auf. Kostet 2 Energie.' },
   can: { name: 'Gießkanne', kind: 'can', tool: 1, desc: 'Gießt aufgelockerten Boden. Am Teich auffüllen.' },
   sickle: { name: 'Sichel', kind: 'sickle', tool: 1, desc: 'Erntet reife Pflanzen – das Feld vor dir und die beiden daneben.' },
-  axe: { name: 'Axt', kind: 'axe', tool: 1, desc: 'Fällt Bäume (3 Schläge) und entfernt Baumstümpfe. Gibt Holz.' },
+  axe: { name: 'Axt', kind: 'axe', tool: 1, desc: 'Fällt Bäume (3 Schläge, 5–8 Holz) und entfernt Baumstümpfe (2 Holz).' },
   shovel: { name: 'Schaufel', kind: 'shovel', tool: 1, desc: 'Gräbt Pflanzen aus und macht Felder wieder zu Wiese.' },
   wood: { name: 'Holz', kind: 'mat', sell: 8, desc: 'Frisch gehacktes Holz. Bringt 8g am Verkaufsstand.' },
   'sap-green': { name: 'Baumsetzling', kind: 'sapling', k: 'green', desc: 'Auf freier Wiese pflanzen. Wird in 4 Tagen zu einem Baum.' },
@@ -1189,30 +1204,32 @@ function eatItem() {
   rerenderInv();
 }
 let standSel = null, standQ = 1;
+let shipQ = {};
+const qOf = t => Math.max(0, Math.min(cnt(t), shipQ[t] || 0));
 function neededForOrders(id) { return S.orders.reduce((a, o) => a + Math.max(0, (o.items[id] || 0) - (o.packed[id] || 0)), 0); }
-function standCard(side, id) {
-  const n = side === 'bag' ? cnt(id) : S.stand[id], sel = standSel && standSel[0] === side && standSel[1] === id;
-  if (side === 'stand') return `<div class="p-crate${sel ? ' sel' : ''}" data-act="ss:stand:${id}"><span class="p-tag">${sellOf(id)}g</span><img src="${ICONURL[iconOf(id)]}" alt=""><div class="p-cbox">${n}×</div></div>`;
-  const tag = neededForOrders(id) > 0 ? '<span class="p-flag">Bestellt</span>' : '';
-  return `<div class="p-slot${sel ? ' sel' : ''}" data-act="ss:bag:${id}">${tag}<img src="${ICONURL[iconOf(id)]}" alt=""><span class="p-n">${n}</span><div class="p-sn">${ITEM[id].name}</div></div>`;
-}
 function standHTML() {
-  if (standSel) { const m = standSel[0] === 'bag' ? cnt(standSel[1]) : (S.stand[standSel[1]] || 0); if (!m) standSel = null; else standQ = Math.max(1, Math.min(m, standQ)); }
   const bag = SELLABLE.filter(t => cnt(t) > 0), on = SELLABLE.filter(t => S.stand[t] > 0);
   const onVal = on.reduce((a, t) => a + S.stand[t] * sellOf(t), 0);
-  let h = `<div class="pwin pstall"><div class="p-awn"></div><div class="p-sign">Sonnenhof-Stand</div>
-    <div class="p-back"><div class="p-chalk"><div>Geöffnet 8 – 18 Uhr</div><div>Heute verkauft: ${S.soldGold.toLocaleString('de-DE')}g</div>${on.length ? `<div>Auf dem Tresen: ${onVal.toLocaleString('de-DE')}g</div>` : ''}</div>
-    <div class="p-goods">${on.length ? on.map(t => standCard('stand', t)).join('') : '<div class="p-empty">Der Tresen ist leer</div>'}</div></div>
-    <div class="p-counter">${on.length ? 'Kiste antippen = zurücknehmen' : ''}</div>
-    <div class="p-lower"><div class="p-basket"><div class="p-label">Dein Korb</div>${bag.length ? `<div class="p-slots">${bag.map(t => standCard('bag', t)).join('')}</div>` : '<div class="p-empty dark">Nichts zum Verkaufen dabei</div>'}</div>`;
-  if (standSel) {
-    const [side, id] = standSel, m = side === 'bag' ? cnt(id) : S.stand[id];
-    h += `<div class="p-paper p-abar"><img src="${ICONURL[iconOf(id)]}" alt=""><div class="an"><b>${ITEM[id].name}</b><small>${side === 'bag' ? `Im Korb: ${m}` : `Auf dem Tresen: ${m}`} · ${(standQ * sellOf(id)).toLocaleString('de-DE')}g</small></div>
-      <div class="p-qty"><button class="pbtn sec sq" data-act="sq:-1" ${standQ > 1 ? '' : 'disabled'}>−</button><span class="qv">${standQ}</span><button class="pbtn sec sq" data-act="sq:1" ${standQ < m ? '' : 'disabled'}>+</button><button class="pbtn sec" data-act="sqa" ${standQ < m ? '' : 'disabled'}>Alle</button></div>
-      <button class="pbtn" data-act="sgo">${side === 'bag' ? 'Auf den Tresen' : 'In den Korb'}</button></div>`;
-    if (side === 'bag' && neededForOrders(id) > 0) h += `<div class="p-warn">${neededForOrders(id)}× ${ITEM[id].name} werden noch für eine Lieferung gebraucht.</div>`;
-  } else h += '<div class="p-paper p-abar empty">Tippe Ware in deinem Korb an, um sie auszulegen.</div>';
-  return h + '<div class="p-foot"><button class="pbtn sec" data-act="close">Schließen</button></div></div></div>';
+  let h = `<h2>Verkaufsstand</h2><div class="sinfo"><span>Kundschaft kommt von 8 bis 18 Uhr</span><span>Heute verkauft: <b>${S.soldGold.toLocaleString('de-DE')}g</b></span></div>`;
+  // Abschnitt 1: Am Stand
+  h += `<div class="ssec"><div class="ssech"><span>Am Stand ausgelegt</span>${on.length ? `<b>${onVal.toLocaleString('de-DE')}g</b>` : ''}</div>`;
+  if (on.length) for (const t of on) h += `<div class="srow"><img src="${ICONURL[iconOf(t)]}" alt=""><div class="sname"><b>${ITEM[t].name}</b><small>${S.stand[t]} Stück · ${(S.stand[t] * sellOf(t)).toLocaleString('de-DE')}g</small></div><span></span><button class="btn" data-act="back:${t}">Zurücknehmen</button></div>`;
+  else h += '<div class="sempty">Noch nichts ausgelegt.</div>';
+  h += '</div>';
+  // Abschnitt 2: Aus dem Rucksack
+  let n = 0, sum = 0;
+  h += `<div class="ssec"><div class="ssech"><span>Aus dem Rucksack auslegen</span></div>`;
+  if (bag.length) for (const t of bag) {
+    const q = qOf(t), need = neededForOrders(t); n += q; sum += q * sellOf(t);
+    h += `<div class="srow${q ? ' on' : ''}"><img src="${ICONURL[iconOf(t)]}" alt=""><div class="sname"><b>${ITEM[t].name}</b><small>Du hast ${cnt(t)} · ${sellOf(t)}g/Stück</small>${need ? `<small class="sneed">${need} für Lieferung reserviert</small>` : ''}</div>
+      <div class="qty"><button class="btn sq" data-act="q:${t}:-1" ${q ? '' : 'disabled'}>−</button><span class="qv">${q}</span><button class="btn sq" data-act="q:${t}:1" ${q < cnt(t) ? '' : 'disabled'}>+</button></div>
+      <button class="btn sall" data-act="qa:${t}">${q < cnt(t) ? 'Alle' : 'Keine'}</button></div>`;
+  }
+  else h += '<div class="sempty">Du hast gerade nichts zum Verkaufen dabei.</div>';
+  h += '</div>';
+  h += `<div class="sfoot"><div class="ssum">${n ? `Auslegen: <b>${n} Stück</b> · ${sum.toLocaleString('de-DE')}g` : 'Wähle oben aus, was du auslegen möchtest.'}</div>
+    <div class="sbtns"><button class="btn" data-act="close">Schließen</button>${bag.length ? `<button class="btn primary" data-act="ship" ${n ? '' : 'disabled'}>Auslegen</button>` : ''}</div></div>`;
+  return h;
 }
 function rerenderShip() { const sc = $('dlg').scrollTop; $('dlg').innerHTML = $('dlg').dataset.orders ? ordersHTML() : standHTML(); $('dlg').scrollTop = sc; }
 
@@ -1353,6 +1370,14 @@ $('dlg').addEventListener('click', e => {
     standQ = 1; rerenderShip();
   }
   else if (a.startsWith('pack:')) { const [, id, t] = a.split(':'); packOrder(id, t); }
+  else if (a.startsWith('q:')) { const [, t, d] = a.split(':'); shipQ[t] = qOf(t) + +d; snd('sel'); rerenderShip(); }
+  else if (a.startsWith('qa:')) { const t = a.slice(3); shipQ[t] = qOf(t) < cnt(t) ? cnt(t) : 0; snd('sel'); rerenderShip(); }
+  else if (a === 'ship') {
+    let n = 0;
+    for (const t of SELLABLE) { const q = qOf(t); if (q) { S.stand[t] = (S.stand[t] || 0) + q; useItem(t, q); n += q; } }
+    shipQ = {}; snd('ship'); toast(`${n} Stück am Stand ausgelegt`); rerenderShip();
+  }
+  else if (a.startsWith('back:')) { const t = a.slice(5), m = S.stand[t]; if (m && addItem(t, m)) { S.stand[t] = 0; snd('plant'); toast(`${m}× ${ITEM[t].name} zurückgenommen`); } rerenderShip(); }
   else if (a === 'eat') eatItem();
   else if (a === 'hold') { const bi = invSel[1]; closeDlg(); setSel(bi); }
   else if (a === 'new') $('dlg').innerHTML = `<h2>Neues Spiel?</h2><p>Dein ganzer Fortschritt geht verloren.</p><div class="foot"><button class="btn" data-act="close">Abbrechen</button><button class="btn red" data-act="newc">Ja, neu anfangen</button></div>`;
@@ -1388,7 +1413,7 @@ function act(tx, ty) {
   }
   if (t === 'H') { toast('Die Haustür ist in der Mitte.'); return; }
   if (t === 'S') { openDlg(shopHTML()); return; }
-  if (t === 'B') { standSel = null; standQ = 1; openDlg(standHTML()); $('dlg').classList.add('pixdlg'); return; }
+  if (t === 'B') { shipQ = {}; openDlg(standHTML()); return; }
   if (t === 'L') { openDlg(ordersHTML()); $('dlg').dataset.orders = 1; $('dlg').classList.add('pixdlg'); return; }
   if (!id) { toast('Du hast nichts in der Hand.'); return; }
   if (kind === 'sickle') {
@@ -1421,7 +1446,7 @@ function act(tx, ty) {
       st.hp--;
       burst(tx, ty, cherry ? ['#ffb6d3', '#ffcfe2'] : ['#58ae55', '#7dcb6c'], 6, 40);
       if (st.hp <= 0) {
-        const n = 4 + Math.floor(Math.random() * 3);
+        const n = 5 + Math.floor(Math.random() * 4);
         TREES[key] = { s: 'stump', hp: 2 }; rebuildTrees();
         burst(tx, ty, cherry ? ['#ffb6d3', '#ffcfe2', '#fff'] : ['#58ae55', '#7dcb6c', '#a5e08a'], 22, 90);
         let msg = `Baum gefällt! +${n} Holz`;
@@ -1432,7 +1457,7 @@ function act(tx, ty) {
     } else {
       const st = TREES[key]; st.hp--;
       if (st.hp <= 0) {
-        const n = 1 + Math.floor(Math.random() * 2);
+        const n = 2;
         TREES[key] = { s: 'gone' }; rebuildTrees();
         if (addItem('wood', n)) toast(`Stumpf entfernt! +${n} Holz`);
         snd('harvest');
@@ -1621,6 +1646,50 @@ addEventListener('wheel', e => { if (e.ctrlKey) e.preventDefault(); }, { passive
 addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && ['+', '-', '=', '0'].includes(e.key)) e.preventDefault(); });
 addEventListener('pointerdown', e => { if (e.pointerType === 'touch' && !touchMode) { touchMode = true; fit(); } });
 
+/* ---------- Felder: Pixel-Ebene, nur bei Änderungen neu gezeichnet ---------- */
+const [SL, sl] = mk(W, H);
+let soilSig = null;
+function soilAt(tx, ty) { return S.soil[tx + ',' + ty]; }
+function soilPix(x, y) {
+  const tx = Math.floor(x / 16), ty = Math.floor(y / 16), lx = x - tx * 16, ly = y - ty * 16;
+  if (!soilAt(tx, ty)) return false;
+  const hx = lx < 8 ? -1 : 1, hy = ly < 8 ? -1 : 1, cx = lx < 8 ? lx : 15 - lx, cy = ly < 8 ? ly : 15 - ly;
+  return !(!soilAt(tx + hx, ty) && !soilAt(tx, ty + hy) && cy < 3 && cx < [3, 1, 1][cy]);
+}
+function updateSoilLayer() {
+  const sig = Object.keys(S.soil).map(k => k + (S.soil[k].w ? 'w' : '')).join('|');
+  if (sig === soilSig) return; soilSig = sig;
+  sl.clearRect(0, 0, W, H);
+  for (const k in S.soil) {
+    const [tx, ty] = k.split(',').map(Number), wet = S.soil[k].w;
+    const C = wet ? { base: '#5f3d26', ridge: '#76503a', ridgeHi: '#8a6248', groove: '#4a2e1c', edge: '#3e2516', rim: '#6f4b33', clod: '#82593e', speck: '#4f3322' }
+                  : { base: '#a3703f', ridge: '#b98550', ridgeHi: '#cc9a62', groove: '#86562f', edge: '#6e4426', rim: '#b27c48', clod: '#c08c58', speck: '#8e5e34' };
+    for (let ly = 0; ly < 16; ly++) for (let lx = 0; lx < 16; lx++) {
+      const x = tx * 16 + lx, y = ty * 16 + ly;
+      if (!soilPix(x, y)) continue;
+      const edgeB = !soilPix(x, y + 1), edgeT = !soilPix(x, y - 1), edgeS = !soilPix(x - 1, y) || !soilPix(x + 1, y);
+      let c;
+      if (edgeB) c = C.edge;
+      else if (edgeT || edgeS) c = C.rim;
+      else {
+        const r = ly % 4;
+        c = r === 0 ? C.ridgeHi : r === 1 ? C.ridge : r === 2 ? C.base : C.groove;
+        const hsh = hash(x, y, 31);
+        if (hsh < .06) c = C.clod; else if (hsh > .95) c = C.speck;
+      }
+      sl.fillStyle = c; sl.fillRect(x, y, 1, 1);
+      if (edgeB) { sl.fillStyle = 'rgba(40,20,10,.22)'; sl.fillRect(x, y + 1, 1, 1); }
+    }
+    // Erdklümpchen und Grashalme am Rand
+    for (let i = 0; i < 2; i++) {
+      const x = tx * 16 + 3 + Math.floor(hash(tx, ty, 40 + i) * 10), y = ty * 16 + 2 + Math.floor(hash(tx, ty, 50 + i) * 4) * 4;
+      if (soilPix(x, y) && soilPix(x + 1, y + 1)) { sl.fillStyle = C.ridgeHi; sl.fillRect(x, y, 2, 1); sl.fillStyle = C.groove; sl.fillRect(x, y + 1, 2, 1); }
+    }
+    if (!soilAt(tx, ty - 1)) for (let lx = 1; lx < 15; lx++) if (hash(tx * 16 + lx, ty, 60) < .14) { sl.fillStyle = '#6aae4a'; sl.fillRect(tx * 16 + lx, ty * 16, 1, 2); }
+    if (wet) for (let i = 0; i < 3; i++) { sl.fillStyle = '#8f7a7a'; sl.fillRect(tx * 16 + 2 + Math.floor(hash(tx, ty, 70 + i) * 11), ty * 16 + 2 + Math.floor(hash(tx, ty, 80 + i) * 3) * 4, 2, 1); }
+  }
+}
+
 /* ---------- Tierchen ---------- */
 const critters = [];
 ['#ff8fb8', '#ffffff', '#d9b8ff', '#ffe066'].forEach((col, i) => critters.push({ k: 'fly', x: 60 + i * 70, y: 130 + (i % 2) * 50, gx: 0, gy: 0, t: Math.random() * 9, col }));
@@ -1723,16 +1792,9 @@ function render(t) {
   X.save(); X.translate(-camX, -camY);
   X.drawImage(BG, 0, 0); X.drawImage(TL, 0, 0);
   drawPondAnim(t); drawStandGoods(t);
-  const has = (x, y) => !!S.soil[x + ',' + y];
-  for (const k in S.soil) {
-    const s = S.soil[k], [tx, ty] = k.split(',').map(Number), x0 = tx * 16, y0 = ty * 16;
-    const base = s.w ? '#5e3b22' : '#93613a', line = s.w ? '#48291a' : '#7a4d2c', hi = s.w ? '#6e4729' : '#a87245';
-    R(X, x0, y0, 16, 16, base);
-    for (const yy of [3, 8, 13]) { R(X, x0 + 1, y0 + yy, 14, 1, line); R(X, x0 + 1, y0 + yy + 1, 14, 1, hi); }
-    if (!has(tx, ty - 1)) R(X, x0, y0, 16, 1, line);
-    if (!has(tx, ty + 1)) R(X, x0, y0 + 15, 16, 1, '#5a3a20');
-    if (!has(tx - 1, ty)) R(X, x0, y0, 1, 16, line);
-    if (!has(tx + 1, ty)) R(X, x0 + 15, y0, 1, 16, line);
+  updateSoilLayer(); X.drawImage(SL, 0, 0);
+  for (const k in S.soil) if (S.soil[k].w && Math.floor(t * 1.5 + hash(...k.split(',').map(Number), 12) * 4) % 4 === 0) {
+    const [tx, ty] = k.split(',').map(Number); R(X, tx * 16 + 3 + Math.floor(hash(tx, ty, 13) * 9), ty * 16 + 5 + Math.floor(hash(tx, ty, 14) * 7), 1, 1, '#b8dcf0');
   }
   for (const k in S.soil) {
     const s = S.soil[k]; if (!s.c) continue;

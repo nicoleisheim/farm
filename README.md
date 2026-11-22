@@ -36,7 +36,7 @@ Im Hochformat liegen Steuerung und Werkzeugleiste unter dem Spielfeld, und die K
 4. Reife Pflanzen mit der **Sichel** ernten (erntet auch die beiden Nachbarfelder)
 5. Ernte am **Verkaufsstand** auslegen – von 8 bis 18 Uhr kommen Leute aus dem Dorf vorbei und kaufen zufällig etwas
 6. Am **Auftragsbrett** warten Bestellungen mit Frist: Ware in die Lieferkiste packen, nachts wird abgeholt und mit Aufschlag bezahlt
-7. Mit der **Axt** Bäume fällen (3 Schläge) und Stümpfe entfernen → **Holz**. Stümpfe wachsen nicht nach – dafür kann man **Setzlinge** (Laden oder Glück beim Fällen) auf freier Wiese pflanzen, die in 4 Tagen zu Bäumen werden
+7. Mit der **Axt** Bäume fällen (3 Schläge, 5–8 Holz) und Stümpfe entfernen (2 Holz) – höchstens 10 Holz pro Baum. Stümpfe wachsen nicht nach – dafür kann man **Setzlinge** (Laden oder Glück beim Fällen) auf freier Wiese pflanzen, die in 4 Tagen zu Bäumen werden
 8. Mit der **Schaufel** Pflanzen und Setzlinge ausgraben und Felder wieder zu Wiese machen
 9. Im **Rucksack** (16 Plätze) liegen Ernte und Holz; Gegenstände lassen sich zwischen Rucksack und Werkzeugleiste (8 Plätze) verschieben
 10. Im **Laden** Samen, Setzlinge, Salat und eine größere Gießkanne kaufen
