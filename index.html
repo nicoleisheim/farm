@@ -1086,13 +1086,8 @@ function drawStore(g) {
   const x0 = STO.x0, y0 = STO.y0, cx = x0 + 32;
   const TH = '#dcae62', TL = '#e8c47e', TD = '#c0904a', TS = '#cfa056', TO = '#a07032';
   const brickWall = (ya, yb) => { R(g, x0 + 4, ya, 56, yb - ya, '#f3cddb'); for (let y = ya, k = 0; y < yb; y += 4, k++) for (let x = x0 + 4 - (k % 2 ? 4 : 0); x < x0 + 60; x += 8) { const xa = Math.max(x, x0 + 4), w = Math.min(x + 7, x0 + 60) - xa, h = Math.min(3, yb - y); if (w > 0 && h > 0) { R(g, xa, y, w, h, '#fde7ef'); R(g, xa, y, w, 1, '#fff4f8'); } } };
-  const base = () => {
-    // Sockel: zwei Steinreihen im Verband, symmetrisch
-    R(g, x0 + 3, y0 + 42, 58, 6, '#d8c0c8');
-    const stone = (x, y, w) => { R(g, x, y, w, 2, '#eadbe0'); R(g, x, y, w, 1, '#f6eef2'); };
-    for (let k = 0; k < 8; k++) stone(x0 + 4 + k * 7, y0 + 43, 6);
-    stone(x0 + 4, y0 + 46, 3); for (let k = 0; k < 7; k++) stone(x0 + 8 + k * 7, y0 + 46, 6); stone(x0 + 57, y0 + 46, 3);
-  };
+  // Sockel genau wie beim Farmhaus: Steine 5×2 oben, 5×1 versetzt darunter, mittig ausgerichtet
+  const base = () => { R(g, x0 + 3, y0 + 42, 58, 6, '#d8c0c8'); for (let i = 0; i < 9; i++) { R(g, x0 + 5 + i * 6, y0 + 43, 5, 2, '#eadbe0'); if (i < 8) R(g, x0 + 8 + i * 6, y0 + 46, 5, 1, '#eadbe0'); } };
   const win = wx => { R(g, wx, y0 + 22, 12, 12, '#ffffff'); R(g, wx + 1, y0 + 23, 10, 10, '#c4ecff'); R(g, wx + 1, y0 + 23, 10, 4, '#e0f6ff'); R(g, wx + 5, y0 + 23, 2, 10, '#ffffff'); R(g, wx + 1, y0 + 27, 10, 2, '#ffffff'); R(g, wx - 1, y0 + 34, 14, 2, '#c08a64'); R(g, wx - 1, y0 + 34, 14, 1, '#e0a874'); };
   const thatch = (rows, ytop, w0, w1, xc) => { let pxa = null; for (let r = 0; r < rows; r++) { const ins = Math.round((w1 - w0) / 2 * (1 - Math.sin((r + 2) / (rows + 2) * Math.PI / 2))), w = w1 - ins * 2, xa = xc - (w >> 1), y = ytop + r, rr = r % 4;
     R(g, xa, y, w, 1, rr === 0 ? TL : rr === 3 ? TD : TH); if (rr === 1 || rr === 2) for (let x = xa + 2 + ((r >> 2) % 2) * 2; x < xa + w - 2; x += 4) R(g, x, y, 1, 1, TS);
