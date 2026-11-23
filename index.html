@@ -582,7 +582,7 @@ function applyLand(owned) {
 const STX = 304, STY = 48; // Verkaufsstand (Kacheln 19–20 / 3–4)
 const BDX = 128, BDY = 48; // Auftragsbrett (Kacheln 8–9 / 3–4)
 // Kuhweide direkt unter dem Hauptweg, Tor oben zum Weg
-const PAST = { x0: 180, y0: 124, x1: 276, y1: 160, g0: 220, g1: 236 }, COW_MAX = 4, COW_PRICE = 500;
+const PAST = { x0: 156, y0: 124, x1: 252, y1: 156, g0: 196, g1: 212 }, COW_MAX = 4, COW_PRICE = 500;
 const inPast = (x, y) => x > PAST.x0 && x < PAST.x1 && y > PAST.y0 && y < PAST.y1;
 function fenceAt(x, y) {
   const P = PAST, inX = x >= P.x0 - 3 && x <= P.x1 + 3, inY = y >= P.y0 - 2 && y <= P.y1 + 2;
