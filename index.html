@@ -1678,8 +1678,9 @@ let S = load();
 const firstRun = !S;
 if (!S) S = newState();
 for (const k of ['19,3', '20,3', '19,4', '20,4', '19,5', '20,5', '8,3', '9,3', '8,4', '9,4', '8,5', '9,5']) { delete S.soil[k]; delete S.trees[k]; }
-for (const k in S.soil) { const [x, y] = k.split(',').map(Number); if (inPast(x * 16 + 8, y * 16 + 8) || MAP[y] && MAP[y][x] !== 'G') delete S.soil[k]; }
 applyLand(S.land); buildFarmBG();
+// Felder nur dort entfernen, wo jetzt ein Gebäude, Weg oder die Kuhweide liegt (erst nach dem Laden des gekauften Landes prüfen)
+for (const k in S.soil) { const [x, y] = k.split(',').map(Number), t = MAP[y] && MAP[y][x]; if (inPast(x * 16 + 8, y * 16 + 8) || 'HSBLPK'.includes(t)) delete S.soil[k]; }
 TREES = S.trees; for (const k in TREES) { const [x, y] = k.split(',').map(Number); if (isEdge(x, y)) delete TREES[k]; } rebuildTrees();
 
 /* ---------- sound ---------- */
