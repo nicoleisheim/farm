@@ -1628,6 +1628,7 @@ function drawPlayerSprite(g, dir, f, pal) {
   pal = pal || PAL_PLAYER;
   const o = 3, { skin, hair, hairL, dress, dressD, apron, shoe, bow } = pal, eye = '#3a2030', blush = '#ff9ab8';
   const step = f === 1 ? 1 : f === 3 ? -1 : 0, a = step > 0 ? 1 : 0, b = step < 0 ? 1 : 0;
+  if (pal.male) { drawManSprite(g, dir, step, a, b, pal); return; }
   if (dir === 'down' || dir === 'up') {
     // Beine & Schuhe
     R(g, 6, o + 13, 1, 2 - a, skin); R(g, 9, o + 13, 1, 2 - b, skin);
@@ -1666,6 +1667,39 @@ function drawPlayerSprite(g, dir, f, pal) {
   // Strohhut mit Blume
   R(g, 2, o, 12, 1, '#e8b95a'); R(g, 4, o - 2, 8, 2, '#f6d47a'); R(g, 4, o - 1, 8, 1, '#ff8fb8'); R(g, 5, o - 2, 3, 1, '#fde9a8');
   R(g, 10, o - 3, 3, 3, '#ff5f8f'); R(g, 11, o - 2, 1, 1, '#ffe066');
+}
+
+// Mann (Ben): kurze Haare, Hemd, Latzhose, Strohhut ohne Blume
+function drawManSprite(g, dir, step, a, b, pal) {
+  const o = 3, { skin, hair, hairL, dress, dressD, apron, shoe } = pal, eye = '#3a2030';
+  if (dir === 'down' || dir === 'up') {
+    R(g, 5, o + 12, 2, 3 - a, dress); R(g, 9, o + 12, 2, 3 - b, dress);                  // Hosenbeine
+    R(g, 5, o + 15 - a, 2, 1, shoe); R(g, 9, o + 15 - b, 2, 1, shoe);
+    R(g, 4, o + 8, 8, 4, apron);                                                          // Hemd
+    R(g, 3, o + 8, 1, 2, apron); R(g, 12, o + 8, 1, 2, apron);                            // Ärmel
+    R(g, 3, o + 10 + a, 1, 2, skin); R(g, 12, o + 10 + b, 1, 2, skin);                    // Hände
+    R(g, 5, o + 11, 6, 1, dressD);                                                        // Gürtellinie der Latzhose
+    if (dir === 'down') {
+      R(g, 6, o + 9, 4, 2, dress); R(g, 5, o + 8, 1, 3, dress); R(g, 10, o + 8, 1, 3, dress); // Latz + Träger
+      R(g, 6, o + 9, 1, 1, '#ffe066'); R(g, 9, o + 9, 1, 1, '#ffe066');                    // Knöpfe
+      R(g, 3, o + 1, 10, 7, skin); R(g, 3, o, 10, 2, hair); R(g, 3, o + 2, 1, 2, hair); R(g, 12, o + 2, 1, 2, hair);
+      R(g, 4, o + 2, 2, 1, hair); R(g, 4, o, 3, 1, hairL);
+      R(g, 5, o + 4, 2, 2, eye); R(g, 9, o + 4, 2, 2, eye); R(g, 5, o + 4, 1, 1, '#fff'); R(g, 9, o + 4, 1, 1, '#fff');
+      R(g, 7, o + 7, 2, 1, '#b8705e'); R(g, 4, o + 6, 1, 1, '#f2b8a8'); R(g, 11, o + 6, 1, 1, '#f2b8a8');
+    } else {
+      R(g, 5, o + 8, 1, 4, dress); R(g, 10, o + 8, 1, 4, dress); R(g, 5, o + 10, 6, 2, dress); // Träger hinten
+      R(g, 3, o, 10, 7, hair); R(g, 4, o, 3, 1, hairL); R(g, 5, o + 7, 6, 1, skin);
+    }
+  } else {
+    R(g, 7 - step, o + 12, 2, 3, dress); R(g, 7 + step, o + 12, 2, 3, dressD);
+    R(g, 7 - step, o + 15, 2, 1, shoe); R(g, 7 + step, o + 15, 2, 1, shoe);
+    R(g, 5, o + 8, 6, 4, apron); R(g, 7, o + 9, 4, 3, dress); R(g, 9, o + 8, 1, 1, dress); R(g, 5, o + 11, 6, 1, dressD);
+    R(g, 7, o + 8, 2, 2, apron); R(g, 7 - step, o + 10, 2, 2, skin);                       // Arm
+    R(g, 4, o + 1, 9, 7, skin); R(g, 3, o, 10, 2, hair); R(g, 3, o, 4, 6, hair); R(g, 4, o, 3, 1, hairL);
+    R(g, 10, o + 4, 1, 2, eye); R(g, 10, o + 7, 2, 1, '#b8705e'); R(g, 12, o + 5, 1, 1, '#f2b8a8');
+  }
+  if (!pal.hat) return;
+  R(g, 2, o, 12, 1, '#e8b95a'); R(g, 4, o - 2, 8, 2, '#f6d47a'); R(g, 4, o - 1, 8, 1, '#7a5a8a'); R(g, 5, o - 2, 3, 1, '#fde9a8');
 }
 
 /* ---------- state ---------- */
@@ -2042,7 +2076,7 @@ const STAFF = 'Lotte';
 const standOpen = () => S.time >= 480 && S.time < 1080;
 const wageOf = () => S.wage || 8;
 const paceOf = w => w <= 5 ? 'gemütlich' : w <= 9 ? 'normal' : w <= 13 ? 'flott' : 'sehr flott';
-const PAL_BEN = { skin: '#f6d2b8', hair: '#7a4a3a', hairL: '#9a6450', dress: '#8fc9e8', dressD: '#5a8fb8', apron: '#cfe8f6', shoe: '#6a4a3a', bow: '#5a8fb8', tails: 0, hat: 1 };
+const PAL_BEN = { skin: '#f6d2b8', hair: '#7a4a3a', hairL: '#9a6450', dress: '#6f97cf', dressD: '#4c6fa3', apron: '#f4e3c3', shoe: '#6a4a3a', bow: '#5a8fb8', tails: 0, hat: 1, male: 1 };
 const PAL_STAFF = { skin: '#ffe0cc', hair: '#5a3a2a', hairL: '#7a5440', dress: '#b8e0a0', dressD: '#8fc878', apron: '#ffffff', shoe: '#5a6a4a', bow: '#ff8fb8', tails: 1, hat: 0 };
 const lotteIcon = (() => { const [c, g] = mk(16, 16); drawPlayerSprite(pg, 'down', 0, PAL_STAFF); g.drawImage(PC, 0, -1); return c.toDataURL(); })();
 const CUST_PATH = [[388, 108], [STX + 16, 108], [STX + 16, 92]];
@@ -2151,6 +2185,7 @@ function updateBen(dt) {
   if (T0.k === 'home') { ben.on = false; ben.task = null; return; }
   ben.dir = T0.k === 'milk' ? 'left' : 'up'; ben.anim = 0; ben.tool = T0.k === 'har' ? 'sickle' : T0.k === 'wat' ? 'can' : 'bucket';
   ben.t += dt;
+  if (ben.tool === 'can' && LOC === 'farm') canDrops(ben.x, ben.y, ben.dir, Math.min(1, ben.t / (1.4 / f)), dt);
   if (ben.t < 1.4 / f) return;
   const so = T0.key && S.soil[T0.key];
   if (T0.k === 'har' && so && so.c && so.c.d >= CROPS[so.c.t].days) { const t = so.c.t; so.c = null; S.store[t] = (S.store[t] || 0) + 1; S.benLog.har[t] = (S.benLog.har[t] || 0) + 1; }
@@ -2164,8 +2199,11 @@ function drawBen() {
   drawPlayerSprite(pg, flip ? 'right' : ben.dir, f, PAL_BEN);
   const ox = Math.round(ben.x - 8), oy = Math.round(ben.y - 19);
   R(X, Math.round(ben.x) - 5, Math.round(ben.y) - 2, 10, 2, 'rgba(0,0,0,.2)');
+  const canB = ben.tool === 'can' && !moving, ph = canB ? Math.min(1, ben.t / (1.4 / (benWage() / 8))) : 0;
+  if (canB && ben.dir === 'up') drawCan(ben.x, ben.y, ben.dir, ph);
   if (flip) { X.save(); X.translate(ox + 16, oy); X.scale(-1, 1); X.drawImage(PC, 0, 0); X.restore(); } else X.drawImage(PC, ox, oy);
-  if (ben.tool && !moving) { const lift = Math.floor(ben.t * 4) % 2 ? -3 : 0; X.drawImage(ICON[ben.tool], Math.round(ben.x) + (flip ? -16 : -2), Math.round(ben.y) - 22 + lift); }
+  if (canB) { if (ben.dir !== 'up') drawCan(ben.x, ben.y, ben.dir, ph); }
+  else if (ben.tool && !moving) { const lift = Math.floor(ben.t * 4) % 2 ? -3 : 0; X.drawImage(ICON[ben.tool], Math.round(ben.x) + (flip ? -16 : -2), Math.round(ben.y) - 22 + lift); }
 }
 function drawStaff() {
   if (!(S.time >= 480 && S.time < 1080 && standStock() > 0)) return;
@@ -2835,25 +2873,26 @@ function moveAxis(dx, dy, other) {
 }
 const vel = { x: 0, y: 0 };
 const rain = Array.from({ length: 80 }, () => ({ x: Math.random() * W, y: Math.random() * H, s: 180 + Math.random() * 80 }));
-function drawCan() {
-  const c = canPos(), ph = canPour ? 1 - actT / CAN_T : 0, tilt = canPour && ph > .15 && ph < .85 ? 1 : 0;
+// Gießkanne in der Hand (Spielerin und Ben): ph = Fortschritt 0..1
+function drawCan(px, py, d, ph) {
+  const c = canPos(px, py, d), tilt = ph > .15 && ph < .85 ? 1 : 0;
   X.drawImage(CANH[tilt][c.dir > 0 ? 0 : 1], c.x, c.y + tilt);
 }
-function canPos() {
-  const d = S.dir, dir = d === 'left' ? -1 : 1;
-  const x = d === 'right' ? S.px + 3 : d === 'left' ? S.px - 19 : S.px - 12;
-  const y = d === 'down' ? S.py - 5 : d === 'up' ? S.py - 27 : S.py - 15;
+function canPos(px, py, d) {
+  const dir = d === 'left' ? -1 : 1;
+  const x = d === 'right' ? px + 3 : d === 'left' ? px - 19 : px - 12;
+  const y = d === 'down' ? py - 5 : d === 'up' ? py - 27 : py - 15;
   return { dir, x: Math.round(x), y: Math.round(y) };
 }
+function canDrops(px, py, d, ph, dt) {
+  if (!(ph > .2 && ph < .85) || Math.random() >= dt * 40) return;
+  const c = canPos(px, py, d), rx = c.x + (c.dir > 0 ? 11 : 2) + Math.floor(Math.random() * 3), ry = c.y + 13;
+  parts.push({ x: rx, y: ry, vx: 0, vy: 30 + Math.random() * 10, life: .1 + Math.random() * .05, col: Math.random() < .5 ? '#4fb3ff' : '#8fd0ff', dr: 1 });
+}
+const myCanPh = () => canPour ? 1 - actT / CAN_T : 0;
 function update(dt) {
   if (actT > 0) actT -= dt;
-  if (actT > 0 && actTool === 'can' && canPour) {
-    const ph = 1 - actT / CAN_T;
-    if (ph > .2 && ph < .85 && Math.random() < dt * 40) {
-      const c = canPos(), rx = c.x + (c.dir > 0 ? 11 : 2) + Math.floor(Math.random() * 3), ry = c.y + 13;
-      parts.push({ x: rx, y: ry, vx: 0, vy: 30 + Math.random() * 10, life: .1 + Math.random() * .05, col: Math.random() < .5 ? '#4fb3ff' : '#8fd0ff', dr: 1 });
-    }
-  }
+  if (actT > 0 && actTool === 'can' && canPour) canDrops(S.px, S.py, S.dir, myCanPh(), dt);
   if (fadeT > 0) fadeT = Math.max(0, fadeT - dt);
   for (let i = parts.length - 1; i >= 0; i--) {
     const p = parts[i]; p.life -= dt;
@@ -2975,7 +3014,7 @@ function render(t) {
   if (farm) cows.forEach((c, i) => { if (c.y <= S.py) drawCow(c, i, t); });
   for (const c of cs) if (c.y <= S.py) drawCustomer(c);
   if (farm && ben.y <= S.py) drawBen();
-  if (actT > 0 && actTool === 'can' && S.dir === 'up') drawCan();   // hinter der Spielerin
+  if (actT > 0 && actTool === 'can' && S.dir === 'up') drawCan(S.px, S.py, S.dir, myCanPh());   // hinter der Spielerin
   // player
   const f = moving ? Math.floor(animT * 8) % 4 : 0;
   const flip = S.dir === 'left';
@@ -2985,7 +3024,7 @@ function render(t) {
   if (flip) { X.save(); X.translate(ox + 16, oy); X.scale(-1, 1); X.drawImage(PC, 0, 0); X.restore(); }
   else X.drawImage(PC, ox, oy);
   // tool swing
-  if (actT > 0 && actTool === 'can') { if (S.dir !== 'up') drawCan(); } else if (actT > 0 && actTool) {
+  if (actT > 0 && actTool === 'can') { if (S.dir !== 'up') drawCan(S.px, S.py, S.dir, myCanPh()); } else if (actT > 0 && actTool) {
     const d = DIRS[S.dir], lift = actT > .14 ? -5 : 0;
     const ix = Math.round(S.px - 8 + d[0] * 9), iy = Math.round(S.py - 16 + d[1] * 6 + lift);
     if (S.dir === 'left') { X.save(); X.translate(ix + 16, iy); X.scale(-1, 1); X.drawImage(ICON[actTool], 0, 0); X.restore(); }
