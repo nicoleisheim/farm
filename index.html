@@ -357,6 +357,7 @@ body.port #toast{bottom:2.7em}
 #dlg .lrow.on{background-color:#fff0f6}
 #dlg .lrow.o{grid-template-columns:2.1em minmax(0,1fr) auto}
 #dlg .inv .slot.moving{animation:mvpulse .8s steps(2) infinite}@keyframes mvpulse{50%{opacity:.45}}
+#dlg .cval{display:inline-flex;align-items:center;gap:.15em;white-space:nowrap}#dlg .kv.total{border-top:.12em dashed #f6c08e;padding-top:.35em}#dlg .kv.total b{font-size:1.15em}
 #dlg .kb{display:none}body.pad #dlg .kb{display:inline-flex;align-items:center;justify-content:center;margin-left:.45em;min-width:1.25em;height:1.25em;border-radius:50%;background:rgba(255,255,255,.85);color:#c4527e;font-size:.8em;line-height:1;border:.1em solid currentColor}
 #dlg .vtabs{display:flex;gap:.4em;margin:0 0 .35em}#dlg .vtabs .btn{padding-top:.15em;padding-bottom:.15em}#dlg .vtabs .btn{flex:1}
 #dlg .lrow.vb{grid-template-columns:2.1em minmax(0,1fr) auto auto}
@@ -567,6 +568,7 @@ for (let x = 4; x <= 23; x++) set(x, 6, 'P');
 for (let x = 12; x <= 15; x++) for (let y = 2; y <= 4; y++) set(x, y, 'K');
 set(13, 5, 'P');
 const STO = { x0: 184, y0: 32 };
+const HELPER = 'Ben', HELPER_WAGE = 60; // Hofhelfer: gießt, erntet, melkt jeden Morgen
 const GATE = [23, 6];
 // Land zum Dazukaufen: drei Stücke im Süden (Reihen 15–22), bis zum Kauf Wald
 const LAND = [{ id: 'sw', name: 'Südwiese West', x0: 1, x1: 7, price: 1000 }, { id: 'sm', name: 'Südwiese Mitte', x0: 8, x1: 15, price: 1500 }, { id: 'so', name: 'Südwiese Ost', x0: 16, x1: 22, price: 2000 }];
@@ -1524,6 +1526,11 @@ icon('bucket', g => {
   const B = ['....oooooo....', '...o......o...', '..o........o..', '.PPPPPPPPPPPP.', '.pWWWWWWWWWWp.', '..pWWWWWWWWp..', '..pWWWWWWWWp..', '..pPPPPPPPPp..', '..pWWWWWWWWp..', '...pWWWWWWp...', '...pppppppp...'];
   B.forEach((r, j) => [...r].forEach((ch, i) => { const c = { o: '#6f6470', P: '#ee8fb0', p: '#7d8a99', W: '#cfdbe6' }[ch]; if (c) R(g, i + 1, j + 3, 1, 1, c); }));
 });
+icon('helper', g => {
+  R(g, 3, 4, 10, 2, '#e8c47e'); R(g, 1, 6, 14, 1, '#dcae62'); R(g, 4, 3, 8, 1, '#e8c47e'); R(g, 4, 5, 8, 1, '#ee8fb0');
+  R(g, 4, 7, 8, 6, '#f6d2b8'); R(g, 4, 7, 8, 1, '#7a4a3a'); R(g, 5, 9, 1, 1, '#3a2030'); R(g, 10, 9, 1, 1, '#3a2030'); R(g, 7, 11, 2, 1, '#d8819f'); R(g, 4, 10, 1, 1, '#f7a6c0'); R(g, 11, 10, 1, 1, '#f7a6c0');
+  R(g, 3, 13, 10, 3, '#8fc9e8'); R(g, 6, 13, 1, 3, '#5a8fb8'); R(g, 9, 13, 1, 3, '#5a8fb8');
+});
 icon('store', g => {
   for (let r = 0; r < 6; r++) R(g, 3 - Math.min(r, 2), 1 + r, 10 + Math.min(r, 2) * 2, 1, r % 3 === 2 ? '#c0904a' : '#dcae62');
   R(g, 2, 7, 12, 8, '#f3cddb'); R(g, 2, 7, 12, 1, '#fde7ef'); R(g, 5, 9, 6, 6, '#eb9cb9'); R(g, 5, 9, 6, 1, '#ffffff'); R(g, 5, 9, 1, 6, '#ffffff'); R(g, 10, 9, 1, 6, '#ffffff'); R(g, 8, 9, 1, 6, '#d8819f');
@@ -1648,7 +1655,7 @@ function migrate2(d) {
     for (const c of ['bar', 'bag']) { const i = d[c].indexOf(null); if (i >= 0) { d[c][i] = id; break; } }
   }
   d.dura = d.dura || {};
-  d.land = d.land || []; d.store = d.store || {}; if (d.trees) delete d.trees['16,1']; d.cows = d.cows || []; if (d.cows.length && !(d.bar || []).includes('bucket') && !(d.bag || []).includes('bucket')) { const c = (d.bar || []).includes(null) ? d.bar : d.bag, i = c ? c.indexOf(null) : -1; if (i >= 0) { c[i] = 'bucket'; d.items = d.items || {}; d.items.bucket = 1; } } d.stand = d.stand || {}; d.sold = d.sold || {}; d.soldGold = d.soldGold || 0; d.trees = d.trees || {};
+  d.land = d.land || []; d.helper = !!d.helper; d.store = d.store || {}; if (d.trees) delete d.trees['16,1']; d.cows = d.cows || []; if (d.cows.length && !(d.bar || []).includes('bucket') && !(d.bag || []).includes('bucket')) { const c = (d.bar || []).includes(null) ? d.bar : d.bag, i = c ? c.indexOf(null) : -1; if (i >= 0) { c[i] = 'bucket'; d.items = d.items || {}; d.items.bucket = 1; } } d.stand = d.stand || {}; d.sold = d.sold || {}; d.soldGold = d.soldGold || 0; d.trees = d.trees || {};
   if (!d.orders) d.orders = [{ id: 'o1', who: 'Frau Lind', items: { ruebe: 3 }, packed: {}, days: 4, reward: 200 }];
   if (d.shipped) { for (const t in d.shipped) if (d.shipped[t]) d.stand[t] = (d.stand[t] || 0) + d.shipped[t]; delete d.shipped; }
   return d;
@@ -2069,6 +2076,9 @@ function shopHTML() {
   h += '</div><div class="ssec"><div class="ssech"><span>Tiere</span></div>';
   h += slotOf('bucket') ? '' : shopRow(ICONURL.bucket, 'Melkeimer', 'Zum Melken deiner Kühe', 120, 'bucket', true);
   h += S.cows.length < COW_MAX ? shopRow(ICONURL.cow, 'Kuh', `${S.cows.length}/${COW_MAX} auf der Weide · täglich 1 Milch`, COW_PRICE, 'cow', true) : `<div class="lrow"><img src="${ICONURL.cow}" alt=""><div class="ln"><b>Kuh</b><small>Die Weide ist voll (${COW_MAX}/${COW_MAX}).</small></div></div>`;
+  h += '</div><div class="ssec"><div class="ssech"><span>Hilfe auf dem Hof</span></div>';
+  h += S.helper ? `<div class="lrow"><img src="${ICONURL.helper}" alt=""><div class="ln"><b>${HELPER} arbeitet für dich</b><small>Gießt, erntet und melkt jeden Morgen · ${HELPER_WAGE} Taler pro Tag</small></div><button class="btn" data-act="fire">Entlassen</button></div>`
+    : `<div class="lrow"><img src="${ICONURL.helper}" alt=""><div class="ln"><b>${HELPER} einstellen</b><small>Gießt, erntet und melkt jeden Morgen · ${HELPER_WAGE} Taler pro Tag</small></div><button class="btn primary" data-act="hire">Einstellen</button></div>`;
   h += '</div><div class="ssec"><div class="ssech"><span>Land</span></div>';
   for (const L of LAND) h += S.land.includes(L.id) ? `<div class="lrow"><img src="${ICONURL.land}" alt=""><div class="ln"><b>${L.name}</b><small>Gehört dir</small></div></div>` : shopRow(ICONURL.land, L.name, `Wald im Süden roden, ${L.x1 - L.x0 + 1}×8 Felder mehr Platz`, L.price, 'land-' + L.id, true);
   h += '</div><div class="ssec"><div class="ssech"><span>Sonstiges</span></div>';
@@ -2133,6 +2143,7 @@ $('dlg').addEventListener('click', e => {
     for (const t of SELLABLE) { const q = qOf(t); if (q) { S.stand[t] = (S.stand[t] || 0) + q; useItem(t, q); n += q; } }
     shipQ = {}; snd('ship'); toast(`${n} Stück am Stand ausgelegt`); rerenderShip();
   }
+  else if (a === 'hire' || a === 'fire') { S.helper = a === 'hire'; save(); snd(a === 'hire' ? 'coin' : 'sel'); toast(a === 'hire' ? `${HELPER} hilft dir ab morgen früh!` : `${HELPER} arbeitet nicht mehr für dich.`); const sc = $('dlg').scrollTop; $('dlg').innerHTML = shopHTML(); $('dlg').scrollTop = sc; }
   else if (a.startsWith('sttab:')) { storeTab = a.slice(6); snd('sel'); rerenderShip(); }
   else if (a.startsWith('sin:') || a.startsWith('sout:')) {
     const [k, t, q] = a.split(':');
@@ -2306,6 +2317,7 @@ function act(tx, ty) {
 
 /* ---------- day cycle ---------- */
 let fading = false;
+const COIN = (n, sign) => `<span class="cval">${sign || ''}<span class="p-coin"></span>${Math.abs(n).toLocaleString('de-DE')}</span>`;
 function endDay(passedOut) {
   if (fading) return;
   fading = true; paused = true; $('fade').style.opacity = 1;
@@ -2313,15 +2325,15 @@ function endDay(passedOut) {
     let lines = '';
     for (const t of SELLABLE) {
       const n = S.sold[t]; if (!n) continue;
-      lines += `<div class="kv"><img src="${ICONURL[iconOf(t)]}" alt=""><span>${n}× ${ITEM[t].name}</span><b>${(n * priceOf(t)).toLocaleString('de-DE')} Taler</b></div>`;
+      lines += `<div class="kv"><img src="${ICONURL[iconOf(t)]}" alt=""><span>${n}× ${ITEM[t].name}</span><b>${COIN(n * priceOf(t))}</b></div>`;
     }
     const income = S.soldGold; S.sold = {}; S.soldGold = 0; custs.length = 0; for (const c of S.cows) c.m = false;
     S.gold += income;
     const hrs = Math.round((S.staffMin || 0) / 60 * 10) / 10, wage = Math.min(Math.round(hrs * wageOf()), S.gold); S.gold -= wage; S.staffMin = 0; delete S.staffed;
     // Lieferungen
-    let dl = '';
+    let dl = '', dlSum = 0;
     for (const o of S.orders.slice()) {
-      if (orderReady(o)) { S.gold += o.reward; S.earned += o.reward; dl += `<div class="kv"><img src="${ICONURL.board}" alt=""><span>Lieferung an ${o.who}</span><b>+${o.reward.toLocaleString('de-DE')} Taler</b></div>`; S.orders.splice(S.orders.indexOf(o), 1); continue; }
+      if (orderReady(o)) { S.gold += o.reward; S.earned += o.reward; dl += `<div class="kv"><img src="${ICONURL.board}" alt=""><span>Lieferung an ${o.who}</span><b>${COIN(o.reward, '+')}</b></div>`; dlSum += o.reward; S.orders.splice(S.orders.indexOf(o), 1); continue; }
       o.days--;
       if (o.days <= 0) {
         for (const t in o.packed) if (o.packed[t]) addItem(t, o.packed[t]);
@@ -2352,17 +2364,39 @@ function endDay(passedOut) {
     }
     S.day++; S.rain = Math.random() < .22;
     if (S.rain) for (const k in S.soil) S.soil[k].w = true;
+    // Hofhelfer: erntet Reifes ins Lager, gießt den Rest, melkt die Kühe
+    let hw = null;
+    if (S.helper) {
+      hw = { har: {}, wat: 0, milk: 0, pay: Math.min(HELPER_WAGE, S.gold) };
+      for (const k in S.soil) { const so = S.soil[k]; if (!so.c) continue;
+        if (so.c.d >= CROPS[so.c.t].days) { hw.har[so.c.t] = (hw.har[so.c.t] || 0) + 1; S.store[so.c.t] = (S.store[so.c.t] || 0) + 1; so.c = null; }
+        else if (!so.w) { so.w = true; hw.wat++; } }
+      for (const c of S.cows) { c.m = true; hw.milk++; }
+      if (hw.milk) S.store.milk = (S.store.milk || 0) + hw.milk;
+      S.gold -= hw.pay;
+    }
     S.energy = passedOut ? Math.round(S.maxEnergy * .6) : S.maxEnergy;
     LOC = 'farm'; S.time = 360; S.warned = false; S.px = 72; S.py = 93; S.dir = 'down';
     save();
     const ready = Object.values(S.soil).filter(s => s.c && s.c.d >= CROPS[s.c.t].days).length;
     const sd = (S.day - 1) % 28 + 1, season = SEASONS[Math.floor((S.day - 1) / 28) % 4];
     let html = T(passedOut ? 'w_moon' : 'w_sun', passedOut ? 'Umgekippt …' : 'Ein neuer Morgen');
-    html += `<div class="sinfo"><span>${WDAYS[(S.day - 1) % 7]}. ${sd}. ${season} · Tag ${S.day}</span><span>Kasse: <b>${S.gold.toLocaleString('de-DE')} Taler</b></span></div>`;
-    if (passedOut) html += `<div class="ssec warn"><p class="lead">Ein Nachbar hat dich nach Hause gebracht. Für die Hilfe fehlen dir <b>${lost} Taler</b>, und du bist nicht ganz ausgeruht.</p></div>`;
-    html += `<div class="ssec"><div class="ssech"><span>Einnahmen vom Stand (gestern)</span>${income ? `<b>+${income.toLocaleString('de-DE')} Taler</b>` : ''}</div>${lines || (income ? `<div class="kv"><img src="${ICONURL.stand}" alt=""><span>Verkäufe am Stand</span><b>+${income.toLocaleString('de-DE')} Taler</b></div>` : '<div class="sempty">Gestern wurde am Stand nichts verkauft.</div>')}</div>`;
-    if (wage) html += `<div class="ssec"><div class="kv"><img src="${ICONURL.stand}" alt=""><span>Lohn für ${STAFF} (${hrs.toLocaleString('de-DE')} Std. × ${wageOf()} Taler)</span><b>−${wage} Taler</b></div></div>`;
+    html += `<div class="sinfo"><span>${WDAYS[(S.day - 1) % 7]}. ${sd}. ${season} · Tag ${S.day}</span><span>Kasse: <b>${COIN(S.gold)}</b></span></div>`;
+    if (passedOut) html += `<div class="ssec warn"><p class="lead">Ein Nachbar hat dich nach Hause gebracht. Für die Hilfe fehlen dir <b>${COIN(lost)}</b>, und du bist nicht ganz ausgeruht.</p></div>`;
+    html += `<div class="ssec"><div class="ssech"><span>Einnahmen vom Stand (gestern)</span>${income ? `<b>${COIN(income, '+')}</b>` : ''}</div>${lines || (income ? `<div class="kv"><img src="${ICONURL.stand}" alt=""><span>Verkäufe am Stand</span><b>${COIN(income, '+')}</b></div>` : '<div class="sempty">Gestern wurde am Stand nichts verkauft.</div>')}</div>`;
+    if (wage) html += `<div class="ssec"><div class="kv"><img src="${ICONURL.stand}" alt=""><span>Lohn für ${STAFF} (${hrs.toLocaleString('de-DE')} Std. × ${wageOf()})</span><b>${COIN(wage, '−')}</b></div></div>`;
     if (dl) html += `<div class="ssec"><div class="ssech"><span>Lieferungen</span></div>${dl}</div>`;
+    if (hw) {
+      let hl = '';
+      for (const t in hw.har) hl += `<div class="kv"><img src="${ICONURL[iconOf(t)]}" alt=""><span>${hw.har[t]}× ${ITEM[t].name} geerntet – liegt im Lager</span></div>`;
+      if (hw.wat) hl += `<div class="kv"><img src="${ICONURL.can}" alt=""><span>${hw.wat} Pflanze${hw.wat > 1 ? 'n' : ''} gegossen</span></div>`;
+      if (hw.milk) hl += `<div class="kv"><img src="${ICONURL.milk}" alt=""><span>${hw.milk}× Milch gemolken – liegt im Lager</span></div>`;
+      if (!hl) hl = `<div class="kv muted"><img src="${ICONURL.helper}" alt=""><span>Heute gab es nichts zu tun.</span></div>`;
+      hl += `<div class="kv"><img src="${ICONURL.helper}" alt=""><span>Tageslohn für ${HELPER}</span><b>${COIN(hw.pay, '−')}</b></div>`;
+      html += `<div class="ssec"><div class="ssech"><span>${HELPER} hat heute früh geholfen</span></div>${hl}</div>`;
+    }
+    const net = income + dlSum - wage - (hw ? hw.pay : 0) - lost;
+    html += `<div class="ssec"><div class="kv total"><img src="${ICONURL.coin}" alt=""><span>Gesamt: Einnahmen und Ausgaben</span><b>${COIN(net, net >= 0 ? '+' : '−')}</b></div></div>`;
     let farm = '';
     if (S.rain) farm += `<div class="kv"><img src="${ICONURL.w_rain}" alt=""><span>Heute regnet es – deine Felder sind schon gegossen.</span></div>`;
     if (grown) farm += `<div class="kv"><img src="${ICONURL.seed_ruebe}" alt=""><span>${grown} Pflanze${grown > 1 ? 'n sind' : ' ist'} über Nacht gewachsen.</span></div>`;
