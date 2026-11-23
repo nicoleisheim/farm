@@ -919,39 +919,44 @@ function drawPondAnim(t) {
     P(-3, 0, 6, 1, '#c8ecfc'); P(-2, -2, 4, 2, '#ffe066'); P(1, -4, 2, 2, '#ffe066'); P(3, -3, 1, 1, '#ff9a3a'); P(2, -4, 1, 1, '#3a2030');
   }
 }
-const WINDOWS = [[43, 55, 10, 10], [91, 55, 10, 10], [68, 31, 9, 9], [BDX + 32, BDY + 6, 5, 4], [193, 54, 8, 8], [231, 54, 8, 8]];
+const WINDOWS = [[43, 55, 10, 10], [92, 55, 10, 10], [66, 29, 13, 13], [BDX + 32, BDY + 6, 5, 4], [193, 54, 8, 8], [232, 54, 8, 8]];
+// Sockelsteine spiegelgleich zur Mitte: obere Reihe mit Stein in der Mitte, untere mit Fuge in der Mitte
+function symStones(g, xa, xb, y) {
+  const A = xa + xb, odd = (xb - xa + 1) % 2 === 1, w = odd ? 5 : 6, mir = (s0, e0) => [A - e0, A - s0];
+  const row = (first, yy, h) => { for (let s0 = first; s0 <= xb - 1; s0 += w + 1) { const e0 = Math.min(s0 + w - 1, xb - 1); for (const [p, q] of [[s0, e0], mir(s0, e0)]) { R(g, p, yy, q - p + 1, h, '#eadbe0'); R(g, p, yy, q - p + 1, 1, '#f6eef2'); } } };
+  row((A - (w - 1)) / 2, y + 1, 2);
+  row(odd ? A / 2 + 1 : (A + 1) / 2 + 1, y + 4, 1);
+}
 function drawFarmHouse(g) {
   const x0 = 32, y0 = 16;
   const TH = '#dcae62', TL = '#e8c47e', TD = '#c0904a', TS = '#cfa056', TO = '#a07032';
-  R(g, x0 + 3, y0 + 62, 76, 3, 'rgba(60,20,40,.18)');
+  R(g, x0 + 3, y0 + 62, 75, 3, 'rgba(60,20,40,.18)');
   // Wände: glatter rosa Putz, Steinsockel
-  R(g, x0 + 4, y0 + 28, 72, 34, '#fbe4ec'); R(g, x0 + 4, y0 + 28, 72, 2, '#f7dbe5');
-  R(g, x0 + 4, y0 + 28, 2, 34, '#f9e0e9'); R(g, x0 + 74, y0 + 28, 2, 34, '#f9e0e9');
+  R(g, x0 + 4, y0 + 28, 73, 34, '#fbe4ec'); R(g, x0 + 4, y0 + 28, 73, 2, '#f7dbe5');
+  R(g, x0 + 4, y0 + 28, 2, 34, '#f9e0e9'); R(g, x0 + 75, y0 + 28, 2, 34, '#f9e0e9');
   // Pastell-Ziegel
-  R(g, x0 + 4, y0 + 33, 72, 24, '#f3cddb');
-  for (let y = y0 + 33, k = 0; y < y0 + 57; y += 4, k++) for (let x = x0 + 4 - (k % 2 ? 4 : 0); x < x0 + 76; x += 8) {
-    const xa = Math.max(x, x0 + 4), w = Math.min(x + 7, x0 + 76) - xa; if (w > 0) { R(g, xa, y, w, 3, '#fde7ef'); R(g, xa, y, w, 1, '#fff4f8'); }
-  }
-  R(g, x0 + 3, y0 + 57, 74, 6, '#d8c0c8');
-  for (let i = 0; i < 12; i++) { R(g, x0 + 4 + i * 6, y0 + 58, 5, 2, '#eadbe0'); if (i < 11) R(g, x0 + 7 + i * 6, y0 + 61, 5, 1, '#eadbe0'); }
+  const cx = x0 + 40;
+  const brick = (x, y) => { const k = Math.floor((y - y0 - 33) / 4), ry = ((y - y0 - 33) % 4 + 4) % 4, bx = ((x - cx + (k & 1 ? 0 : 4)) % 8 + 8) % 8; return ry === 3 || bx === 0 ? '#f3cddb' : ry === 0 ? '#fff4f8' : '#fde7ef'; };
+  R(g, x0 + 4, y0 + 33, 73, 24, '#f3cddb');
+  for (let y = y0 + 33; y < y0 + 57; y++) for (let x = x0 + 4; x <= x0 + 76; x++) R(g, x, y, 1, 1, brick(x, y));
+  R(g, x0 + 3, y0 + 57, 75, 6, '#d8c0c8');
+  symStones(g, x0 + 3, x0 + 77, y0 + 57);
   // Strohdach in sauberen Lagen
   let pxa = null;
   for (let r = 0; r < 30; r++) {
-    const ins = Math.round(16 * (1 - Math.sin((r + 2) / 32 * Math.PI / 2))), xa = x0 - 3 + ins, w = 86 - ins * 2, rr = r % 5;
+    const ins = Math.round(16 * (1 - Math.sin((r + 2) / 32 * Math.PI / 2))), xa = x0 - 3 + ins, w = 87 - ins * 2, rr = r % 5;
     R(g, xa, y0 + r, w, 1, rr === 0 ? TL : rr === 4 ? TD : TH);
-    if (rr === 2 || rr === 3) for (let x = xa + 2 + ((r / 5 | 0) % 2) * 2; x < xa + w - 2; x += 4) R(g, x, y0 + r, 1, 1, TS);
+    if (rr === 2 || rr === 3) for (let x = xa + 2; x < xa + w - 2; x++) if (Math.abs(x - (x0 + 40)) % 4 === ((r / 5 | 0) % 2) * 2) R(g, x, y0 + r, 1, 1, TS);
     // durchgehende Kontur, auch an den Stufen
     const st = pxa === null ? 1 : Math.max(1, pxa - xa + 1);
     R(g, xa, y0 + r, st, 1, TO); R(g, xa + w - st, y0 + r, st, 1, TO);
-    if (pxa === null) { const top = 86 - (xa - x0 + 3) * 2; R(g, xa, y0 + r - 1, top, 1, TO); }
+    if (pxa === null) { const top = 87 - (xa - x0 + 3) * 2; R(g, xa, y0 + r - 1, top, 1, TO); }
     pxa = xa;
   }
   // saubere Traufkante mit gleichmäßigen Zipfeln
-  R(g, x0 - 3, y0 + 30, 86, 1, TD); R(g, x0 - 3, y0 + 31, 86, 1, TO);
-  R(g, x0 + 4, y0 + 32, 72, 1, '#f0d2de');
+  R(g, x0 - 3, y0 + 30, 87, 1, TD); R(g, x0 - 3, y0 + 31, 87, 1, TO);
+  R(g, x0 + 4, y0 + 32, 73, 1, '#f0d2de');
   // Ziegelgiebel mit Fenster (Ziegel im selben Raster wie die Fassade)
-  const cx = x0 + 40;
-  const brick = (x, y) => { const k = Math.floor((y - y0 - 33) / 4), ry = ((y - y0 - 33) % 4 + 4) % 4, bx = ((x - x0 - 4 + (k & 1 ? 4 : 0)) % 8 + 8) % 8; return ry === 3 || bx === 7 ? '#f3cddb' : ry === 0 ? '#fff4f8' : '#fde7ef'; };
   for (let y = y0 + 3; y < y0 + 34; y++) {
     const half = Math.min(16, y - y0 - 2), xl = cx - half + (y < y0 + 18 ? 2 : y < y0 + 32 ? 1 : 0), xr = cx + half - (y < y0 + 18 ? 2 : y < y0 + 32 ? 1 : 0);
     for (let x = xl; x <= xr; x++) R(g, x, y, 1, 1, brick(x, y));
@@ -985,21 +990,21 @@ function drawFarmHouse(g) {
   for (const [dx, y] of [[10, 60], [11, 55], [10, 49], [9, 41], [6, 37], [3, 36]]) for (const sx of [-1, 1]) {
     const x = cx + dx * sx; R(g, x + sx, y0 + y, 1, 1, VL); R(g, x + sx, y0 + y - 1, 1, 1, VG);
   }
-  const rose = (x, y, big) => { R(g, x - 1, y - 1, 3, 3, '#ee8fb0'); if (!big) { R(g, x - 1, y - 1, 1, 1, '#f7bcd0'); R(g, x + 1, y + 1, 1, 1, '#f7bcd0'); } R(g, x, y, 1, 1, '#cf6890'); R(g, x - 1, y - 1, 1, 1, big ? '#ffd6e5' : '#f7bcd0'); R(g, x + 1, y - 1, 1, 1, big ? '#f7bcd0' : '#ee8fb0'); };
+  const rose = (x, y, big, m = x < cx ? 1 : -1) => { R(g, x - 1, y - 1, 3, 3, '#ee8fb0'); if (!big) { R(g, x - m, y - 1, 1, 1, '#f7bcd0'); R(g, x + m, y + 1, 1, 1, '#f7bcd0'); } R(g, x, y, 1, 1, '#cf6890'); if (x === cx) { R(g, x - 1, y - 1, 1, 1, '#ffd6e5'); R(g, x + 1, y - 1, 1, 1, '#ffd6e5'); } else { R(g, x - m, y - 1, 1, 1, big ? '#ffd6e5' : '#f7bcd0'); R(g, x + m, y - 1, 1, 1, big ? '#f7bcd0' : '#ee8fb0'); } };
   rose(cx, y0 + 35, true);
   for (const sx of [-1, 1]) { rose(cx + 7 * sx, y0 + 39, false); rose(cx + 10 * sx, y0 + 45, true); rose(cx + 10 * sx, y0 + 52, false); rose(cx + 10 * sx, y0 + 58, true); }
   // Fenster: weißer Sprossenrahmen, rosa Läden mit Z-Leiste direkt am Rahmen, Steinsims, Blumenkasten
-  for (const wx of [x0 + 10, x0 + 58]) {
+  for (const wx of [x0 + 10, x0 + 59]) {
     const y = y0 + 38;
     R(g, wx, y, 12, 12, '#ffffff'); R(g, wx + 1, y + 1, 10, 10, '#c4ecff'); R(g, wx + 1, y + 1, 10, 3, '#e0f6ff');
-    R(g, wx + 6, y + 1, 1, 10, '#ffffff'); R(g, wx + 1, y + 6, 10, 1, '#ffffff'); R(g, wx + 2, y + 2, 2, 1, '#ffffff'); R(g, wx + 2, y + 3, 1, 1, '#ffffff');
+    R(g, wx + 5, y + 1, 2, 10, '#ffffff'); R(g, wx + 1, y + 5, 10, 2, '#ffffff'); const hl = wx < x0 + 40 ? wx + 2 : wx + 8; R(g, hl, y + 2, 2, 1, '#ffffff'); R(g, wx < x0 + 40 ? wx + 2 : wx + 9, y + 3, 1, 1, '#ffffff');
     for (const [sx, L] of [[wx - 4, true], [wx + 12, false]]) {
       R(g, sx, y, 4, 12, '#f7bcd0'); R(g, sx, y, 4, 1, '#ffb3cf'); R(g, sx, y + 1, 4, 1, '#eb9cb9'); R(g, sx, y + 10, 4, 1, '#eb9cb9');
       for (let i = 0; i < 8; i++) R(g, L ? sx + 3 - Math.floor(i / 2.4) : sx + Math.floor(i / 2.4), y + 2 + i, 1, 1, '#eb9cb9');
     }
     R(g, wx - 1, y + 12, 14, 2, '#c08a64'); R(g, wx - 1, y + 12, 14, 1, '#e0a874'); R(g, wx - 1, y + 13, 1, 1, '#a86d48'); R(g, wx + 12, y + 13, 1, 1, '#a86d48');
     R(g, wx - 1, y + 16, 14, 3, '#eab2c6'); R(g, wx - 1, y + 16, 14, 1, '#ffc2d8');
-    [[1, '#f3a7c1'], [4, '#ffffff'], [7, '#ffe066'], [10, '#f3a7c1']].forEach(([d, c]) => { R(g, wx + d, y + 14, 2, 2, c); R(g, wx + d, y + 15, 1, 1, '#5aa040'); });
+    [[1, '#f3a7c1'], [5, '#ffe066'], [9, '#f3a7c1']].forEach(([d, c]) => { R(g, wx + d, y + 14, 2, 2, c); R(g, wx + d, y + 15, 2, 1, '#5aa040'); });
   }
 }
 function drawHouse(g, o) {
@@ -1092,7 +1097,7 @@ function drawStore(g) {
   const TH = '#dcae62', TL = '#e8c47e', TD = '#c0904a', TS = '#cfa056', TO = '#a07032';
   const brickWall = (ya, yb) => { R(g, x0 + 4, ya, 56, yb - ya, '#f3cddb'); for (let y = ya, k = 0; y < yb; y += 4, k++) for (let x = x0 + 4 - (k % 2 ? 4 : 0); x < x0 + 60; x += 8) { const xa = Math.max(x, x0 + 4), w = Math.min(x + 7, x0 + 60) - xa, h = Math.min(3, yb - y); if (w > 0 && h > 0) { R(g, xa, y, w, h, '#fde7ef'); R(g, xa, y, w, 1, '#fff4f8'); } } };
   // Sockel genau wie beim Farmhaus: Steine 5×2 oben, 5×1 versetzt darunter, mittig ausgerichtet
-  const base = () => { R(g, x0 + 3, y0 + 42, 58, 6, '#d8c0c8'); for (let i = 0; i < 9; i++) { R(g, x0 + 5 + i * 6, y0 + 43, 5, 2, '#eadbe0'); if (i < 8) R(g, x0 + 8 + i * 6, y0 + 46, 5, 1, '#eadbe0'); } };
+  const base = () => { R(g, x0 + 3, y0 + 42, 59, 6, '#d8c0c8'); symStones(g, x0 + 3, x0 + 61, y0 + 42); };
   const win = wx => { R(g, wx, y0 + 22, 12, 12, '#ffffff'); R(g, wx + 1, y0 + 23, 10, 10, '#c4ecff'); R(g, wx + 1, y0 + 23, 10, 4, '#e0f6ff'); R(g, wx + 5, y0 + 23, 2, 10, '#ffffff'); R(g, wx + 1, y0 + 27, 10, 2, '#ffffff'); R(g, wx - 1, y0 + 34, 14, 2, '#c08a64'); R(g, wx - 1, y0 + 34, 14, 1, '#e0a874'); };
   const thatch = (rows, ytop, w0, w1, xc) => { let pxa = null; for (let r = 0; r < rows; r++) { const ins = Math.round((w1 - w0) / 2 * (1 - Math.sin((r + 2) / (rows + 2) * Math.PI / 2))), w = w1 - ins * 2, xa = xc - (w >> 1), y = ytop + r, rr = r % 4;
     R(g, xa, y, w, 1, rr === 0 ? TL : rr === 3 ? TD : TH); if (rr === 1 || rr === 2) for (let x = xa + 2 + ((r >> 2) % 2) * 2; x < xa + w - 2; x += 4) R(g, x, y, 1, 1, TS);
@@ -1100,18 +1105,18 @@ function drawStore(g) {
     const wl = w1, xa = xc - (wl >> 1); R(g, xa, ytop + rows, wl, 1, TD); R(g, xa, ytop + rows + 1, wl, 1, TO); };
   const frame = (x, y, w, h) => { R(g, x, y, w, h, '#c08a64'); R(g, x, y, w, 1, '#e0a874'); R(g, x, y, 1, h, '#e0a874'); R(g, x + w - 1, y + 1, 1, h - 1, '#a86d48'); };
   const line = (xa, ya, xb, yb, c) => { const n = Math.max(Math.abs(xb - xa), Math.abs(yb - ya)); for (let i = 0; i <= n; i++) R(g, Math.round(xa + (xb - xa) * i / n), Math.round(ya + (yb - ya) * i / n), 1, 1, c); };
-  R(g, x0 + 2, y0 + 47, 62, 3, 'rgba(60,20,40,.18)');
+  R(g, x0 + 1, y0 + 47, 63, 3, 'rgba(60,20,40,.18)');
   // rosa Holzwände aus senkrechten Brettern
-  const GW = (x) => (x - x0) % 4 === 0 ? '#e9a9c2' : (x - x0) % 4 === 1 ? '#fbd3e0' : '#f6c0d3';
-  for (let x = x0 + 4; x < x0 + 60; x++) R(g, x, y0 + 14, 1, 28, GW(x));
-  for (const x of [x0 + 4, x0 + 58]) { R(g, x, y0 + 14, 2, 28, '#ffffff'); R(g, x + (x === x0 + 4 ? 1 : 0), y0 + 14, 1, 28, '#f3e6ec'); }
+  const GW = (x) => { const m = (x <= cx ? x - x0 : 2 * (cx - x0) - (x - x0)) % 4; return m === 0 ? '#e9a9c2' : m === 1 ? '#fbd3e0' : '#f6c0d3'; };
+  for (let x = x0 + 4; x <= x0 + 60; x++) R(g, x, y0 + 14, 1, 28, GW(x));
+  for (const x of [x0 + 4, x0 + 59]) { R(g, x, y0 + 14, 2, 28, '#ffffff'); R(g, x + (x === x0 + 4 ? 1 : 0), y0 + 14, 1, 28, '#f3e6ec'); }
   base();
   // Satteldach mit gleichmäßiger Neigung (1:1) und dicker Strohkante
   const ap = y0 - 16;
   for (let y = ap + 3; y < y0 + 14; y++) { const half = y - ap - 3; for (let x = cx - half; x <= cx + half; x++) R(g, x, y, 1, 1, GW(x)); }
-  // Übergang: weiße Zierkante mit gleichmäßigen Bögen über die Wandbreite
-  R(g, x0 + 4, y0 + 12, 56, 1, '#e9a9c2'); R(g, x0 + 4, y0 + 13, 56, 1, '#ffffff');
-  for (let x = x0 + 4; x < x0 + 60; x += 4) { R(g, x, y0 + 14, 3, 1, '#ffffff'); R(g, x + 1, y0 + 15, 1, 1, '#ffffff'); R(g, x + 3, y0 + 14, 1, 1, '#e9a9c2'); }
+  // Übergang: weiße Zierkante mit Bögen, spiegelgleich zur Mitte
+  R(g, x0 + 4, y0 + 12, 57, 1, '#e9a9c2'); R(g, x0 + 4, y0 + 13, 57, 1, '#ffffff');
+  for (let x = x0 + 4; x <= x0 + 60; x++) { const m = Math.abs(x - cx) % 4; R(g, x, y0 + 14, 1, 1, m === 2 ? '#e9a9c2' : '#ffffff'); if (m === 0) R(g, x, y0 + 15, 1, 1, '#ffffff'); }
   const BAND = [TO, TD, TH, TH, TL, TO];
   for (let y = ap; y <= y0 + 14; y++) { const h = y - ap + 2; for (let k = BAND.length - 1; k >= 0; k--) { const o = h - k; if (o < 0) continue; R(g, cx - o, y, 1, 1, BAND[k]); R(g, cx + o, y, 1, 1, BAND[k]); } }
   // Firstkappe: runder Abschluss oben
@@ -1125,10 +1130,10 @@ function drawStore(g) {
   R(g, cx - 10, y0 + 24, 21, 19, '#c08a64'); R(g, cx - 10, y0 + 24, 1, 19, '#e0a874'); R(g, cx + 10, y0 + 24, 1, 19, '#a86d48');
   const DI = [3, 5, 6, 7, 8];
   DI.forEach((hw, i) => R(g, cx - hw, y0 + 20 + i, hw * 2 + 1, 1, '#eb9cb9')); R(g, cx - 8, y0 + 25, 17, 18, '#eb9cb9');
-  for (const x of [cx - 5, cx - 2, cx + 3, cx + 6]) R(g, x, y0 + 21, 1, 22, '#d8819f');
+  for (const x of [cx - 6, cx - 3, cx + 3, cx + 6]) R(g, x, y0 + 21, 1, 22, '#d8819f');
   R(g, cx, y0 + 20, 1, 23, '#c08a64'); R(g, cx - 2, y0 + 31, 1, 3, '#ffd84a'); R(g, cx + 2, y0 + 31, 1, 3, '#ffd84a');
   // Fenster: Holzrahmen mit Kreuz
-  for (const wx of [x0 + 8, x0 + 46]) { R(g, wx, y0 + 21, 10, 10, '#c08a64'); R(g, wx, y0 + 21, 10, 1, '#e0a874'); R(g, wx, y0 + 21, 1, 10, '#e0a874'); R(g, wx + 1, y0 + 22, 8, 8, '#c4ecff'); R(g, wx + 1, y0 + 22, 8, 3, '#e0f6ff'); R(g, wx + 4, y0 + 22, 2, 8, '#c08a64'); R(g, wx + 1, y0 + 25, 8, 2, '#c08a64'); R(g, wx - 1, y0 + 31, 12, 2, '#c08a64'); R(g, wx - 1, y0 + 31, 12, 1, '#e0a874'); }
+  for (const wx of [x0 + 8, x0 + 47]) { R(g, wx, y0 + 21, 10, 10, '#c08a64'); R(g, wx, y0 + 21, 10, 1, '#e0a874'); R(g, wx, y0 + 21, 1, 10, '#e0a874'); R(g, wx + 1, y0 + 22, 8, 8, '#c4ecff'); R(g, wx + 1, y0 + 22, 8, 3, '#e0f6ff'); R(g, wx + 4, y0 + 22, 2, 8, '#c08a64'); R(g, wx + 1, y0 + 25, 8, 2, '#c08a64'); R(g, wx - 1, y0 + 31, 12, 2, '#c08a64'); R(g, wx - 1, y0 + 31, 12, 1, '#e0a874'); }
   // obere Holzstufe direkt unter dem Tor, etwas schmaler
   R(g, cx - 9, y0 + 43, 19, 1, '#e0a874'); R(g, cx - 9, y0 + 44, 19, 1, '#c08a64'); R(g, cx - 9, y0 + 45, 19, 1, '#a86d48'); R(g, cx - 9, y0 + 43, 1, 2, '#e0a874'); R(g, cx + 9, y0 + 44, 1, 1, '#a86d48');
   // untere Holzstufe, genau wie am Farmhaus
@@ -2950,7 +2955,7 @@ function render(t) {
       const x = wx - camX, y = wy - camY;
       X.globalAlpha = Math.min(1, dark * 2.2); X.drawImage(farm ? LIT : LIT_T, wx, wy, w, h, x, y, w, h); X.globalAlpha = 1;
       if (h === 10) { X.fillStyle = `rgba(255,190,80,${dark * .35})`; X.fillRect(x - 3, y + h, w + 6, 6); }
-      else { X.fillStyle = `rgba(255,200,100,${dark * .22})`; X.beginPath(); X.arc(x + w / 2, y + h / 2, Math.max(7, w), 0, 7); X.fill(); } // Laterne, Rundfenster: runder Schein
+      else { X.fillStyle = `rgba(255,200,100,${dark * .22})`; X.beginPath(); X.arc(x + w / 2, y + h / 2, Math.max(7, w * .75), 0, 7); X.fill(); } // Laterne, Rundfenster: runder Schein
     }
     if (farm && S.time > 1200 && !S.rain) drawFireflies();
   }
