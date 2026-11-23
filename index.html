@@ -1387,10 +1387,9 @@ icon('hoe', g => {
   R(g, 12, 5, 3, 6, '#b8c3ce'); R(g, 12, 5, 1, 6, '#e3eaf0'); R(g, 14, 5, 1, 6, '#7f8b97');
   R(g, 12, 11, 3, 1, '#f4f8fb'); R(g, 13, 4, 2, 1, '#6f7b88');
 });
-icon('can', g => {
-  R(g, 3, 6, 9, 7, '#7d8a96'); R(g, 3, 6, 9, 1, '#a9b6c2'); R(g, 3, 12, 9, 1, '#5d6873'); R(g, 4, 5, 7, 1, '#5d6873');
-  R(g, 5, 2, 5, 1, '#5d6873'); R(g, 4, 3, 1, 3, '#5d6873'); R(g, 10, 3, 1, 3, '#5d6873');
-  R(g, 12, 8, 2, 1, '#7d8a96'); R(g, 13, 6, 1, 2, '#7d8a96'); R(g, 13, 5, 2, 1, '#a9b6c2'); R(g, 5, 8, 2, 2, '#4fb3ff');
+icon('can', g => { // kantige Gießkanne mit Blume
+  const A = ["................", "...aaaaa........", "..abbbcca....aaa", "..acaaada...abbc", ".aacaaadaa..aefc", "abbbbbbbbba.afef", "addddddddda.adfd", "abgeeeeeeca..aca", "abgeeheegca.aba.", "abgehiheecaabca.", "abbbbhbbbbabca..", "adddddddddbca...", "abgeeeeegcca....", "accccccccca.....", "addddddddda.....", ".aaaaaaaaa......"], C = {"a": "#6a3a52", "b": "#ffc8dc", "c": "#dc79a0", "d": "#c25f88", "e": "#f59ab8", "f": "#8a4a66", "g": "#fff6fa", "h": "#ffffff", "i": "#ffd84a"};
+  A.forEach((r, y) => [...r].forEach((ch, x) => { if (C[ch]) R(g, x, y, 1, 1, C[ch]); }));
 });
 icon('sickle', g => {
   R(g, 3, 9, 2, 6, '#c98a5a'); R(g, 3, 9, 1, 6, '#e0a874'); R(g, 3, 12, 2, 2, '#ff8fb8'); R(g, 3, 14, 2, 1, '#8a5a40');
