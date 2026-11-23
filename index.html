@@ -948,7 +948,7 @@ function drawPondAnim(t) {
     P(-3, 0, 6, 1, '#c8ecfc'); P(-2, -2, 4, 2, '#ffe066'); P(1, -4, 2, 2, '#ffe066'); P(3, -3, 1, 1, '#ff9a3a'); P(2, -4, 1, 1, '#3a2030');
   }
 }
-const WINDOWS = [[43, 55, 10, 10], [92, 55, 10, 10], [66, 29, 13, 13], [BDX + 32, BDY + 6, 5, 4], [193, 54, 8, 8], [232, 54, 8, 8]];
+const WINDOWS = [[43, 55, 10, 10], [92, 55, 10, 10], [66, 29, 13, 13], [BDX + 32, BDY + 6, 5, 4], [193, 54, 8, 9], [232, 54, 8, 9]];
 // Sockelsteine spiegelgleich zur Mitte: obere Reihe mit Stein in der Mitte, untere mit Fuge in der Mitte
 function symStones(g, xa, xb, y) {
   const A = xa + xb, odd = (xb - xa + 1) % 2 === 1, w = odd ? 5 : 6, mir = (s0, e0) => [A - e0, A - s0];
@@ -1049,52 +1049,13 @@ function drawStand(g) {
   const px = (x, y, rows, pal) => rows.forEach((r, j) => [...r].forEach((ch, i) => { if (pal[ch]) R(g, x + i, y + j, 1, 1, pal[ch]); }));
   for (const wx of [x0 + 3, x0 + 21]) px(wx, y0 + 24, ['..ooooo..', '.oLLLLLo.', 'oL..s..Lo', 'oL..s..Lo', 'oLsshssLo', 'oD..s..Do', 'oD..s..Do', '.oDDDDDo.', '..ooooo..'], { o: '#6a3a2a', L: '#e0a874', D: '#c08a64', s: '#a86d48', h: '#ff8fb8' });
 }
+// Lagerhaus als Pixel Art (64×67) nach Vorlage, unten bündig an der alten Stelle
+const LH_ROWS = ["................................T...............................", "...............................TJT..............................", "..............................TJJKT.............................", ".............................TKKKOOT............................", "............................TKKKJOOOT...........................", "...........................TKKKJTKOOOT..........................", "..........................TKKKJTSTKOOOT.........................", ".........................TKKKJTQSQTKOOOT........................", "........................TKKKJTQQSQQTKOOOT.......................", ".......................TKKKJTQQQSDQQTKOOOT......................", "......................TKKKJTSQQQLDFQSTKOOOT.....................", ".....................TKKKJTQSQQHLDFHSQTKOOOT....................", "....................TKKKJTQQSQFHLDFHLQQTKOOOT...................", "...................TKKKJTQQQSJFHLDFHLQQQTKOOOT..................", "..................TKKKJTSQJJJJJJJJJJJJJQSTKOOOT.................", ".................TKKKJTQSQJAAAAAAAAAAATQSQTKOOOT................", "................TKKKJTQQSQJAAMMMMMMMAATQLQQTKOOOT...............", "...............TKKKJTQQQSDJAMAIIIIIAMATQLDQQTKOOOT..............", "..............TKKKJTSQQQLDJAMMAIIIAMIATQLDFQSTKOOOT.............", ".............KKKKJTQSQQQLDJAMIMAIAMIIATQLDFGSQTKOOOT............", "............TKKKJTQQSQFQLDJAMIIMAMIIIATQLDFGQQQTKOOOT...........", "...........TKKKJTQQQSDFQLDJAMIIAMAIIIATQLDFGLFQQTKOOOT..........", "..........KKKKJTSQQQLDFHLDJAMIAMIMAIIATQLDFGLFGQSTKOOOT.........", ".........KKKKJTQSQQQLDFHLDJAMAMIIIMAIATQLDFHLFGHSQTKOOOT........", "........KKKKJTQQSQFGLDFHLDJAAMIIIIIMAATQLDFHLFGHLQQTKOOOT.......", ".......KKKKJTQQQSDFGLDFHLDJAAAAAAAAAAATQLDFHLFGHLDQQTKOOOT......", "......KKKKJTSQQQLDFHLDFHLDJTTTTTTTTTTTTQLDFHLFGHLDGQSTKOOOT.....", ".....TKKKJTQSQQQLDFHLDFHLDQQQQQQQQQQQQQQLDFHLFGHLDGHSQTKOOOT....", "....TKKKJTQQSQFHLDFHLDFHLDFHLDFQLDFQLDFHLDFHLFGHLDGHLQQTKOOOT...", "...TKKKJTQQQSDFHLDFHLDFHLDFHLDFQLDFQLDFHLDFHLFGHLDGHLDQQTKOOOT..", "..KKKKJTTQQQQDFHLDFHLDFHLDFALDFALDFALDFHLDFHAFGHLDAHLDQQTTKOOOT.", ".TKKKJTEEEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEETKOOOT", "TKKKJTREEERAAARAAARAAARAAARAAARAAARAAARAAARAAARAAARAAARAAERTKOOO", ".TTTTQRRERRRARRRARRRARRRARRRARRRARRRARRRARRRARRRARRRARRRAARQTTTT", ".....QQQRQQQRQQQRQQQRQQQRQQQRQQQRQQQRQQQRQQQRQQQRQQQRQQQRQQQQ...", ".....QFQLDFHLDFHLDFHLDFGLDQQQQQQQQQQQQQHLDFHLFGHLDGHLDFHLFQQ....", ".....DFHLDFHLDFHLDFHLDFGLDJJOOOOOOOOOOOHLDFHLFGHLDGHLDFHLFQM....", ".....DFHLDFHLDFHLDFHLDFHLJOOOTTTTTTTOOOTLDFHLFGHLDGHLDFHLFHM....", ".....DFHJJJJJJJJJJFHLDFHJOOTTMMMTMMMTTOOTDFHLFGJJJJJJJJJJFHM....", ".....DFHJBBBOTBBAOOHLDFJOOTTMRRIOIRRMMTOOTFHLFGJBBBOTBBAOQHM....", ".....DFHJBBAOTBABOOHLDJOOTMRRMFIOIRMRRITOOTHLFGJBBAOTBABOQHL....", ".....DFHJBABOTABBOQHLDJOTMRMIMFIOIRMIIRITOTRLFGJBABOTABBOQHL....", ".....DFHJABBOTBBBOQHLDJOMMRIIMFIOIRMIIMIIOTRMFGJABBOTBBBOMHM....", ".....DFHOOOOOTOOOOMHLDJOMRMIIMFIOIRMIIMFIOTRMFGOOOOOTOOOOMHM....", ".....DFHJBBBOTBBBOMHLDJOMRMIIMFIOIRMIIMFIOTRMFGJBBBOTBBBOMHM....", ".....DFHJBBBOTBBBOMHLDJOMRMIIMFIOIRMIIMFIOTRMFGJBBBOTBBBOMHM....", ".....DFHJBBBOTBBBOMHLDJOMRMIIMFIOIRMIIMFIOTRMFHJBBBOTBBBOMHM....", ".....DFHJBBBOTBBBOQHLDJOMRMIIMFIOIRMIIMFIOTRMFHJBBBOTBBBOMHM....", ".....DFHJOOOOOOOOOQHLDJOMRMIIIIIOIIIIIMFIOTRMFJJOOOOOOOOOMHM....", ".....DFJJJJJJJJJJJJMLDJOMRMIIIUIOIUIIIMFIOTRLFJJJJJJJJJJJJML....", ".....DFOOOOOOOOOOOOMLDJOMRMIIIUMOIUMIIMFIOTRLFOOOOOOOOOOOOML....", ".....DFOORRRRRRRRRRMLDJOMRMIIIUMOIUMIIMFIOTRLFQRRRRRRRRRRRML....", ".....DFHRMMMRMMMRMMMLDJOMFFFFIMMOIMMFFFFIOTRLFGQRMMMRMMMRMML....", ".....DFHLDFHLDFHLDFHLDJOMIIIIIIIOIIIIIIIIOTRLFGHMFIILFHHLFHL....", ".....DFHLDFHLDFHLDFHLDJOMRRRRRFIOIRRRRRFIOTRLFGHLFHHLFGHLFHM....", ".....DFHLDFHLDFHLDFHLDJOMRMMMMFIOIRMMMMFIOTRLFGHLFGHLFGHLFHM....", ".....DFHLDFHLDFHLDFHLDJOMRMIIMFIOIRMIIMFIOTRLFGHLFGHLFGHLFHL....", ".....DFHLDFHLDFHLDFHLDJOMRMIIMFIOIRMIIMFIOTRLFGHLFGHLFGHLFHL....", ".....DFHLDFHLDFHLDFHLDJOMRMIIMFIOIRMIIMFIOTRLFGHLFGHLFGHLFHL....", ".....DFHLDFHLDFHLDFHLDJOMFFFFFFIOIFFFFFFIOTRLFGHLFHHLFGHLFHQ....", "...QQQQQQQQQQQQQQQQQQQJOMIIIIIIIOIIIIIIIIOTQQQQQQQQQQQQQQQQQQQ..", "...NAAAAAACNAAAACNAAAAAJJJJJJJJJJJJJJJJJJJNCCCENCCCCENCCCCCCNN..", "...NCCCCCCCNCCCCCNCCCCAJJJPPOOOOOOPPPPOOOTNNCCENCCCCENCCCCCCNN..", "...NNNNNNNNNNNNNNNNNNQQTTTTTTTTTTTTTTTTTTTPPNNNNNNNNNNNNNNNNNN..", "...NAAAANAAAAANAAAAANQJJJJJJJJJJJJJJJJJJJJJQQCCCCCNCCCCCNCCCCN..", "...NNNNNNNNNNNNNNNNNQQJPPPPPPPPPPPPPPPPPPOTQQQNNNNNNNNNNNNNNNN..", "......................JPPPPPPPPPPPPPPPPPOPT....................."];
+const LH_PAL = {"A": "#ede4e6", "B": "#c4ecff", "C": "#ead3d6", "D": "#f8c6d5", "E": "#e8b8ad", "F": "#f0b2c5", "G": "#eaa3bc", "H": "#e89fb9", "I": "#e695b3", "J": "#d8a16c", "K": "#d1a466", "L": "#d4819a", "M": "#cd7a93", "N": "#af8d8f", "O": "#b57f51", "P": "#a9775e", "Q": "#b0657f", "R": "#9b4e61", "S": "#91465e", "T": "#744220", "U": "#ffd84a"};
 function drawStore(g) {
   const x0 = STO.x0, y0 = STO.y0, cx = x0 + 32;
-  const TH = '#dcae62', TL = '#e8c47e', TD = '#c0904a', TS = '#cfa056', TO = '#a07032';
-  const brickWall = (ya, yb) => { R(g, x0 + 4, ya, 56, yb - ya, '#f3cddb'); for (let y = ya, k = 0; y < yb; y += 4, k++) for (let x = x0 + 4 - (k % 2 ? 4 : 0); x < x0 + 60; x += 8) { const xa = Math.max(x, x0 + 4), w = Math.min(x + 7, x0 + 60) - xa, h = Math.min(3, yb - y); if (w > 0 && h > 0) { R(g, xa, y, w, h, '#fde7ef'); R(g, xa, y, w, 1, '#fff4f8'); } } };
-  // Sockel genau wie beim Farmhaus: Steine 5×2 oben, 5×1 versetzt darunter, mittig ausgerichtet
-  const base = () => { R(g, x0 + 3, y0 + 42, 59, 6, '#d8c0c8'); symStones(g, x0 + 3, x0 + 61, y0 + 42); };
-  const win = wx => { R(g, wx, y0 + 22, 12, 12, '#ffffff'); R(g, wx + 1, y0 + 23, 10, 10, '#c4ecff'); R(g, wx + 1, y0 + 23, 10, 4, '#e0f6ff'); R(g, wx + 5, y0 + 23, 2, 10, '#ffffff'); R(g, wx + 1, y0 + 27, 10, 2, '#ffffff'); R(g, wx - 1, y0 + 34, 14, 2, '#c08a64'); R(g, wx - 1, y0 + 34, 14, 1, '#e0a874'); };
-  const thatch = (rows, ytop, w0, w1, xc) => { let pxa = null; for (let r = 0; r < rows; r++) { const ins = Math.round((w1 - w0) / 2 * (1 - Math.sin((r + 2) / (rows + 2) * Math.PI / 2))), w = w1 - ins * 2, xa = xc - (w >> 1), y = ytop + r, rr = r % 4;
-    R(g, xa, y, w, 1, rr === 0 ? TL : rr === 3 ? TD : TH); if (rr === 1 || rr === 2) for (let x = xa + 2 + ((r >> 2) % 2) * 2; x < xa + w - 2; x += 4) R(g, x, y, 1, 1, TS);
-    const st = pxa === null ? 1 : Math.max(1, pxa - xa + 1); R(g, xa, y, st, 1, TO); R(g, xa + w - st, y, st, 1, TO); if (pxa === null) R(g, xa, y - 1, w, 1, TO); pxa = xa; }
-    const wl = w1, xa = xc - (wl >> 1); R(g, xa, ytop + rows, wl, 1, TD); R(g, xa, ytop + rows + 1, wl, 1, TO); };
-  const frame = (x, y, w, h) => { R(g, x, y, w, h, '#c08a64'); R(g, x, y, w, 1, '#e0a874'); R(g, x, y, 1, h, '#e0a874'); R(g, x + w - 1, y + 1, 1, h - 1, '#a86d48'); };
-  const line = (xa, ya, xb, yb, c) => { const n = Math.max(Math.abs(xb - xa), Math.abs(yb - ya)); for (let i = 0; i <= n; i++) R(g, Math.round(xa + (xb - xa) * i / n), Math.round(ya + (yb - ya) * i / n), 1, 1, c); };
-  R(g, x0 + 1, y0 + 47, 63, 3, 'rgba(60,20,40,.18)');
-  // rosa Holzwände aus senkrechten Brettern
-  const GW = (x) => { const m = (x <= cx ? x - x0 : 2 * (cx - x0) - (x - x0)) % 4; return m === 0 ? '#e9a9c2' : m === 1 ? '#fbd3e0' : '#f6c0d3'; };
-  for (let x = x0 + 4; x <= x0 + 60; x++) R(g, x, y0 + 14, 1, 28, GW(x));
-  for (const x of [x0 + 4, x0 + 59]) { R(g, x, y0 + 14, 2, 28, '#ffffff'); R(g, x + (x === x0 + 4 ? 1 : 0), y0 + 14, 1, 28, '#f3e6ec'); }
-  base();
-  // Satteldach mit gleichmäßiger Neigung (1:1) und dicker Strohkante
-  const ap = y0 - 16;
-  for (let y = ap + 3; y < y0 + 14; y++) { const half = y - ap - 3; for (let x = cx - half; x <= cx + half; x++) R(g, x, y, 1, 1, GW(x)); }
-  // Übergang: weiße Zierkante mit Bögen, spiegelgleich zur Mitte
-  R(g, x0 + 4, y0 + 12, 57, 1, '#e9a9c2'); R(g, x0 + 4, y0 + 13, 57, 1, '#ffffff');
-  for (let x = x0 + 4; x <= x0 + 60; x++) { const m = Math.abs(x - cx) % 4; R(g, x, y0 + 14, 1, 1, m === 2 ? '#e9a9c2' : '#ffffff'); if (m === 0) R(g, x, y0 + 15, 1, 1, '#ffffff'); }
-  const BAND = [TO, TD, TH, TH, TL, TO];
-  for (let y = ap; y <= y0 + 14; y++) { const h = y - ap + 2; for (let k = BAND.length - 1; k >= 0; k--) { const o = h - k; if (o < 0) continue; R(g, cx - o, y, 1, 1, BAND[k]); R(g, cx + o, y, 1, 1, BAND[k]); } }
-  // Firstkappe: runder Abschluss oben
-  R(g, cx - 1, ap - 1, 3, 1, TO); R(g, cx, ap - 2, 1, 1, TO); R(g, cx - 1, ap, 3, 1, TL); R(g, cx, ap - 1, 1, 1, TL);
-  // Heuluke: quadratisch, weißes X im 45°-Winkel
-  frame(cx - 6, y0 - 4, 13, 13); R(g, cx - 5, y0 - 3, 11, 11, '#ffffff'); R(g, cx - 4, y0 - 2, 9, 9, '#eb9cb9');
-  for (let i = 0; i < 9; i++) { R(g, cx - 4 + i, y0 - 2 + i, 1, 1, '#ffffff'); R(g, cx + 4 - i, y0 - 2 + i, 1, 1, '#ffffff'); }
-  // Rundbogentor im Stil der Farmhaustür
-  const DF = [5, 7, 8, 9, 10, 10];
-  DF.forEach((hw, i) => { R(g, cx - hw, y0 + 18 + i, hw * 2 + 1, 1, '#c08a64'); R(g, cx - hw, y0 + 18 + i, 1, 1, '#e0a874'); });
-  R(g, cx - 10, y0 + 24, 21, 19, '#c08a64'); R(g, cx - 10, y0 + 24, 1, 19, '#e0a874'); R(g, cx + 10, y0 + 24, 1, 19, '#a86d48');
-  const DI = [3, 5, 6, 7, 8];
-  DI.forEach((hw, i) => R(g, cx - hw, y0 + 20 + i, hw * 2 + 1, 1, '#eb9cb9')); R(g, cx - 8, y0 + 25, 17, 18, '#eb9cb9');
-  for (const x of [cx - 6, cx - 3, cx + 3, cx + 6]) R(g, x, y0 + 21, 1, 22, '#d8819f');
-  R(g, cx, y0 + 20, 1, 23, '#c08a64'); R(g, cx - 2, y0 + 31, 1, 3, '#ffd84a'); R(g, cx + 2, y0 + 31, 1, 3, '#ffd84a');
-  // Fenster: Holzrahmen mit Kreuz
-  for (const wx of [x0 + 8, x0 + 47]) { R(g, wx, y0 + 21, 10, 10, '#c08a64'); R(g, wx, y0 + 21, 10, 1, '#e0a874'); R(g, wx, y0 + 21, 1, 10, '#e0a874'); R(g, wx + 1, y0 + 22, 8, 8, '#c4ecff'); R(g, wx + 1, y0 + 22, 8, 3, '#e0f6ff'); R(g, wx + 4, y0 + 22, 2, 8, '#c08a64'); R(g, wx + 1, y0 + 25, 8, 2, '#c08a64'); R(g, wx - 1, y0 + 31, 12, 2, '#c08a64'); R(g, wx - 1, y0 + 31, 12, 1, '#e0a874'); }
-  // obere Holzstufe direkt unter dem Tor, etwas schmaler
-  R(g, cx - 9, y0 + 43, 19, 1, '#e0a874'); R(g, cx - 9, y0 + 44, 19, 1, '#c08a64'); R(g, cx - 9, y0 + 45, 19, 1, '#a86d48'); R(g, cx - 9, y0 + 43, 1, 2, '#e0a874'); R(g, cx + 9, y0 + 44, 1, 1, '#a86d48');
-  // untere Holzstufe, genau wie am Farmhaus
-  R(g, cx - 10, y0 + 46, 21, 1, '#e0a874'); R(g, cx - 10, y0 + 47, 21, 2, '#c08a64'); R(g, cx - 9, y0 + 49, 19, 1, '#a86d48'); R(g, cx - 10, y0 + 46, 1, 3, '#e0a874'); R(g, cx + 10, y0 + 47, 1, 2, '#a86d48'); R(g, cx - 8, y0 + 50, 17, 1, 'rgba(60,20,40,.14)');
+  R(g, x0 + 1, y0 + 47, 63, 3, 'rgba(60,20,40,.18)'); R(g, cx - 8, y0 + 50, 17, 1, 'rgba(60,20,40,.14)');
+  LH_ROWS.forEach((r, y) => [...r].forEach((ch, x) => { if (LH_PAL[ch]) R(g, x0 + x, y0 + 50 - LH_ROWS.length + y, 1, 1, LH_PAL[ch]); }));
 }
 function drawFence(g) {
   // Holzzaun mit Kreuzstreben: Pfosten gleichmäßig verteilt, je Feld ein sauberes X zwischen zwei Latten
