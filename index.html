@@ -356,6 +356,7 @@ body.port #toast{bottom:2.7em}
 #dlg .lrow:last-child{background-image:none}
 #dlg .lrow.on{background-color:#fff0f6}
 #dlg .lrow.o{grid-template-columns:2.1em minmax(0,1fr) auto}
+#dlg .kb{display:none}body.pad #dlg .kb{display:inline-flex;align-items:center;justify-content:center;margin-left:.45em;min-width:1.25em;height:1.25em;border-radius:50%;background:rgba(255,255,255,.85);color:#c4527e;font-size:.8em;line-height:1;border:.1em solid currentColor}
 #dlg .vtabs{display:flex;gap:.4em;margin:0 0 .35em}#dlg .vtabs .btn{padding-top:.15em;padding-bottom:.15em}#dlg .vtabs .btn{flex:1}
 #dlg .lrow.vb{grid-template-columns:2.1em minmax(0,1fr) auto auto}
 #dlg .lrow.ware{grid-template-columns:2.1em minmax(0,1fr) auto auto auto;column-gap:.7em}
@@ -1796,7 +1797,7 @@ function fmtTime(t) {
 /* ---------- dialogs ---------- */
 function helpHTML(intro) {
   const ctl = padMode ? [
-    ['Steuerkreuz', 'laufen'], ['A', 'Werkzeug benutzen, mit Dingen reden'], ['L / R', 'Gegenstand wechseln'], ['X / Y', 'Rucksack öffnen'], ['B', 'Fenster schließen'], ['Steuerkreuz + A', 'in Fenstern Knöpfe wählen und drücken'], ['Rechter Stick / L / R', 'in Fenstern scrollen']
+    ['Steuerkreuz', 'laufen'], ['A', 'Werkzeug benutzen, mit Dingen reden'], ['L / R', 'Gegenstand wechseln'], ['X / Y / Select', 'Rucksack öffnen'], ['Start', 'Einstellungen: X speichern, Y neues Spiel, B schließen'], ['B', 'Fenster schließen'], ['Steuerkreuz + A', 'in Fenstern Knöpfe wählen und drücken'], ['Rechter Stick / L / R', 'in Fenstern scrollen']
   ] : touchMode ? [
     ['Joystick', 'laufen'], ['A-Knopf', 'Werkzeug benutzen, mit Dingen reden'], ['Leiste antippen', 'Gegenstand wählen'], ['Rucksack-Knopf', 'Inventar öffnen'], ['Feld antippen', 'direkt daneben handeln']
   ] : [
@@ -1810,7 +1811,7 @@ function helpHTML(intro) {
   if (!intro) h += `<div class="ssec"><div class="ssech"><span>Anzeige</span></div>${[['bar', 'Werkzeugleiste'], ['top', 'Datum und Hilfe-Knopf'], ['dlg', 'Fenster']].map(([k, n]) => `<div class="lrow"><span></span><div class="ln"><b>${n}</b><small>Größe anpassen</small></div><div class="qty"><button class="btn sq" data-act="ui:${k}:-1" ${UIS[k] > .5 ? '' : 'disabled'}>−</button><span class="qv">${Math.round(UIS[k] * 100)}%</span><button class="btn sq" data-act="ui:${k}:1" ${UIS[k] < 1.5 ? '' : 'disabled'}>+</button></div><span></span></div>`).join('')}</div>`;
   h += `<div class="ssec"><div class="ssech"><span>So geht's</span></div><div class="steps">${steps.map(([ic, t]) => `<div class="step"><img src="${ICONURL[ic]}" alt=""><span>${t}</span></div>`).join('')}</div></div>`;
   h += `<div class="ssec"><div class="ssech"><span>Gut zu wissen</span></div><div class="kv"><img src="${ICONURL.w_moon}" alt=""><span>Geh vor 2 Uhr nachts durch die Haustür ins Bett – sonst kippst du um. Gespeichert wird beim Schlafen.</span></div></div>`;
-  return h + `<div class="foot">${intro ? '' : '<button class="btn red" data-act="new">Neues Spiel</button><button class="btn" data-act="save">Speichern</button>'}<button class="btn${intro ? ' primary' : ''}" data-act="close">${intro ? "Los geht's!" : 'Schließen'}</button></div>`;
+  return h + `<div class="foot">${intro ? '' : '<button class="btn red" data-act="new">Neues Spiel<span class="kb">Y</span></button><button class="btn" data-act="save">Speichern<span class="kb">X</span></button>'}<button class="btn${intro ? ' primary' : ''}" data-act="close">${intro ? "Los geht's!" : 'Schließen'}${intro ? '' : '<span class="kb">B</span>'}</button></div>`;
 }
 const T = (ic, txt) => `<h2>${ic ? `<img src="${ICONURL[ic]}" alt="">` : ''}<span>${txt}</span></h2>`;
 let invSel = null;
@@ -2147,7 +2148,7 @@ $('dlg').addEventListener('click', e => {
     b.textContent = ok ? 'Gespeichert ✓' : 'Fehler'; b.classList.add('primary');
     setTimeout(() => { if (b.isConnected) { b.textContent = 'Speichern'; b.classList.remove('primary'); } }, 1600);
   }
-  else if (a === 'new') $('dlg').innerHTML = `${T('heart', 'Neues Spiel?')}<div class="ssec warn"><p class="lead">Dein ganzer Fortschritt geht verloren – Hof, Geld und Rucksack.</p></div><div class="foot"><button class="btn" data-act="close">Abbrechen</button><button class="btn red" data-act="newc">Ja, neu anfangen</button></div>`;
+  else if (a === 'new') $('dlg').innerHTML = `${T('heart', 'Neues Spiel?')}<div class="ssec warn"><p class="lead">Dein ganzer Fortschritt geht verloren – Hof, Geld und Rucksack.</p></div><div class="foot"><button class="btn" data-act="close">Abbrechen<span class="kb">B</span></button><button class="btn red" data-act="newc">Ja, neu anfangen<span class="kb">Y</span></button></div>`;
   else if (a === 'newc') { LOC = 'farm'; S = newState(); applyLand(S.land); buildFarmBG(); TREES = S.trees; rebuildTrees(); custs.length = 0; save(); parts.length = 0; closeDlg(); toast('Ein neuer Anfang!'); }
 });
 
@@ -2423,12 +2424,14 @@ addEventListener('keydown', e => {
     const nav = { ArrowLeft: 'l', ArrowRight: 'r', ArrowUp: 'u', ArrowDown: 'd' }[e.key];
     if (nav) { e.preventDefault(); dlgNav(nav); return; }
     if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); if (!e.repeat) dlgPress(); return; }
+    const kbtn = { x: '[data-act="save"]', y: '[data-act="new"],[data-act="newc"]' }[e.key.toLowerCase()], kel = kbtn && $('dlg').querySelector(kbtn);
+    if (kel) { e.preventDefault(); if (!e.repeat) kel.click(); return; }
     if (e.key === 'PageUp' || e.key === 'PageDown') { e.preventDefault(); $('dlg').scrollBy({ top: (e.key === 'PageDown' ? 1 : -1) * $('dlg').clientHeight * .6, behavior: 'smooth' }); return; }
   }
   if (e.key === 'ScrollDown' || e.key === 'ScrollUp') { padScroll = e.key === 'ScrollDown' ? 1 : -1; return; }
   if (e.key === 'Escape') { if (paused && !fading) closeDlg(); return; }
   if (KMAP[e.key]) { keys.add(KMAP[e.key]); e.preventDefault(); return; }
-  if (e.key === 'i' || e.key === 'I' || e.key === 'Tab') { e.preventDefault(); openInv(); return; }
+  if (e.key === 'i' || e.key === 'I' || e.key === 'Tab' || e.key === 'x' || e.key === 'y') { e.preventDefault(); openInv(); return; }
   if (e.key === 'F1') { e.preventDefault(); if (!fading && !paused) openDlg(helpHTML(false)); return; }
   if (paused) return;
   if (e.key === 'PageUp' || e.key === 'PageDown') { e.preventDefault(); cycleSlot(e.key === 'PageUp' ? -1 : 1); return; }
@@ -2882,7 +2885,9 @@ function pollPad() {
       if (hit(0)) dlgPress();
     }
     if (hit(1) && !fading) closeDlg();
-    if ((hit(2) || hit(3)) && $('dlg').dataset.inv && !fading) closeDlg();
+    const xb = hit(2), yb = hit(3), kq = xb ? '[data-act="save"]' : yb ? '[data-act="new"],[data-act="newc"]' : null, kel = kq && !fading && $('dlg').querySelector(kq);
+    if (kel) kel.click();
+    else if ((xb || yb) && $('dlg').dataset.inv && !fading) closeDlg();
     const ry = gp.axes[3] || 0; if (Math.abs(ry) > .3) $('dlg').scrollTop += ry * 14;
   } else {
     if (hit(0)) act(...targetTile());

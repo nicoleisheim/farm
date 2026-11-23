@@ -160,7 +160,9 @@ jobs:
                 case KeyEvent.KEYCODE_DPAD_RIGHT: k = "ArrowRight"; break;
                 case KeyEvent.KEYCODE_BUTTON_A: case KeyEvent.KEYCODE_DPAD_CENTER: k = " "; break;
                 case KeyEvent.KEYCODE_BUTTON_B: k = "Escape"; break;
-                case KeyEvent.KEYCODE_BUTTON_X: case KeyEvent.KEYCODE_BUTTON_Y: case KeyEvent.KEYCODE_BUTTON_SELECT: k = "i"; break;
+                case KeyEvent.KEYCODE_BUTTON_X: k = "x"; break;
+                case KeyEvent.KEYCODE_BUTTON_Y: k = "y"; break;
+                case KeyEvent.KEYCODE_BUTTON_SELECT: k = "i"; break;
                 case KeyEvent.KEYCODE_BUTTON_L1: case KeyEvent.KEYCODE_BUTTON_L2: k = "PageUp"; break;
                 case KeyEvent.KEYCODE_BUTTON_R1: case KeyEvent.KEYCODE_BUTTON_R2: k = "PageDown"; break;
                 case KeyEvent.KEYCODE_BUTTON_START: k = "F1"; break;
