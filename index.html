@@ -1913,7 +1913,7 @@ function standHTML() {
   const onVal = SELLABLE.reduce((a, t) => a + (S.stand[t] || 0) * priceOf(t), 0), open = standOpen(), put = standTab === 'put';
   let h = T('stand', 'Verkaufsstand');
   h += `<div class="sinfo"><span>Heute: <b class="cval"><span class="p-coin"></span>${S.soldGold.toLocaleString('de-DE')}</b>, Auszahlung morgen</span><span>${open ? 'Offen' : 'Zu'} 8–18 Uhr</span></div>`;
-  h += `<div class="vtabs"><button class="btn${put ? ' primary' : ''}" data-act="stab:put">Auslegen<span class="kb">L1</span></button><button class="btn${put ? '' : ' primary'}" data-act="stab:price">Preise<span class="kb">L2</span></button></div><div class="ssec">`;
+  h += `<div class="vtabs"><button class="btn${put ? ' primary' : ''}" data-act="stab:put">Auslegen${put ? '' : '<span class="kb">L1</span>'}</button><button class="btn${put ? '' : ' primary'}" data-act="stab:price">Preise${put ? '<span class="kb">L1</span>' : ''}</button></div><div class="ssec">`;
   if (!rows.length) h += '<div class="sempty">Du hast nichts zum Verkaufen dabei.</div>';
   for (const t of rows) {
     const n = S.stand[t] || 0, b = cnt(t), p = priceOf(t), lo = Math.ceil(sellOf(t) * .5), hi = Math.floor(sellOf(t) * 1.5);
@@ -1932,7 +1932,7 @@ function storeHTML() {
   const total = Object.values(S.store).reduce((a, b) => a + b, 0);
   let h = T('store', 'Lagerhaus');
   h += `<div class="sinfo"><span>Im Lager: <b>${total} Stück</b></span><span>Platz ohne Ende</span></div>`;
-  h += `<div class="vtabs"><button class="btn${inn ? ' primary' : ''}" data-act="sttab:in">Einlagern<span class="kb">L1</span></button><button class="btn${inn ? '' : ' primary'}" data-act="sttab:out">Herausholen<span class="kb">L2</span></button></div><div class="ssec">`;
+  h += `<div class="vtabs"><button class="btn${inn ? ' primary' : ''}" data-act="sttab:in">Einlagern${inn ? '' : '<span class="kb">L1</span>'}</button><button class="btn${inn ? '' : ' primary'}" data-act="sttab:out">Herausholen${inn ? '<span class="kb">L1</span>' : ''}</button></div><div class="ssec">`;
   if (!ids.length) h += `<div class="sempty">${inn ? 'Du hast nichts zum Einlagern dabei.' : 'Das Lager ist leer.'}</div>`;
   for (const t of ids) {
     const n = inn ? cnt(t) : S.store[t];
@@ -2572,7 +2572,7 @@ addEventListener('keydown', e => {
     const kbtn = { x: '[data-act="save"],[data-act="sleep"]', y: '[data-act="new"],[data-act="newc"]' }[e.key.toLowerCase()], kel = kbtn && $('dlg').querySelector(kbtn);
     if (kel) { e.preventDefault(); if (!e.repeat) kel.click(); return; }
     const tabs = $('dlg').querySelectorAll('.vtabs .btn');
-    if (tabs.length > 1 && (e.key === 'PageUp' || e.key === 'End')) { e.preventDefault(); const tb = tabs[e.key === 'PageUp' ? 0 : 1]; if (!e.repeat && !tb.classList.contains('primary')) tb.click(); return; }
+    if (tabs.length > 1 && (e.key === 'PageUp' || e.key === 'End' || e.key === 'PageDown')) { e.preventDefault(); const tb = [...tabs].find(b => !b.classList.contains('primary')); if (!e.repeat && tb) tb.click(); return; }
     if (e.key === 'PageUp' || e.key === 'PageDown' || e.key === 'End') { e.preventDefault(); $('dlg').scrollBy({ top: (e.key === 'PageDown' ? 1 : -1) * $('dlg').clientHeight * .6, behavior: 'smooth' }); return; }
   }
   if (e.key === 'ScrollDown' || e.key === 'ScrollUp') { padScroll = e.key === 'ScrollDown' ? 1 : -1; return; }

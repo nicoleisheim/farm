@@ -115,7 +115,7 @@ jobs:
 
           public class MainActivity extends Activity {
             private WebView web;
-            private boolean hl, hr, hu, hd, hsu, hsd;
+            private boolean hl, hr, hu, hd, hsu, hsd, htl, htr;
             private float sx, sy;
 
             @Override protected void onCreate(Bundle b) {
@@ -193,6 +193,13 @@ jobs:
               boolean sd = ry > 0.4f, su = ry < -0.4f;
               stick(sd, hsd, "ScrollDown"); stick(su, hsu, "ScrollUp");
               hsd = sd; hsu = su;
+              // Analoge Schultertasten (L2/R2) als Tasten
+              float lt = Math.max(e.getAxisValue(MotionEvent.AXIS_LTRIGGER), e.getAxisValue(MotionEvent.AXIS_BRAKE));
+              float rt = Math.max(e.getAxisValue(MotionEvent.AXIS_RTRIGGER), e.getAxisValue(MotionEvent.AXIS_GAS));
+              boolean tl = lt > 0.5f, tr = rt > 0.5f;
+              if (tl && !htl) key("End", true);
+              if (tr && !htr) key("PageDown", true);
+              htl = tl; htr = tr;
               return true;
             }
           }
