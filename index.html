@@ -437,6 +437,19 @@ body.port #hint{bottom:.3em}
 #dlg .sinfo b,#dlg .money{color:#e0703a}
 #dlg .townimg{margin:.2em 0 .4em;border:.4em solid transparent;border-image:var(--t-dsec) 4 fill / .4em stretch}
 #dlg .townimg img{display:block;width:100%;image-rendering:pixelated}
+
+/* Leiste und Rucksack: Bild oben, darunter ein Streifen für Balken und Anzahl */
+#hotbar .slot,#dlg .inv .slot{flex-direction:column;justify-content:flex-start}
+#hotbar .slot img{width:58%;height:58%;margin:.08em 0 0}
+#dlg .inv .slot img{width:68%;height:68%;margin:0 auto}
+#hotbar .slot .n,#dlg .inv .slot .n{top:auto;left:auto;bottom:.05em;right:.18em;background:none;border:0;padding:0;min-width:0;font-size:.55em;line-height:1;color:#c4527e}
+#dlg .inv .slot .n{bottom:-.1em;right:.1em;font-size:1em}
+#hotbar .slot .wl{left:.35em;right:.35em;bottom:.2em;height:.2em}
+#hotbar .slot .wl.wa{bottom:.48em}
+#hotbar .slot .wl.wa i{background:#4fb3ff}
+#hotbar .slot.hasn .wl{right:1.05em}
+#dlg .inv .slot .dbar{left:0;right:0;bottom:-.05em;height:.25em}
+#dlg .inv .slot.hasn .dbar{right:1em}
 </style>
 </head>
 <body>
@@ -1378,6 +1391,19 @@ const COWC = {"B": "#ffffff", "H": "#ffffff", "S": "#f5a9c6", "P": "#ffbfd4", "n
 const COWSPR = [1, -1].map(dir => { const [c, g] = mk(24, 15);
   COW.forEach((r, j) => [...r].forEach((ch, i) => { if (COWC[ch]) R(g, dir > 0 ? i : 23 - i, j, 1, 1, COWC[ch]); })); return c; });
 function icon(name, fn) { const [c, g] = mk(16, 16); fn(g); ICON[name] = c; ICONURL[name] = c.toDataURL(); }
+// Für Leiste und Rucksack: Inhalt zuschneiden und quadratisch zentrieren, damit alle Items gleich groß wirken
+const SLOTURL = {};
+function slotIcon(name) {
+  if (SLOTURL[name]) return SLOTURL[name];
+  const src = ICON[name]; if (!src) return ICONURL[name];
+  const d = src.getContext('2d').getImageData(0, 0, 16, 16).data;
+  let x0 = 16, y0 = 16, x1 = -1, y1 = -1;
+  for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) if (d[(y * 16 + x) * 4 + 3] > 0) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+  if (x1 < 0) return ICONURL[name];
+  const w = x1 - x0 + 1, h = y1 - y0 + 1, n = Math.max(w, h), [c, g] = mk(n, n);
+  g.drawImage(src, x0, y0, w, h, (n - w) >> 1, (n - h) >> 1, w, h);
+  return SLOTURL[name] = c.toDataURL();
+}
 icon('hoe', g => {
   // Stiel
   for (let i = 0; i < 9; i++) { R(g, 2 + i, 12 - i, 2, 2, '#d39a5a'); R(g, 3 + i, 13 - i, 1, 1, '#a86d36'); }
@@ -1748,7 +1774,7 @@ function buildHotbar() {
   hb.style.display = v.length ? '' : 'none';
   v.forEach((bi, n) => {
     const id = S.bar[bi], d = document.createElement('div'); d.className = 'slot'; d.dataset.bi = bi;
-    d.innerHTML = `<span class="k">${n + 1}</span><img src="${ICONURL[iconOf(id)]}" alt=""><span class="n"></span>` + (id === 'can' ? '<span class="wf"><i></i></span>' : '') + (ITEM[id].dura ? '<span class="wl du"><i></i></span>' : '');
+    d.innerHTML = `<span class="k">${n + 1}</span><img src="${slotIcon(iconOf(id))}" alt=""><span class="n"></span>` + (id === 'can' ? '<span class="wl wa"><i></i></span>' : '') + (ITEM[id].dura ? '<span class="wl du"><i></i></span>' : '');
     d.addEventListener('pointerdown', e => { e.preventDefault(); setSel(bi); });
     hb.appendChild(d);
   });
@@ -1784,9 +1810,9 @@ function updateHUD() {
       const n = d.querySelector('.n');
       const showN = !ITEM[id].tool || cnt(id) > 1;
       n.textContent = showN ? cnt(id) : '';
-      n.style.display = showN ? '' : 'none';
+      n.style.display = showN ? '' : 'none'; d.classList.toggle('hasn', showN);
       d.title = itemName(id);
-      if (id === 'can') d.querySelector('.wf i').style.height = (S.water / S.canCap * 100) + '%';
+      if (id === 'can') d.querySelector('.wa i').style.width = (S.water / S.canCap * 100) + '%';
       if (ITEM[id].dura) { const f = duraOf(id) / ITEM[id].dura, i = d.querySelector('.wl i'); i.style.width = Math.max(4, f * 100) + '%'; i.style.background = duraCol(f); }
     });
   }
@@ -1844,7 +1870,8 @@ let invSel = null, invMoving = false;
 function slotHTML(c, i) {
   const id = S[c][i], sel = invSel && invSel[0] === c && invSel[1] === i;
   if (!id) return `<div class="slot empty${sel ? ' sel' : ''}" data-act="slot:${c}:${i}"></div>`;
-  return `<div class="slot${sel ? ' sel' : ''}${sel ? ' moving' : ''}" data-act="slot:${c}:${i}" title="${itemName(id)}"><img src="${ICONURL[iconOf(id)]}" alt="">${ITEM[id].dura ? duraBar(id, 'dbar') : ''}${ITEM[id].tool && cnt(id) < 2 ? '' : `<span class="n">${cnt(id)}</span>`}</div>`;
+  const hn = !(ITEM[id].tool && cnt(id) < 2);
+  return `<div class="slot${sel ? ' sel' : ''}${sel ? ' moving' : ''}${hn ? ' hasn' : ''}" data-act="slot:${c}:${i}" title="${itemName(id)}"><img src="${slotIcon(iconOf(id))}" alt="">${ITEM[id].dura ? duraBar(id, 'dbar') : ''}${ITEM[id].tool && cnt(id) < 2 ? '' : `<span class="n">${cnt(id)}</span>`}</div>`;
 }
 function invHTML() {
   let h = T('bag', 'Rucksack') + `<div class="sinfo"><span class="money" title="Geld"><span class="p-coin"></span>${S.gold.toLocaleString('de-DE')}</span><span class="money" title="Energie"><img src="${ICONURL.heart}" alt="">${Math.round(S.energy)}/${S.maxEnergy}</span></div>`;
@@ -1906,7 +1933,7 @@ function neededForOrders(id) { return S.orders.reduce((a, o) => a + Math.max(0, 
 function bagView(q) {
   return `<div class="ssec bagsec"><div class="ssech"><span><img class="hi" src="${ICONURL.bag}" alt="">Dein Rucksack</span></div><div class="inv bagv">${SELLABLE.map(t => {
     const n = cnt(t) - (q ? q(t) : 0);
-    return `<div class="slot${n > 0 ? '' : ' zero'}" title="${ITEM[t].name}"><img src="${ICONURL[iconOf(t)]}" alt=""><span class="n">${n}</span></div>`;
+    return `<div class="slot${n > 0 ? '' : ' zero'}" title="${ITEM[t].name}"><img src="${slotIcon(iconOf(t))}" alt=""><span class="n">${n}</span></div>`;
   }).join('')}</div></div>`;
 }
 let standTab = 'put';
