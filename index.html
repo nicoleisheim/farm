@@ -961,7 +961,8 @@ const FH_ROWS = ["..............DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
 const FH_PAL = {"A": "#dcae62", "B": "#c0904a", "C": "#e8c47e", "S": "#cfa056", "D": "#a07032", "O": "#e0a874", "E": "#fde7ef", "F": "#f3cddb", "W": "#ffffff", "L": "#c4ecff", "l": "#e0f6ff", "M": "#c08a64", "m": "#a86d48", "K": "#8a5a40", "P": "#eb9cb9", "T": "#d8819f", "t": "#cf6890", "R": "#f7bcd0", "N": "#5aa040", "n": "#8fd16a", "Y": "#ffd84a", "a": "#e7bd92", "c": "#d7ccc8", "d": "#efebe9"};
 function drawFarmHouse(g) {
   const x0 = 32, y0 = 16, cx = x0 + 40;
-  R(g, x0 + 3, y0 + 62, 75, 3, 'rgba(60,20,40,.18)'); R(g, cx - 8, y0 + 65, 17, 1, 'rgba(60,20,40,.14)');
+  // Schatten wie beim Lagerhaus: 2 px breiter als der Sockel, 2 Reihen darunter, mittig unter der Tür eine Reihe mehr
+  R(g, 33, 80, 79, 3, 'rgba(60,20,40,.18)'); R(g, cx - 8, 83, 17, 1, 'rgba(60,20,40,.14)');
   FH_ROWS.forEach((r, y) => [...r].forEach((ch, x) => { if (FH_PAL[ch]) R(g, 29 + x, 15 + y, 1, 1, FH_PAL[ch]); }));
 }
 function drawHouse(g, o) {
