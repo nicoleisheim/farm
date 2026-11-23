@@ -438,21 +438,24 @@ body.port #hint{bottom:.3em}
 #dlg .townimg{margin:.2em 0 .4em;border:.4em solid transparent;border-image:var(--t-dsec) 4 fill / .4em stretch}
 #dlg .townimg img{display:block;width:100%;image-rendering:pixelated}
 
-/* Leiste und Rucksack: Bild in ganzzahliger Vergrößerung, darunter Balken, Anzahl oben rechts */
+/* Leiste und Rucksack: Bild in ganzzahliger Vergrößerung, darunter eine Zeile mit Balken (links) und Anzahl (rechts) */
 #hotbar .slot,#dlg .inv .slot{flex-direction:column;justify-content:center}
-#hotbar .slot img{width:var(--ico,74%);height:var(--ico,74%);margin:0 0 .22em}
-#dlg .inv .slot img{width:72%;height:72%;margin:0 auto}
-#hotbar .slot .n,#dlg .inv .slot .n{top:.08em;right:.12em;bottom:auto;left:auto;background:none;border:0;padding:0;min-width:0;font-size:.8em;line-height:1;color:#c4527e;text-shadow:0 .06em 0 #fff,0 -.06em 0 #fff,.06em 0 0 #fff,-.06em 0 0 #fff}
-#dlg .inv .slot .n{top:0;right:.1em;font-size:.85em}
-#hotbar .slot .wl,#hotbar .slot .wl.du,#hotbar .slot .wl.wa{left:50%;right:auto;width:var(--ico,64%);transform:translateX(-50%);bottom:.2em;height:.16em;border-radius:0;box-shadow:0 0 0 .06em #6a3a4a;background:#6a3a4a}
-#hotbar .slot .wl.wa{left:auto;right:.2em;transform:none;width:.16em;height:var(--ico,64%);bottom:auto;top:50%;margin-top:calc(var(--ico,64%) / -2 - .15em);display:flex;align-items:flex-end}
+#hotbar .slot img{width:var(--ico,64%);height:var(--ico,64%);margin:0 0 .3em}
+#hotbar .slot .n,#dlg .inv .slot .n{top:auto;left:auto;background:none;border:0;padding:0;min-width:0;line-height:1;color:#b8406e;font-weight:700;
+  text-shadow:.05em 0 0 #fff,-.05em 0 0 #fff,0 .05em 0 #fff,0 -.05em 0 #fff}
+#hotbar .slot .n{right:calc(50% - var(--ico,64%) / 2);bottom:.12em;font-size:.45em}
+#hotbar .slot .wl,#hotbar .slot .wl.du{left:calc(50% - var(--ico,64%) / 2);right:auto;width:var(--ico,64%);transform:none;bottom:.2em;height:.14em;border-radius:0;box-shadow:0 0 0 .05em #6a3a4a;background:#6a3a4a}
+#hotbar .slot.hasn .wl.du{width:calc(var(--ico,64%) - .7em)}
+#hotbar .slot .wl.wa{left:calc(50% + var(--ico,64%) / 2 + .1em);right:auto;width:.14em;height:var(--ico,64%);bottom:auto;top:50%;margin-top:calc(var(--ico,64%) / -2 - .15em);transform:none;box-shadow:0 0 0 .05em #6a3a4a;background:#6a3a4a;display:flex;align-items:flex-end}
 #hotbar .slot .wl.wa i{background:#4fb3ff;width:100%}
-body.pad #hotbar .slot .n{right:auto;left:.12em}
 body.pad #hotbar .slot{width:3.3em;height:3.3em}
 body.pad #invBtn{width:3.9em;height:3.9em}
 body.pad #hint{bottom:7.9em}
 #invBtn{font-size:inherit}
-#dlg .inv .slot .dbar{left:14%;right:14%;bottom:0;height:.25em}
+#dlg .inv .slot img{width:66%;height:66%;margin:0 auto .25em}
+#dlg .inv .slot .n{right:17%;bottom:.12em;font-size:.4em}
+#dlg .inv .slot .dbar{left:17%;right:17%;bottom:.15em;height:.15em}
+#dlg .inv .slot.hasn .dbar{right:42%}
 </style>
 </head>
 <body>
@@ -1853,7 +1856,7 @@ function updateHUD() {
       const n = d.querySelector('.n');
       const showN = !ITEM[id].tool || cnt(id) > 1;
       n.textContent = showN ? cnt(id) : '';
-      n.style.display = showN ? '' : 'none';
+      n.style.display = showN ? '' : 'none'; d.classList.toggle('hasn', showN);
       d.title = itemName(id);
       if (id === 'can') d.querySelector('.wa i').style.height = (S.water / S.canCap * 100) + '%';
       if (ITEM[id].dura) { const f = duraOf(id) / ITEM[id].dura, i = d.querySelector('.wl.du i'); i.style.width = Math.max(4, f * 100) + '%'; i.style.background = duraCol(f); }
