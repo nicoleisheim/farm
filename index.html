@@ -568,8 +568,8 @@ for (let x = 4; x <= 23; x++) set(x, 6, 'P');
 for (let x = 12; x <= 15; x++) for (let y = 2; y <= 4; y++) set(x, y, 'K');
 set(13, 5, 'P');
 const STO = { x0: 184, y0: 32 };
-const HELPER = 'Ben', BEN_MIN = 20, BEN_MAX = 120; // Hofhelfer: gießt, erntet und melkt tagsüber (7–18 Uhr)
-const benWage = () => S.benWage || 60, benPace = w => w < 45 ? 'gemütlich' : w < 75 ? 'normal' : w < 100 ? 'flink' : 'sehr flink';
+const HELPER = 'Ben', BEN_MIN = 4, BEN_MAX = 16; // Hofhelfer: gießt, erntet und melkt tagsüber (7–18 Uhr), Stundenlohn
+const benWage = () => S.benWage || 8, benPace = w => w < 6 ? 'gemütlich' : w < 10 ? 'normal' : w < 14 ? 'flink' : 'sehr flink';
 const GATE = [23, 6];
 // Land zum Dazukaufen: drei Stücke im Süden (Reihen 15–22), bis zum Kauf Wald
 const LAND = [{ id: 'sw', name: 'Südwiese West', x0: 1, x1: 7, price: 1000 }, { id: 'sm', name: 'Südwiese Mitte', x0: 8, x1: 15, price: 1500 }, { id: 'so', name: 'Südwiese Ost', x0: 16, x1: 22, price: 2000 }];
@@ -1656,7 +1656,7 @@ function migrate2(d) {
     for (const c of ['bar', 'bag']) { const i = d[c].indexOf(null); if (i >= 0) { d[c][i] = id; break; } }
   }
   d.dura = d.dura || {};
-  d.land = d.land || []; d.helper = !!d.helper; d.benWage = d.benWage || 60; d.benLog = d.benLog || { har: {}, wat: 0, milk: 0 }; d.store = d.store || {}; if (d.trees) delete d.trees['16,1']; d.cows = d.cows || []; if (d.cows.length && !(d.bar || []).includes('bucket') && !(d.bag || []).includes('bucket')) { const c = (d.bar || []).includes(null) ? d.bar : d.bag, i = c ? c.indexOf(null) : -1; if (i >= 0) { c[i] = 'bucket'; d.items = d.items || {}; d.items.bucket = 1; } } d.stand = d.stand || {}; d.sold = d.sold || {}; d.soldGold = d.soldGold || 0; d.trees = d.trees || {};
+  d.land = d.land || []; d.helper = !!d.helper; d.benWage = d.benWage && d.benWage <= BEN_MAX ? d.benWage : 8; d.benMin = d.benMin || 0; d.benLog = d.benLog || { har: {}, wat: 0, milk: 0 }; d.store = d.store || {}; if (d.trees) delete d.trees['16,1']; d.cows = d.cows || []; if (d.cows.length && !(d.bar || []).includes('bucket') && !(d.bag || []).includes('bucket')) { const c = (d.bar || []).includes(null) ? d.bar : d.bag, i = c ? c.indexOf(null) : -1; if (i >= 0) { c[i] = 'bucket'; d.items = d.items || {}; d.items.bucket = 1; } } d.stand = d.stand || {}; d.sold = d.sold || {}; d.soldGold = d.soldGold || 0; d.trees = d.trees || {};
   if (!d.orders) d.orders = [{ id: 'o1', who: 'Frau Lind', items: { ruebe: 3 }, packed: {}, days: 4, reward: 200 }];
   if (d.shipped) { for (const t in d.shipped) if (d.shipped[t]) d.stand[t] = (d.stand[t] || 0) + d.shipped[t]; delete d.shipped; }
   return d;
@@ -1934,7 +1934,7 @@ function houseHTML() {
   const w = benWage();
   h += `<div class="ssec"><div class="ssech"><span>Hofhelfer ${HELPER}</span></div>`;
   h += `<div class="lrow"><img src="${ICONURL.helper}" alt=""><div class="ln"><b>${S.helper ? `${HELPER} arbeitet für dich` : `${HELPER} einstellen`}</b><small>Gießt, erntet und melkt von 7 bis 18 Uhr. Die Ernte bringt er ins Lager.</small></div>${S.helper ? '<button class="btn" data-act="fire">Entlassen</button>' : '<button class="btn primary" data-act="hire">Einstellen</button>'}</div>`;
-  h += `<div class="lrow"><img src="${ICONURL.coin}" alt=""><div class="ln"><b>Lohn pro Tag</b><small>Tempo: ${benPace(w)}</small></div><div class="qty"><button class="btn sq" data-act="bw:-1" ${w > BEN_MIN ? '' : 'disabled'}>−</button><span class="qv">${w}</span><button class="btn sq" data-act="bw:1" ${w < BEN_MAX ? '' : 'disabled'}>+</button></div></div></div>`;
+  h += `<div class="lrow"><img src="${ICONURL.coin}" alt=""><div class="ln"><b>Stundenlohn</b><small>Tempo: ${benPace(w)} · bis zu ${w * 11} Taler am Tag</small></div><div class="qty"><button class="btn sq" data-act="bw:-1" ${w > BEN_MIN ? '' : 'disabled'}>−</button><span class="qv">${w}</span><button class="btn sq" data-act="bw:1" ${w < BEN_MAX ? '' : 'disabled'}>+</button></div></div></div>`;
   h += '<div class="foot"><button class="btn" data-act="close">Noch nicht</button><button class="btn primary" data-act="sleep">Gute Nacht</button></div>';
   return h;
 }
@@ -2056,7 +2056,8 @@ function benRoute(tx, ty) {
   r.push([tx, ty]); return r;
 }
 function updateBen(dt) {
-  const f = benWage() / 60, sp = 34 * f, home = [DOOR[0] * 16 + 8, DOOR[1] * 16 + 29];
+  if (ben.on) { if (ben.lastT != null && S.time > ben.lastT) S.benMin = (S.benMin || 0) + S.time - ben.lastT; ben.lastT = S.time; } else ben.lastT = null;
+  const f = benWage() / 8, sp = 34 * f, home = [DOOR[0] * 16 + 8, DOOR[1] * 16 + 29];
   if (!S.helper) { ben.on = false; return; }
   if (!benWork()) {
     if (!ben.on) return;
@@ -2214,7 +2215,7 @@ $('dlg').addEventListener('click', e => {
     shipQ = {}; snd('ship'); toast(`${n} Stück am Stand ausgelegt`); rerenderShip();
   }
   else if (a === 'hire' || a === 'fire' || a.startsWith('bw:')) {
-    if (a.startsWith('bw:')) S.benWage = Math.max(BEN_MIN, Math.min(BEN_MAX, benWage() + +a.slice(3) * 10));
+    if (a.startsWith('bw:')) S.benWage = Math.max(BEN_MIN, Math.min(BEN_MAX, benWage() + +a.slice(3)));
     else { S.helper = a === 'hire'; snd(a === 'hire' ? 'coin' : 'sel'); toast(a === 'hire' ? `${HELPER} legt gleich los!` : `${HELPER} arbeitet nicht mehr für dich.`); }
     save(); const sc = $('dlg').scrollTop; $('dlg').innerHTML = houseHTML(); $('dlg').scrollTop = sc;
   }
@@ -2440,7 +2441,8 @@ function endDay(passedOut) {
     if (S.rain) for (const k in S.soil) S.soil[k].w = true;
     // Hofhelfer: Tagesbericht und Lohn
     let hw = null;
-    if (S.helper) { hw = { har: S.benLog.har, wat: S.benLog.wat, milk: S.benLog.milk, pay: Math.min(benWage(), S.gold) }; S.gold -= hw.pay; }
+    if (S.helper || S.benMin) { const bh = Math.round((S.benMin || 0) / 60 * 10) / 10; hw = { har: S.benLog.har, wat: S.benLog.wat, milk: S.benLog.milk, hrs: bh, pay: Math.min(Math.round(bh * benWage()), S.gold) }; S.gold -= hw.pay; }
+    S.benMin = 0; ben.lastT = null;
     S.benLog = { har: {}, wat: 0, milk: 0 };
     S.energy = passedOut ? Math.round(S.maxEnergy * .6) : S.maxEnergy;
     LOC = 'farm'; S.time = 360; S.warned = false; S.px = 72; S.py = 93; S.dir = 'down';
@@ -2459,7 +2461,7 @@ function endDay(passedOut) {
       if (hw.wat) hl += `<div class="kv"><img src="${ICONURL.can}" alt=""><span>${hw.wat} Pflanze${hw.wat > 1 ? 'n' : ''} gegossen</span></div>`;
       if (hw.milk) hl += `<div class="kv"><img src="${ICONURL.milk}" alt=""><span>${hw.milk}× Milch gemolken – liegt im Lager</span></div>`;
       if (!hl) hl = `<div class="kv muted"><img src="${ICONURL.helper}" alt=""><span>Heute gab es nichts zu tun.</span></div>`;
-      hl += `<div class="kv"><img src="${ICONURL.helper}" alt=""><span>Tageslohn für ${HELPER} (${benPace(benWage())})</span><b>${COIN(hw.pay, '−')}</b></div>`;
+      hl += `<div class="kv"><img src="${ICONURL.helper}" alt=""><span>Lohn für ${HELPER} (${hw.hrs.toLocaleString('de-DE')} Std. × ${benWage()})</span><b>${COIN(hw.pay, '−')}</b></div>`;
       html += `<div class="ssec"><div class="ssech"><span>${HELPER} hat gestern geholfen</span></div>${hl}</div>`;
     }
     const net = income + dlSum - wage - (hw ? hw.pay : 0) - lost;
