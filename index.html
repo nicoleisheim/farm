@@ -1934,7 +1934,7 @@ function houseHTML() {
   h += `<div class="ssec"><div class="ssech"><span>Schlafen gehen</span></div><div class="kv"><img src="${ICONURL.seed_ruebe}" alt=""><span>Gegossene Pflanzen wachsen über Nacht.</span></div><div class="kv"><img src="${ICONURL.board}" alt=""><span>Fertige Lieferungen werden abgeholt und bezahlt.</span></div><div class="kv"><img src="${ICONURL.heart}" alt=""><span>Du wachst mit voller Energie auf. Der Tag wird gespeichert.</span></div></div>`;
   const w = benWage();
   h += `<div class="ssec"><div class="ssech"><span>Hofhelfer ${HELPER}</span></div>`;
-  h += `<div class="lrow"><img src="${ICONURL.helper}" alt=""><div class="ln"><b>${S.helper ? `${HELPER} arbeitet für dich` : `${HELPER} einstellen`}</b><small>Gießt, erntet und melkt von 6 bis 18 Uhr. Die Ernte bringt er ins Lager.</small></div>${S.helper ? '<button class="btn" data-act="fire">Entlassen</button>' : '<button class="btn primary" data-act="hire">Einstellen</button>'}</div>`;
+  h += `<div class="lrow"><img src="${ICONURL.helper}" alt=""><div class="ln"><b>${S.helper ? `${HELPER} arbeitet für dich` : `${HELPER} einstellen`}</b><small>Gießt, erntet und melkt ab 6 Uhr und geht heim, sobald alles erledigt ist (spätestens 18 Uhr). Die Ernte bringt er ins Lager.</small></div>${S.helper ? '<button class="btn" data-act="fire">Entlassen</button>' : '<button class="btn primary" data-act="hire">Einstellen</button>'}</div>`;
   h += `<div class="lrow"><img src="${ICONURL.coin}" alt=""><div class="ln"><b>Stundenlohn</b><small>Tempo: ${benPace(w)} · bis zu ${w * 12} Taler am Tag</small></div><div class="qty"><button class="btn sq" data-act="bw:-1" ${w > BEN_MIN ? '' : 'disabled'}>−</button><span class="qv">${w}</span><button class="btn sq" data-act="bw:1" ${w < BEN_MAX ? '' : 'disabled'}>+</button></div></div></div>`;
   h += '<div class="foot"><button class="btn" data-act="close">Noch nicht</button><button class="btn primary" data-act="sleep">Gute Nacht</button></div>';
   return h;
@@ -2040,7 +2040,7 @@ function drawCustomer(c) {
 }
 /* ---------- Hofhelfer Ben ---------- */
 const ben = { x: DOOR[0] * 16 + 8, y: DOOR[1] * 16 + 29, dir: 'down', anim: 0, on: false, task: null, wp: [], t: 0, tool: null };
-const benWork = () => S.helper && S.time >= 360 && S.time < 1080;
+const benWork = () => S.helper && S.time >= 360 && S.time < 1080 && S.benDone !== S.day;
 function benTasks() {
   const L = [];
   for (const k in S.soil) { const so = S.soil[k]; if (!so.c) continue; const [x, y] = k.split(',').map(Number);
@@ -2054,21 +2054,31 @@ function benRoute(tx, ty) {
   const gx = (PAST.g0 + PAST.g1) / 2, inA = inPast(ben.x, ben.y), inB = inPast(tx, ty), r = [];
   if (inA && !inB) r.push([gx, PAST.y0 + 8], [gx, PAST.y0 - 6]);
   if (!inA && inB) r.push([gx, PAST.y0 - 6], [gx, PAST.y0 + 8]);
+  // nicht quer über die Weide laufen: seitlich am Zaun vorbei
+  const [ax, ay] = r.length ? r[r.length - 1] : [ben.x, ben.y];
+  if (!inA && !inB && segHitsPast(ax, ay, tx, ty)) {
+    const sx = Math.abs(ax + tx - PAST.x0 * 2) < Math.abs(ax + tx - PAST.x1 * 2) ? PAST.x0 - 12 : PAST.x1 + 12;
+    r.push([sx, ay], [sx, ty]);
+  }
   r.push([tx, ty]); return r;
+}
+function segHitsPast(ax, ay, bx, by) {
+  const x0 = PAST.x0 - 6, x1 = PAST.x1 + 6, y0 = PAST.y0 - 14, y1 = PAST.y1 + 4;
+  for (let i = 0; i <= 40; i++) { const x = ax + (bx - ax) * i / 40, y = ay + (by - ay) * i / 40; if (x > x0 && x < x1 && y > y0 && y < y1) return true; }
+  return false;
 }
 function updateBen(dt) {
   if (ben.on) { if (ben.lastT != null && S.time > ben.lastT) S.benMin = (S.benMin || 0) + S.time - ben.lastT; ben.lastT = S.time; } else ben.lastT = null;
-  const f = benWage() / 8, sp = 34 * f, home = [DOOR[0] * 16 + 8, DOOR[1] * 16 + 29];
+  const f = benWage() / 8, sp = 34 * f, home = [GATE[0] * 16 + 6, GATE[1] * 16 + 10];
   if (!S.helper) { ben.on = false; return; }
   if (!benWork()) {
     if (!ben.on) return;
     if (!ben.task || ben.task.k !== 'home') { ben.task = { k: 'home' }; ben.wp = benRoute(...home); }
-  } else if (!ben.on) { ben.on = true; ben.x = home[0]; ben.y = home[1]; ben.task = null; ben.wp = []; }
+  } else if (!ben.on) { ben.on = true; ben.x = home[0] + 8; ben.y = home[1]; ben.task = null; ben.wp = []; }
   if (!ben.task) {
     const L = benTasks();
     if (L.length) { L.sort((a, b) => Math.hypot(a.x - ben.x, a.y - ben.y) - Math.hypot(b.x - ben.x, b.y - ben.y)); ben.task = L[0]; ben.wp = benRoute(L[0].x, L[0].y); ben.t = 0; }
-    else if (Math.hypot(ben.x - home[0], ben.y - home[1] - 10) > 3) { ben.task = { k: 'idle' }; ben.wp = benRoute(home[0], home[1] + 10); }
-    else { ben.dir = 'down'; ben.anim = 0; return; }
+    else { ben.task = { k: 'home' }; ben.wp = benRoute(home[0], home[1]); S.benDone = S.day; } // alles erledigt: Ben geht durchs Tor nach Hause
   }
   const T0 = ben.task;
   if (T0.k === 'milk' && cows[T0.i] && ben.wp.length) { const last = ben.wp[ben.wp.length - 1]; last[0] = cows[T0.i].x + 12; last[1] = cows[T0.i].y; }
@@ -2081,7 +2091,6 @@ function updateBen(dt) {
   }
   // angekommen: arbeiten
   if (T0.k === 'home') { ben.on = false; ben.task = null; return; }
-  if (T0.k === 'idle') { ben.task = null; return; }
   ben.dir = T0.k === 'milk' ? 'left' : 'up'; ben.anim = 0; ben.tool = T0.k === 'har' ? 'sickle' : T0.k === 'wat' ? 'can' : 'bucket';
   ben.t += dt;
   if (ben.t < 1.4 / f) return;
@@ -2217,7 +2226,7 @@ $('dlg').addEventListener('click', e => {
   }
   else if (a === 'hire' || a === 'fire' || a.startsWith('bw:')) {
     if (a.startsWith('bw:')) S.benWage = Math.max(BEN_MIN, Math.min(BEN_MAX, benWage() + +a.slice(3)));
-    else { S.helper = a === 'hire'; snd(a === 'hire' ? 'coin' : 'sel'); toast(a === 'hire' ? `${HELPER} legt gleich los!` : `${HELPER} arbeitet nicht mehr für dich.`); }
+    else { S.helper = a === 'hire'; S.benDone = 0; snd(a === 'hire' ? 'coin' : 'sel'); toast(a === 'hire' ? `${HELPER} legt gleich los!` : `${HELPER} arbeitet nicht mehr für dich.`); }
     save(); const sc = $('dlg').scrollTop; $('dlg').innerHTML = houseHTML(); $('dlg').scrollTop = sc;
   }
   else if (a.startsWith('sttab:')) { storeTab = a.slice(6); snd('sel'); rerenderShip(); }
