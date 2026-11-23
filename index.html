@@ -1373,11 +1373,10 @@ function cropStage(c) { const N = CROPS[c.t].days; return c.d >= N ? 4 : Math.mi
 
 /* ---------- icons ---------- */
 const ICON = {}, ICONURL = {};
-const COW = ['.............c..c.', '............SWWWWS', '..WWWSSWWWWWWWeWW.', '.WWWSSSSWWWWWWWWW.', 'tWWWWSSWWWWSSWPPPP', 'tWWWWWWWWWSSSWPnPn', '.WWWWWWWWWWSSWPPPP', '.ddddddddddddd....', '..WW.WW.uu.WW.WW..', '..WW.WW....WW.WW..', '..hh.hh....hh.hh..'];
-const COWC = { c: '#f6e6cf', S: '#a8735a', W: '#ffffff', e: '#3a2030', d: '#ecd6e0', P: '#ffb3cf', n: '#e86f9c', t: '#a8735a', u: '#ffb3cf', h: '#8a5a4a' };
-const COWSPR = [1, -1].map(dir => { const [c, g] = mk(20, 13), on = (i, j) => j >= 0 && j < 11 && i >= 0 && i < 18 && COW[j][i] !== '.';
-  for (let j = -1; j <= 11; j++) for (let i = -1; i <= 18; i++) if (!on(i, j) && [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([a, b]) => on(i + a, j + b))) R(g, (dir > 0 ? i : 17 - i) + 1, j + 1, 1, 1, 'rgba(120,70,90,.45)');
-  COW.forEach((r, j) => [...r].forEach((ch, i) => { if (COWC[ch]) R(g, (dir > 0 ? i : 17 - i) + 1, j + 1, 1, 1, COWC[ch]); })); return c; });
+const COW = ["..............ocooooco..", "............ooocHHHHcooo", "...........oEEHHHHSSSSEE", "....oooooooooEHHHHHSSSEo", "..ooBBSSSBBBBoHHeHHeHHo.", ".oTBBSSSSBBBBBHkHHHHkHo.", "oToBBBSSBBBBBBPPPPPPPPo.", "oToBBBBBBBBBBBPPnPPnPPo.", "oToBBBBBBBBSSBBPPPPPPo..", "SSoBBBBBBBSSSBBoooooo...", "ooodBBBBBdBSBBBo........", "...odddddudddddo........", "...oLLoLLoLLoLLo........", "...ohhohhohhohho........", "....oo.oo.oo.oo........."];
+const COWC = {"B": "#ffffff", "H": "#ffffff", "S": "#f5a9c6", "P": "#ffbfd4", "n": "#e57aa2", "e": "#3a2030", "E": "#f5a9c6", "c": "#fbeed9", "L": "#ffffff", "h": "#c77895", "u": "#ffb3cf", "T": "#ffffff", "d": "#efdfe7", "o": "#b48296", "k": "#ffc4d8"};
+const COWSPR = [1, -1].map(dir => { const [c, g] = mk(24, 15);
+  COW.forEach((r, j) => [...r].forEach((ch, i) => { if (COWC[ch]) R(g, dir > 0 ? i : 23 - i, j, 1, 1, COWC[ch]); })); return c; });
 function icon(name, fn) { const [c, g] = mk(16, 16); fn(g); ICON[name] = c; ICONURL[name] = c.toDataURL(); }
 icon('hoe', g => {
   // Stiel
@@ -1556,7 +1555,7 @@ icon('land', g => {
   R(g, 3, 4, 1, 6, '#c08a64'); R(g, 12, 4, 1, 6, '#c08a64'); R(g, 2, 5, 12, 2, '#fff4e6'); R(g, 2, 5, 12, 1, '#ffffff'); R(g, 2, 7, 12, 1, '#c08a64');
   R(g, 6, 5, 4, 1, '#ee8fb0'); R(g, 7, 6, 2, 1, '#ee8fb0'); R(g, 5, 11, 1, 1, '#ffffff'); R(g, 10, 12, 1, 1, '#ee8fb0');
 });
-icon('cow', g => g.drawImage(COWSPR[0], 0, 0, 20, 13, -3, 2, 20, 13));
+icon('cow', g => g.drawImage(COWSPR[0], 7, 0, 17, 15, -1, 1, 17, 15));
 icon('coin', g => { disc(g, 8, 8, 6, '#9c6b12'); disc(g, 8, 8, 5, '#f2c13a'); R(g, 7, 5, 2, 6, '#d29a1e'); R(g, 5, 5, 2, 1, '#fff0a8'); });
 
 /* ---------- static background ---------- */
@@ -2742,7 +2741,7 @@ function syncCows() {
 function updateCows(dt) {
   syncCows();
   cows.forEach((c, i) => {
-    if (c.wait > 0) { c.wait -= dt; if (c.wait <= 0) { c.gx = PAST.x0 + 14 + Math.random() * (PAST.x1 - PAST.x0 - 28); c.gy = PAST.y0 + 16 + Math.random() * (PAST.y1 - PAST.y0 - 30); } return; }
+    if (c.wait > 0) { c.wait -= dt; if (c.wait <= 0) { c.gx = PAST.x0 + 14 + Math.random() * (PAST.x1 - PAST.x0 - 28); c.gy = PAST.y0 + 18 + Math.random() * (PAST.y1 - PAST.y0 - 32); } return; }
     const dx = c.gx - c.x, dy = c.gy - c.y, d = Math.hypot(dx, dy);
     if (d < 1) { c.wait = 2 + Math.random() * 5; c.walk = 0; return; }
     const sp = 9 * dt; c.x += dx / d * Math.min(sp, d); c.y += dy / d * Math.min(sp, d); if (Math.abs(dx) > .5) c.dir = dx > 0 ? 1 : -1; c.walk += dt;
@@ -2750,9 +2749,9 @@ function updateCows(dt) {
 }
 function drawCow(c, i, t) {
   const x = Math.round(c.x), y = Math.round(c.y), bob = c.walk && Math.floor(c.walk * 6) % 2 ? 1 : 0;
-  R(X, x - 8, y, 16, 2, 'rgba(60,20,40,.18)');
-  X.drawImage(COWSPR[c.dir > 0 ? 0 : 1], x - 10, y - 11 - bob);
-  if (S.cows[i] && !S.cows[i].m) heart(X, x + (c.dir > 0 ? 4 : -8), y - 17 - Math.floor(t * 4 % 2), '#ff5f8f');
+  R(X, x - 10, y, 20, 2, 'rgba(60,20,40,.18)');
+  X.drawImage(COWSPR[c.dir > 0 ? 0 : 1], x - 12, y - 14 - bob);
+  if (S.cows[i] && !S.cows[i].m) heart(X, x + (c.dir > 0 ? 5 : -10), y - 20 - Math.floor(t * 4 % 2), '#ff5f8f');
 }
 function cowNear() {
   if (LOC !== 'farm') return -1;
