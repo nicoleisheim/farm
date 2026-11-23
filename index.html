@@ -568,7 +568,8 @@ for (let x = 4; x <= 23; x++) set(x, 6, 'P');
 for (let x = 12; x <= 15; x++) for (let y = 2; y <= 4; y++) set(x, y, 'K');
 set(13, 5, 'P');
 const STO = { x0: 184, y0: 32 };
-const HELPER = 'Ben', HELPER_WAGE = 60; // Hofhelfer: gießt, erntet, melkt jeden Morgen
+const HELPER = 'Ben', BEN_MIN = 20, BEN_MAX = 120; // Hofhelfer: gießt, erntet und melkt tagsüber (7–18 Uhr)
+const benWage = () => S.benWage || 60, benPace = w => w < 45 ? 'gemütlich' : w < 75 ? 'normal' : w < 100 ? 'flink' : 'sehr flink';
 const GATE = [23, 6];
 // Land zum Dazukaufen: drei Stücke im Süden (Reihen 15–22), bis zum Kauf Wald
 const LAND = [{ id: 'sw', name: 'Südwiese West', x0: 1, x1: 7, price: 1000 }, { id: 'sm', name: 'Südwiese Mitte', x0: 8, x1: 15, price: 1500 }, { id: 'so', name: 'Südwiese Ost', x0: 16, x1: 22, price: 2000 }];
@@ -1655,7 +1656,7 @@ function migrate2(d) {
     for (const c of ['bar', 'bag']) { const i = d[c].indexOf(null); if (i >= 0) { d[c][i] = id; break; } }
   }
   d.dura = d.dura || {};
-  d.land = d.land || []; d.helper = !!d.helper; d.store = d.store || {}; if (d.trees) delete d.trees['16,1']; d.cows = d.cows || []; if (d.cows.length && !(d.bar || []).includes('bucket') && !(d.bag || []).includes('bucket')) { const c = (d.bar || []).includes(null) ? d.bar : d.bag, i = c ? c.indexOf(null) : -1; if (i >= 0) { c[i] = 'bucket'; d.items = d.items || {}; d.items.bucket = 1; } } d.stand = d.stand || {}; d.sold = d.sold || {}; d.soldGold = d.soldGold || 0; d.trees = d.trees || {};
+  d.land = d.land || []; d.helper = !!d.helper; d.benWage = d.benWage || 60; d.benLog = d.benLog || { har: {}, wat: 0, milk: 0 }; d.store = d.store || {}; if (d.trees) delete d.trees['16,1']; d.cows = d.cows || []; if (d.cows.length && !(d.bar || []).includes('bucket') && !(d.bag || []).includes('bucket')) { const c = (d.bar || []).includes(null) ? d.bar : d.bag, i = c ? c.indexOf(null) : -1; if (i >= 0) { c[i] = 'bucket'; d.items = d.items || {}; d.items.bucket = 1; } } d.stand = d.stand || {}; d.sold = d.sold || {}; d.soldGold = d.soldGold || 0; d.trees = d.trees || {};
   if (!d.orders) d.orders = [{ id: 'o1', who: 'Frau Lind', items: { ruebe: 3 }, packed: {}, days: 4, reward: 200 }];
   if (d.shipped) { for (const t in d.shipped) if (d.shipped[t]) d.stand[t] = (d.stand[t] || 0) + d.shipped[t]; delete d.shipped; }
   return d;
@@ -1704,7 +1705,7 @@ function toast(m) {
   clearTimeout(toastTimer); toastTimer = setTimeout(() => e.classList.remove('show'), 1700 + Math.max(0, m.length - 25) * 40);
 }
 let paused = false;
-function openDlg(html) { delete $('dlg').dataset.inv; delete $('dlg').dataset.orders; delete $('dlg').dataset.store; $('dlg').classList.remove('standdlg', 'pixdlg'); $('dlg').innerHTML = html; $('dlg').scrollTop = 0; $('shade').style.display = 'flex'; paused = true; keys.clear(); joyReset();  if (padMode) setTimeout(() => { if (paused) dlgNav('d'); }, 30); }
+function openDlg(html) { delete $('dlg').dataset.house; delete $('dlg').dataset.inv; delete $('dlg').dataset.orders; delete $('dlg').dataset.store; $('dlg').classList.remove('standdlg', 'pixdlg'); $('dlg').innerHTML = html; $('dlg').scrollTop = 0; $('shade').style.display = 'flex'; paused = true; keys.clear(); joyReset();  if (padMode) setTimeout(() => { if (paused) dlgNav('d'); }, 30); }
 function closeDlg() { $('shade').style.display = 'none'; paused = false; }
 
 const cnt = id => (id && S.items[id]) || 0;
@@ -1927,6 +1928,16 @@ function storeHTML() {
   h += '</div><div class="sfoot"><div class="ssum">Gegenstände sicher aufbewahren</div><div class="sbtns"><button class="btn" data-act="close">Schließen</button></div></div>';
   return h;
 }
+function houseHTML() {
+  let h = T('w_moon', 'Farmhaus');
+  h += `<div class="ssec"><div class="ssech"><span>Schlafen gehen</span></div><div class="kv"><img src="${ICONURL.seed_ruebe}" alt=""><span>Gegossene Pflanzen wachsen über Nacht.</span></div><div class="kv"><img src="${ICONURL.board}" alt=""><span>Fertige Lieferungen werden abgeholt und bezahlt.</span></div><div class="kv"><img src="${ICONURL.heart}" alt=""><span>Du wachst mit voller Energie auf. Der Tag wird gespeichert.</span></div></div>`;
+  const w = benWage();
+  h += `<div class="ssec"><div class="ssech"><span>Hofhelfer ${HELPER}</span></div>`;
+  h += `<div class="lrow"><img src="${ICONURL.helper}" alt=""><div class="ln"><b>${S.helper ? `${HELPER} arbeitet für dich` : `${HELPER} einstellen`}</b><small>Gießt, erntet und melkt von 7 bis 18 Uhr. Die Ernte bringt er ins Lager.</small></div>${S.helper ? '<button class="btn" data-act="fire">Entlassen</button>' : '<button class="btn primary" data-act="hire">Einstellen</button>'}</div>`;
+  h += `<div class="lrow"><img src="${ICONURL.coin}" alt=""><div class="ln"><b>Lohn pro Tag</b><small>Tempo: ${benPace(w)}</small></div><div class="qty"><button class="btn sq" data-act="bw:-1" ${w > BEN_MIN ? '' : 'disabled'}>−</button><span class="qv">${w}</span><button class="btn sq" data-act="bw:1" ${w < BEN_MAX ? '' : 'disabled'}>+</button></div></div></div>`;
+  h += '<div class="foot"><button class="btn" data-act="close">Noch nicht</button><button class="btn primary" data-act="sleep">Gute Nacht</button></div>';
+  return h;
+}
 function rerenderShip() { const sc = $('dlg').scrollTop; $('dlg').innerHTML = $('dlg').dataset.store ? storeHTML() : $('dlg').dataset.orders ? ordersHTML() : standHTML(); $('dlg').scrollTop = sc; }
 
 /* ---------- Lieferungen ---------- */
@@ -1982,6 +1993,7 @@ const STAFF = 'Lotte';
 const standOpen = () => S.time >= 480 && S.time < 1080;
 const wageOf = () => S.wage || 8;
 const paceOf = w => w <= 5 ? 'gemütlich' : w <= 9 ? 'normal' : w <= 13 ? 'flott' : 'sehr flott';
+const PAL_BEN = { skin: '#f6d2b8', hair: '#7a4a3a', hairL: '#9a6450', dress: '#8fc9e8', dressD: '#5a8fb8', apron: '#cfe8f6', shoe: '#6a4a3a', bow: '#5a8fb8', tails: 0, hat: 1 };
 const PAL_STAFF = { skin: '#ffe0cc', hair: '#5a3a2a', hairL: '#7a5440', dress: '#b8e0a0', dressD: '#8fc878', apron: '#ffffff', shoe: '#5a6a4a', bow: '#ff8fb8', tails: 1, hat: 0 };
 const lotteIcon = (() => { const [c, g] = mk(16, 16); drawPlayerSprite(pg, 'down', 0, PAL_STAFF); g.drawImage(PC, 0, -1); return c.toDataURL(); })();
 const CUST_PATH = [[388, 108], [STX + 16, 108], [STX + 16, 92]];
@@ -2024,6 +2036,67 @@ function drawCustomer(c) {
   R(X, Math.round(c.x) - 5, Math.round(c.y) - 2, 10, 2, 'rgba(0,0,0,.2)');
   if (flip) { X.save(); X.translate(ox + 16, oy); X.scale(-1, 1); X.drawImage(PC, 0, 0); X.restore(); } else X.drawImage(PC, ox, oy);
   X.globalAlpha = 1;
+}
+/* ---------- Hofhelfer Ben ---------- */
+const ben = { x: DOOR[0] * 16 + 8, y: DOOR[1] * 16 + 29, dir: 'down', anim: 0, on: false, task: null, wp: [], t: 0, tool: null };
+const benWork = () => S.helper && S.time >= 420 && S.time < 1080;
+function benTasks() {
+  const L = [];
+  for (const k in S.soil) { const so = S.soil[k]; if (!so.c) continue; const [x, y] = k.split(',').map(Number);
+    if (so.c.d >= CROPS[so.c.t].days) L.push({ k: 'har', key: k, x: x * 16 + 8, y: y * 16 + 22 });
+    else if (!so.w) L.push({ k: 'wat', key: k, x: x * 16 + 8, y: y * 16 + 22 }); }
+  S.cows.forEach((c, i) => { if (!c.m && cows[i]) L.push({ k: 'milk', i, x: cows[i].x + 12, y: cows[i].y }); });
+  return L;
+}
+function benRoute(tx, ty) {
+  // durch das Tor der Kuhweide statt über den Zaun
+  const gx = (PAST.g0 + PAST.g1) / 2, inA = inPast(ben.x, ben.y), inB = inPast(tx, ty), r = [];
+  if (inA && !inB) r.push([gx, PAST.y0 + 8], [gx, PAST.y0 - 6]);
+  if (!inA && inB) r.push([gx, PAST.y0 - 6], [gx, PAST.y0 + 8]);
+  r.push([tx, ty]); return r;
+}
+function updateBen(dt) {
+  const f = benWage() / 60, sp = 34 * f, home = [DOOR[0] * 16 + 8, DOOR[1] * 16 + 29];
+  if (!S.helper) { ben.on = false; return; }
+  if (!benWork()) {
+    if (!ben.on) return;
+    if (!ben.task || ben.task.k !== 'home') { ben.task = { k: 'home' }; ben.wp = benRoute(...home); }
+  } else if (!ben.on) { ben.on = true; ben.x = home[0]; ben.y = home[1]; ben.task = null; ben.wp = []; }
+  if (!ben.task) {
+    const L = benTasks();
+    if (L.length) { L.sort((a, b) => Math.hypot(a.x - ben.x, a.y - ben.y) - Math.hypot(b.x - ben.x, b.y - ben.y)); ben.task = L[0]; ben.wp = benRoute(L[0].x, L[0].y); ben.t = 0; }
+    else if (Math.hypot(ben.x - home[0], ben.y - home[1] - 10) > 3) { ben.task = { k: 'idle' }; ben.wp = benRoute(home[0], home[1] + 10); }
+    else { ben.dir = 'down'; ben.anim = 0; return; }
+  }
+  const T0 = ben.task;
+  if (T0.k === 'milk' && cows[T0.i] && ben.wp.length) { const last = ben.wp[ben.wp.length - 1]; last[0] = cows[T0.i].x + 12; last[1] = cows[T0.i].y; }
+  if (ben.wp.length) {
+    const [wx, wy] = ben.wp[0], dx = wx - ben.x, dy = wy - ben.y, d = Math.hypot(dx, dy);
+    if (d < 1.5) { ben.wp.shift(); return; }
+    const m = Math.min(d, sp * dt); ben.x += dx / d * m; ben.y += dy / d * m; ben.anim += dt;
+    ben.dir = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up');
+    return;
+  }
+  // angekommen: arbeiten
+  if (T0.k === 'home') { ben.on = false; ben.task = null; return; }
+  if (T0.k === 'idle') { ben.task = null; return; }
+  ben.dir = T0.k === 'milk' ? 'left' : 'up'; ben.anim = 0; ben.tool = T0.k === 'har' ? 'sickle' : T0.k === 'wat' ? 'can' : 'bucket';
+  ben.t += dt;
+  if (ben.t < 1.4 / f) return;
+  const so = T0.key && S.soil[T0.key];
+  if (T0.k === 'har' && so && so.c && so.c.d >= CROPS[so.c.t].days) { const t = so.c.t; so.c = null; S.store[t] = (S.store[t] || 0) + 1; S.benLog.har[t] = (S.benLog.har[t] || 0) + 1; }
+  else if (T0.k === 'wat' && so && so.c && !so.w) { so.w = true; S.benLog.wat++; }
+  else if (T0.k === 'milk' && S.cows[T0.i] && !S.cows[T0.i].m) { S.cows[T0.i].m = true; S.store.milk = (S.store.milk || 0) + 1; S.benLog.milk++; }
+  ben.task = null; ben.tool = null; ben.t = 0;
+}
+function drawBen() {
+  if (!ben.on) return;
+  const moving = ben.wp.length > 0, f = moving ? Math.floor(ben.anim * 8) % 4 : 0, flip = ben.dir === 'left';
+  drawPlayerSprite(pg, flip ? 'right' : ben.dir, f, PAL_BEN);
+  const ox = Math.round(ben.x - 8), oy = Math.round(ben.y - 19);
+  R(X, Math.round(ben.x) - 5, Math.round(ben.y) - 2, 10, 2, 'rgba(0,0,0,.2)');
+  if (flip) { X.save(); X.translate(ox + 16, oy); X.scale(-1, 1); X.drawImage(PC, 0, 0); X.restore(); } else X.drawImage(PC, ox, oy);
+  if (ben.tool && !moving) { const lift = Math.floor(ben.t * 4) % 2 ? -3 : 0; X.drawImage(ICON[ben.tool], Math.round(ben.x) + (flip ? -16 : -2), Math.round(ben.y) - 22 + lift); }
 }
 function drawStaff() {
   if (!(S.time >= 480 && S.time < 1080 && standStock() > 0)) return;
@@ -2076,9 +2149,6 @@ function shopHTML() {
   h += '</div><div class="ssec"><div class="ssech"><span>Tiere</span></div>';
   h += slotOf('bucket') ? '' : shopRow(ICONURL.bucket, 'Melkeimer', 'Zum Melken deiner Kühe', 120, 'bucket', true);
   h += S.cows.length < COW_MAX ? shopRow(ICONURL.cow, 'Kuh', `${S.cows.length}/${COW_MAX} auf der Weide · täglich 1 Milch`, COW_PRICE, 'cow', true) : `<div class="lrow"><img src="${ICONURL.cow}" alt=""><div class="ln"><b>Kuh</b><small>Die Weide ist voll (${COW_MAX}/${COW_MAX}).</small></div></div>`;
-  h += '</div><div class="ssec"><div class="ssech"><span>Hilfe auf dem Hof</span></div>';
-  h += S.helper ? `<div class="lrow"><img src="${ICONURL.helper}" alt=""><div class="ln"><b>${HELPER} arbeitet für dich</b><small>Gießt, erntet und melkt jeden Morgen · ${HELPER_WAGE} Taler pro Tag</small></div><button class="btn" data-act="fire">Entlassen</button></div>`
-    : `<div class="lrow"><img src="${ICONURL.helper}" alt=""><div class="ln"><b>${HELPER} einstellen</b><small>Gießt, erntet und melkt jeden Morgen · ${HELPER_WAGE} Taler pro Tag</small></div><button class="btn primary" data-act="hire">Einstellen</button></div>`;
   h += '</div><div class="ssec"><div class="ssech"><span>Land</span></div>';
   for (const L of LAND) h += S.land.includes(L.id) ? `<div class="lrow"><img src="${ICONURL.land}" alt=""><div class="ln"><b>${L.name}</b><small>Gehört dir</small></div></div>` : shopRow(ICONURL.land, L.name, `Wald im Süden roden, ${L.x1 - L.x0 + 1}×8 Felder mehr Platz`, L.price, 'land-' + L.id, true);
   h += '</div><div class="ssec"><div class="ssech"><span>Sonstiges</span></div>';
@@ -2143,7 +2213,11 @@ $('dlg').addEventListener('click', e => {
     for (const t of SELLABLE) { const q = qOf(t); if (q) { S.stand[t] = (S.stand[t] || 0) + q; useItem(t, q); n += q; } }
     shipQ = {}; snd('ship'); toast(`${n} Stück am Stand ausgelegt`); rerenderShip();
   }
-  else if (a === 'hire' || a === 'fire') { S.helper = a === 'hire'; save(); snd(a === 'hire' ? 'coin' : 'sel'); toast(a === 'hire' ? `${HELPER} hilft dir ab morgen früh!` : `${HELPER} arbeitet nicht mehr für dich.`); const sc = $('dlg').scrollTop; $('dlg').innerHTML = shopHTML(); $('dlg').scrollTop = sc; }
+  else if (a === 'hire' || a === 'fire' || a.startsWith('bw:')) {
+    if (a.startsWith('bw:')) S.benWage = Math.max(BEN_MIN, Math.min(BEN_MAX, benWage() + +a.slice(3) * 10));
+    else { S.helper = a === 'hire'; snd(a === 'hire' ? 'coin' : 'sel'); toast(a === 'hire' ? `${HELPER} legt gleich los!` : `${HELPER} arbeitet nicht mehr für dich.`); }
+    save(); const sc = $('dlg').scrollTop; $('dlg').innerHTML = houseHTML(); $('dlg').scrollTop = sc;
+  }
   else if (a.startsWith('sttab:')) { storeTab = a.slice(6); snd('sel'); rerenderShip(); }
   else if (a.startsWith('sin:') || a.startsWith('sout:')) {
     const [k, t, q] = a.split(':');
@@ -2211,7 +2285,7 @@ function act(tx, ty) {
   const ripe = s && s.c && s.c.d >= CROPS[s.c.t].days;
   if (ripe && kind !== 'sickle') { toast('Zum Ernten die Sichel nehmen'); return; }
   if (tx === DOOR[0] && ty === DOOR[1]) {
-    openDlg(`${T('w_moon', 'Schlafen gehen?')}<div class="ssec"><div class="kv"><img src="${ICONURL.seed_ruebe}" alt=""><span>Gegossene Pflanzen wachsen über Nacht.</span></div><div class="kv"><img src="${ICONURL.board}" alt=""><span>Fertige Lieferungen werden abgeholt und bezahlt.</span></div><div class="kv"><img src="${ICONURL.heart}" alt=""><span>Du wachst mit voller Energie auf. Der Tag wird gespeichert.</span></div></div><div class="foot"><button class="btn" data-act="close">Noch nicht</button><button class="btn primary" data-act="sleep">Gute Nacht</button></div>`);
+    openDlg(houseHTML()); $('dlg').dataset.house = 1;
     return;
   }
   if (t === 'H') { toast('Die Haustür ist in der Mitte.'); return; }
@@ -2364,17 +2438,10 @@ function endDay(passedOut) {
     }
     S.day++; S.rain = Math.random() < .22;
     if (S.rain) for (const k in S.soil) S.soil[k].w = true;
-    // Hofhelfer: erntet Reifes ins Lager, gießt den Rest, melkt die Kühe
+    // Hofhelfer: Tagesbericht und Lohn
     let hw = null;
-    if (S.helper) {
-      hw = { har: {}, wat: 0, milk: 0, pay: Math.min(HELPER_WAGE, S.gold) };
-      for (const k in S.soil) { const so = S.soil[k]; if (!so.c) continue;
-        if (so.c.d >= CROPS[so.c.t].days) { hw.har[so.c.t] = (hw.har[so.c.t] || 0) + 1; S.store[so.c.t] = (S.store[so.c.t] || 0) + 1; so.c = null; }
-        else if (!so.w) { so.w = true; hw.wat++; } }
-      for (const c of S.cows) { c.m = true; hw.milk++; }
-      if (hw.milk) S.store.milk = (S.store.milk || 0) + hw.milk;
-      S.gold -= hw.pay;
-    }
+    if (S.helper) { hw = { har: S.benLog.har, wat: S.benLog.wat, milk: S.benLog.milk, pay: Math.min(benWage(), S.gold) }; S.gold -= hw.pay; }
+    S.benLog = { har: {}, wat: 0, milk: 0 };
     S.energy = passedOut ? Math.round(S.maxEnergy * .6) : S.maxEnergy;
     LOC = 'farm'; S.time = 360; S.warned = false; S.px = 72; S.py = 93; S.dir = 'down';
     save();
@@ -2392,8 +2459,8 @@ function endDay(passedOut) {
       if (hw.wat) hl += `<div class="kv"><img src="${ICONURL.can}" alt=""><span>${hw.wat} Pflanze${hw.wat > 1 ? 'n' : ''} gegossen</span></div>`;
       if (hw.milk) hl += `<div class="kv"><img src="${ICONURL.milk}" alt=""><span>${hw.milk}× Milch gemolken – liegt im Lager</span></div>`;
       if (!hl) hl = `<div class="kv muted"><img src="${ICONURL.helper}" alt=""><span>Heute gab es nichts zu tun.</span></div>`;
-      hl += `<div class="kv"><img src="${ICONURL.helper}" alt=""><span>Tageslohn für ${HELPER}</span><b>${COIN(hw.pay, '−')}</b></div>`;
-      html += `<div class="ssec"><div class="ssech"><span>${HELPER} hat heute früh geholfen</span></div>${hl}</div>`;
+      hl += `<div class="kv"><img src="${ICONURL.helper}" alt=""><span>Tageslohn für ${HELPER} (${benPace(benWage())})</span><b>${COIN(hw.pay, '−')}</b></div>`;
+      html += `<div class="ssec"><div class="ssech"><span>${HELPER} hat gestern geholfen</span></div>${hl}</div>`;
     }
     const net = income + dlSum - wage - (hw ? hw.pay : 0) - lost;
     html += `<div class="ssec"><div class="kv total"><img src="${ICONURL.coin}" alt=""><span>Gesamt: Einnahmen und Ausgaben</span><b>${COIN(net, net >= 0 ? '+' : '−')}</b></div></div>`;
@@ -2709,6 +2776,7 @@ function update(dt) {
     parts.push({ x: tx * 16 + 3 + Math.random() * 10, y: ty * 16 + 6 + Math.random() * 6, vx: -5 - Math.random() * 6, vy: 7 + Math.random() * 5,
       life: 2.5 + Math.random() * 2, col: Math.random() < .5 ? '#ffc2dc' : '#ffe3ee', pt: 1, s: Math.random() * 6 });
   if (LOC === 'farm') { updateCritters(dt); updatePond(dt); updateCows(dt); }
+  if (!paused) { syncCows(); updateBen(dt); }
   if (!paused) updateCustomers(dt);
   if (S.rain) for (const d of rain) { d.y += d.s * dt; d.x -= d.s * .25 * dt; if (d.y > VH) { d.y = -4; d.x = Math.random() * (VW + 60); } }
   if (paused) { moving = false; if (!fading && $('shade').style.display === 'flex') stickNav(dt); else stick.nav = ''; return; }
@@ -2817,6 +2885,7 @@ function render(t) {
   for (const c of buns) if (c.y <= S.py) drawBunny(c);
   if (farm) cows.forEach((c, i) => { if (c.y <= S.py) drawCow(c, i, t); });
   for (const c of cs) if (c.y <= S.py) drawCustomer(c);
+  if (farm && ben.y <= S.py) drawBen();
   // player
   const f = moving ? Math.floor(animT * 8) % 4 : 0;
   const flip = S.dir === 'left';
@@ -2835,6 +2904,7 @@ function render(t) {
   for (const c of buns) if (c.y > S.py) drawBunny(c);
   if (farm) cows.forEach((c, i) => { if (c.y > S.py) drawCow(c, i, t); });
   for (const c of cs) if (c.y > S.py) drawCustomer(c);
+  if (farm && ben.y > S.py) drawBen();
   for (const p of parts) {
     if (p.h) heart(X, Math.round(p.x) - 2, Math.round(p.y) - 2, p.col);
     else R(X, Math.round(p.x), Math.round(p.y), p.pt ? (p.s > 3 ? 2 : 1) : 2, p.pt ? 1 : 2, p.col);
