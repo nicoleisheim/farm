@@ -1391,6 +1391,10 @@ icon('can', g => { // kantige Gießkanne mit Blume
   const A = ["................", "...aaaa.........", "..abbcca....aaa.", "..acaada...abbca", ".aacaadaa..aefca", "abbbbbbbba.afefa", "adddddddda.adfda", "abgeeeeeca..aca.", "abgeheegca.aba..", "abghiheecaabca..", "abbbhbbbbabca...", "addddddddbca....", "abgeeeegcca.....", "acccccccca......", "adddddddda......", ".aaaaaaaa......."], C = {"a": "#6a3a52", "b": "#ffc8dc", "c": "#dc79a0", "d": "#c25f88", "e": "#f59ab8", "f": "#8a4a66", "g": "#fff6fa", "h": "#ffffff", "i": "#ffd84a"};
   A.forEach((r, y) => [...r].forEach((ch, x) => { if (C[ch]) R(g, x, y, 1, 1, C[ch]); }));
 });
+// Gießkanne in der Hand: aufrecht und gekippt (je rechts/links)
+const CANH = [[["................", "................", "................", "...aaaa....aa...", "..abbcca..abba..", "..acaada..aeca..", ".abbbbbba.afca..", ".addddddaabaa...", ".abfgffcabca....", ".abghgfcbca.....", ".abfgffcca......", ".adddddda.......", "..aaaaaa........", "................"], {"a": "#6a3a52", "b": "#ffc8dc", "c": "#dc79a0", "d": "#c25f88", "e": "#8a4a66", "f": "#f59ab8", "g": "#ffffff", "h": "#ffd84a"}], [["................", "................", "................", "....aaaa........", "...abbcca.......", "...acaada.......", "..abbbbbba......", "..adddddda......", ".abefeecaaaaaa..", ".abfgfecbbbbbba.", ".abefeecccceeea.", ".addddddaaahcha.", "..aaaaaa...aaa..", "................"], {"a": "#6a3a52", "b": "#ffc8dc", "c": "#dc79a0", "d": "#c25f88", "e": "#f59ab8", "f": "#ffffff", "g": "#ffd84a", "h": "#8a4a66"}]].map(([A, C]) => [1, -1].map(dir => { const [c, g] = mk(16, 14);
+  A.forEach((r, y) => [...r].forEach((ch, x) => { if (C[ch]) R(g, dir > 0 ? x : 15 - x, y, 1, 1, C[ch]); })); return c; }));
+let canPour = 0;
 icon('sickle', g => {
   R(g, 3, 9, 2, 6, '#c98a5a'); R(g, 3, 9, 1, 6, '#e0a874'); R(g, 3, 12, 2, 2, '#ff8fb8'); R(g, 3, 14, 2, 1, '#8a5a40');
   R(g, 3, 8, 3, 1, '#6f7b88');
@@ -2279,7 +2283,7 @@ $('dlg').addEventListener('click', e => {
 });
 
 /* ---------- actions ---------- */
-let actT = 0, actTool = null, actTile = null;
+let actT = 0, actTool = null, actTile = null; const CAN_T = .7;
 const parts = [];
 function burst(tx, ty, cols, n, up) {
   for (let i = 0; i < n; i++) parts.push({ x: tx * 16 + 8, y: ty * 16 + 9, vx: (Math.random() - .5) * 50, vy: -Math.random() * (up || 50) - 10,
@@ -2298,7 +2302,7 @@ function needEnergy(n) {
 function act(tx, ty) {
   if (paused || actT > .08) return;
   const k = tx + ',' + ty, s = S.soil[k], t = tileAt(tx, ty), id = held(), kind = id ? ITEM[id].kind : '';
-  actT = .25; actTool = null; actTile = [tx, ty];
+  actT = .25; actTool = null; actTile = [tx, ty]; canPour = 0;
   if (LOC === 'town') {
     if (t === 'S') openDlg(shopHTML());
     else if (t === 'N') { const n = TOWN_NPC.find(n => n.x === tx && n.y === ty); hearts(tx, ty, 1); snd('sel'); toast(n.say[Math.floor(Math.random() * n.say.length)]); }
@@ -2400,11 +2404,11 @@ function act(tx, ty) {
     S.soil[k] = { w: S.rain, c: null }; burst(tx, ty, ['#7a4d2c', '#93613a', '#5e3b22'], 8); snd('till'); wear('hoe');
   } else if (kind === 'can') {
     actTool = 'can';
-    if (isWater(tx, ty)) { S.water = S.canCap; burst(tx, ty, ['#8fd0ff', '#d4f0ff'], 8, 60); snd('water'); toast('Gießkanne aufgefüllt'); return; }
+    if (isWater(tx, ty)) { S.water = S.canCap; canPour = 0; burst(tx, ty, ['#8fd0ff', '#d4f0ff'], 8, 60); snd('water'); toast('Gießkanne aufgefüllt'); return; }
     if (!s) { toast('Gieß den aufgelockerten Boden.'); return; }
     if (S.water <= 0) { toast('Die Gießkanne ist leer – füll sie am Teich auf.'); snd('err'); return; }
     if (!needEnergy(1)) return;
-    S.water--; s.w = true; burst(tx, ty, ['#4fb3ff', '#8fd0ff'], 8, 30); snd('water'); wear('can');
+    S.water--; s.w = true; actT = CAN_T; canPour = 1; snd('water'); wear('can');
   } else if (kind === 'sapling') {
     const [px, py] = playerTile();
     if (t !== 'G' || s || wetCount(tx, ty, 2) > 0 || (tx === px && ty === py)) { toast('Hier kann kein Baum wachsen.'); snd('err'); return; }
@@ -2798,8 +2802,25 @@ function moveAxis(dx, dy, other) {
 }
 const vel = { x: 0, y: 0 };
 const rain = Array.from({ length: 80 }, () => ({ x: Math.random() * W, y: Math.random() * H, s: 180 + Math.random() * 80 }));
+function drawCan() {
+  const c = canPos(), ph = canPour ? 1 - actT / CAN_T : 0, tilt = canPour && ph > .15 && ph < .85 ? 1 : 0;
+  X.drawImage(CANH[tilt][c.dir > 0 ? 0 : 1], c.x, c.y + tilt);
+}
+function canPos() {
+  const d = S.dir, dir = d === 'left' ? -1 : 1;
+  const x = d === 'right' ? S.px + 3 : d === 'left' ? S.px - 19 : S.px - 12;
+  const y = d === 'down' ? S.py - 5 : d === 'up' ? S.py - 27 : S.py - 15;
+  return { dir, x: Math.round(x), y: Math.round(y) };
+}
 function update(dt) {
   if (actT > 0) actT -= dt;
+  if (actT > 0 && actTool === 'can' && canPour) {
+    const ph = 1 - actT / CAN_T;
+    if (ph > .2 && ph < .85 && Math.random() < dt * 40) {
+      const c = canPos(), rx = c.x + (c.dir > 0 ? 11 : 2) + Math.floor(Math.random() * 3), ry = c.y + 13;
+      parts.push({ x: rx, y: ry, vx: 0, vy: 30 + Math.random() * 10, life: .1 + Math.random() * .05, col: Math.random() < .5 ? '#4fb3ff' : '#8fd0ff', dr: 1 });
+    }
+  }
   if (fadeT > 0) fadeT = Math.max(0, fadeT - dt);
   for (let i = parts.length - 1; i >= 0; i--) {
     const p = parts[i]; p.life -= dt;
@@ -2921,6 +2942,7 @@ function render(t) {
   if (farm) cows.forEach((c, i) => { if (c.y <= S.py) drawCow(c, i, t); });
   for (const c of cs) if (c.y <= S.py) drawCustomer(c);
   if (farm && ben.y <= S.py) drawBen();
+  if (actT > 0 && actTool === 'can' && S.dir === 'up') drawCan();   // hinter der Spielerin
   // player
   const f = moving ? Math.floor(animT * 8) % 4 : 0;
   const flip = S.dir === 'left';
@@ -2930,7 +2952,7 @@ function render(t) {
   if (flip) { X.save(); X.translate(ox + 16, oy); X.scale(-1, 1); X.drawImage(PC, 0, 0); X.restore(); }
   else X.drawImage(PC, ox, oy);
   // tool swing
-  if (actT > 0 && actTool) {
+  if (actT > 0 && actTool === 'can') { if (S.dir !== 'up') drawCan(); } else if (actT > 0 && actTool) {
     const d = DIRS[S.dir], lift = actT > .14 ? -5 : 0;
     const ix = Math.round(S.px - 8 + d[0] * 9), iy = Math.round(S.py - 16 + d[1] * 6 + lift);
     if (S.dir === 'left') { X.save(); X.translate(ix + 16, iy); X.scale(-1, 1); X.drawImage(ICON[actTool], 0, 0); X.restore(); }
@@ -2942,6 +2964,7 @@ function render(t) {
   if (farm && ben.y > S.py) drawBen();
   for (const p of parts) {
     if (p.h) heart(X, Math.round(p.x) - 2, Math.round(p.y) - 2, p.col);
+    else if (p.dr) R(X, Math.round(p.x), Math.round(p.y), 1, 2, p.col);
     else R(X, Math.round(p.x), Math.round(p.y), p.pt ? (p.s > 3 ? 2 : 1) : 2, p.pt ? 1 : 2, p.col);
   }
   if (farm && !night && !S.rain) for (const c of critters) if (c.k === 'fly') drawFly(c, false);
