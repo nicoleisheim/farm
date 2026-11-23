@@ -5,6 +5,8 @@
 <style>
 :root{--bg:#fff4f8;--ink:#5a2a42;--pink:#e8779f;--line:#f0c6d6}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{touch-action:manipulation;-webkit-text-size-adjust:100%;overscroll-behavior:none}
+input,select,textarea{font-size:16px!important}
 body{margin:0;font-family:-apple-system,system-ui,sans-serif;background:var(--bg);color:var(--ink);display:flex;flex-direction:column;height:100dvh;overflow:hidden}
 header{padding:8px 12px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line)}
 header h1{font-size:16px;margin:0;flex:1}
@@ -109,7 +111,13 @@ wrap.addEventListener('pointermove',e=>{if(!pts.has(e.pointerId))return;pts.set(
 const lift=e=>{pts.delete(e.pointerId);if(pts.size<2)pinch=null;if(!pts.size)drag=null};
 wrap.addEventListener('pointerup',lift,true);wrap.addEventListener('pointercancel',lift,true);
 wrap.addEventListener('wheel',e=>{if(!e.ctrlKey)return;e.preventDefault();const[ux,uy,mx,my]=zoomAt(z*Math.exp(-e.deltaY*.01),e.clientX,e.clientY);wrap.scrollLeft=ux*z+12-mx;wrap.scrollTop=uy*z+12-my},{passive:false});
-['gesturestart','gesturechange'].forEach(t=>document.addEventListener(t,e=>e.preventDefault()));
+
+// Seite selbst nie zoomen (Pinch außerhalb des Bildes, Doppeltippen, Strg+Mausrad)
+document.addEventListener('touchmove',e=>{if(e.touches.length>1)e.preventDefault()},{passive:false});
+document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});
+document.addEventListener('wheel',e=>{if(e.ctrlKey)e.preventDefault()},{passive:false});
+['gesturestart','gesturechange','gestureend'].forEach(t=>document.addEventListener(t,e=>e.preventDefault(),{passive:false}));
+
 
 document.getElementById('undo').onclick=()=>{const s=undo.pop();if(!s)return;const r=[];for(let i=s.length-1;i>=0;i--){const[x,y,c]=s[i];r.push([x,y,px[y][x]]);px[y][x]=c}redo.push(r);save();draw()};
 document.getElementById('redo').onclick=()=>{const s=redo.pop();if(!s)return;const r=[];for(let i=s.length-1;i>=0;i--){const[x,y,c]=s[i];r.push([x,y,px[y][x]]);px[y][x]=c}undo.push(r);save();draw()};
