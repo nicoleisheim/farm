@@ -356,6 +356,7 @@ body.port #toast{bottom:2.7em}
 #dlg .lrow:last-child{background-image:none}
 #dlg .lrow.on{background-color:#fff0f6}
 #dlg .lrow.o{grid-template-columns:2.1em minmax(0,1fr) auto}
+#dlg .inv .slot.moving{animation:mvpulse .8s steps(2) infinite}@keyframes mvpulse{50%{opacity:.45}}
 #dlg .kb{display:none}body.pad #dlg .kb{display:inline-flex;align-items:center;justify-content:center;margin-left:.45em;min-width:1.25em;height:1.25em;border-radius:50%;background:rgba(255,255,255,.85);color:#c4527e;font-size:.8em;line-height:1;border:.1em solid currentColor}
 #dlg .vtabs{display:flex;gap:.4em;margin:0 0 .35em}#dlg .vtabs .btn{padding-top:.15em;padding-bottom:.15em}#dlg .vtabs .btn{flex:1}
 #dlg .lrow.vb{grid-template-columns:2.1em minmax(0,1fr) auto auto}
@@ -562,10 +563,10 @@ set(4, 5, 'P'); for (let x = 4; x <= 19; x++) set(x, 6, 'P'); set(19, 5, 'P'); s
 for (let x = 18; x <= 20; x++) for (let y = 2; y <= 3; y++) set(x, y, 'G');
 set(19, 3, 'B'); set(20, 3, 'B'); set(19, 4, 'B'); set(20, 4, 'B'); set(19, 5, 'P'); set(20, 5, 'P');
 for (let x = 4; x <= 23; x++) set(x, 6, 'P');
-// Lagerhaus zwischen Auftragsbrett und Verkaufsstand (Kacheln 13–16 / 2–4), Weg zur Tür
-for (let x = 13; x <= 16; x++) for (let y = 2; y <= 4; y++) set(x, y, 'K');
-set(14, 5, 'P'); set(15, 5, 'P');
-const STO = { x0: 208, y0: 32 };
+// Lagerhaus neben dem Auftragsbrett (Kacheln 12–15 / 2–4), Weg zur Tür
+for (let x = 12; x <= 15; x++) for (let y = 2; y <= 4; y++) set(x, y, 'K');
+set(13, 5, 'P'); set(14, 5, 'P');
+const STO = { x0: 192, y0: 32 };
 const GATE = [23, 6];
 // Land zum Dazukaufen: drei Stücke im Süden (Reihen 15–22), bis zum Kauf Wald
 const LAND = [{ id: 'sw', name: 'Südwiese West', x0: 1, x1: 7, price: 1000 }, { id: 'sm', name: 'Südwiese Mitte', x0: 8, x1: 15, price: 1500 }, { id: 'so', name: 'Südwiese Ost', x0: 16, x1: 22, price: 2000 }];
@@ -915,7 +916,7 @@ function drawPondAnim(t) {
     P(-3, 0, 6, 1, '#c8ecfc'); P(-2, -2, 4, 2, '#ffe066'); P(1, -4, 2, 2, '#ffe066'); P(3, -3, 1, 1, '#ff9a3a'); P(2, -4, 1, 1, '#3a2030');
   }
 }
-const WINDOWS = [[43, 55, 10, 10], [91, 55, 10, 10], [68, 31, 9, 9], [BDX + 32, BDY + 6, 5, 4], [217, 54, 8, 8], [255, 54, 8, 8]];
+const WINDOWS = [[43, 55, 10, 10], [91, 55, 10, 10], [68, 31, 9, 9], [BDX + 32, BDY + 6, 5, 4], [201, 54, 8, 8], [239, 54, 8, 8]];
 function drawFarmHouse(g) {
   const x0 = 32, y0 = 16;
   const TH = '#dcae62', TL = '#e8c47e', TD = '#c0904a', TS = '#cfa056', TO = '#a07032';
@@ -1125,9 +1126,8 @@ function drawStore(g) {
   R(g, cx, y0 + 20, 1, 23, '#c08a64'); R(g, cx - 2, y0 + 31, 1, 3, '#ffd84a'); R(g, cx + 2, y0 + 31, 1, 3, '#ffd84a');
   // Fenster: Holzrahmen mit Kreuz
   for (const wx of [x0 + 8, x0 + 46]) { R(g, wx, y0 + 21, 10, 10, '#c08a64'); R(g, wx, y0 + 21, 10, 1, '#e0a874'); R(g, wx, y0 + 21, 1, 10, '#e0a874'); R(g, wx + 1, y0 + 22, 8, 8, '#c4ecff'); R(g, wx + 1, y0 + 22, 8, 3, '#e0f6ff'); R(g, wx + 4, y0 + 22, 2, 8, '#c08a64'); R(g, wx + 1, y0 + 25, 8, 2, '#c08a64'); R(g, wx - 1, y0 + 31, 12, 2, '#c08a64'); R(g, wx - 1, y0 + 31, 12, 1, '#e0a874'); }
-  // Holzstufe vor dem Tor, reicht bis auf den Boden
-  R(g, cx - 11, y0 + 43, 23, 1, '#e0a874'); R(g, cx - 11, y0 + 44, 23, 4, '#c08a64'); R(g, cx - 11, y0 + 46, 23, 1, '#a86d48'); R(g, cx - 11, y0 + 47, 23, 1, '#8a5a40');
-  R(g, cx - 11, y0 + 43, 1, 4, '#e0a874'); R(g, cx + 11, y0 + 44, 1, 3, '#a86d48'); R(g, cx - 10, y0 + 48, 21, 1, 'rgba(60,20,40,.16)');
+  // Holzstufe vor dem Tor, genau wie am Farmhaus
+  R(g, cx - 10, y0 + 46, 21, 1, '#e0a874'); R(g, cx - 10, y0 + 47, 21, 2, '#c08a64'); R(g, cx - 9, y0 + 49, 19, 1, '#a86d48'); R(g, cx - 10, y0 + 46, 1, 3, '#e0a874'); R(g, cx + 10, y0 + 47, 1, 2, '#a86d48'); R(g, cx - 8, y0 + 50, 17, 1, 'rgba(60,20,40,.14)');
 }
 function drawFence(g) {
   // Holzzaun mit Kreuzstreben: Pfosten gleichmäßig verteilt, je Feld ein sauberes X zwischen zwei Latten
@@ -1668,7 +1668,7 @@ let S = load();
 const firstRun = !S;
 if (!S) S = newState();
 for (const k of ['19,3', '20,3', '19,4', '20,4', '19,5', '20,5', '8,3', '9,3', '8,4', '9,4', '8,5', '9,5']) { delete S.soil[k]; delete S.trees[k]; }
-for (const k in S.soil) { const [x, y] = k.split(',').map(Number); if (inPast(x * 16 + 8, y * 16 + 8)) delete S.soil[k]; }
+for (const k in S.soil) { const [x, y] = k.split(',').map(Number); if (inPast(x * 16 + 8, y * 16 + 8) || MAP[y] && MAP[y][x] !== 'G') delete S.soil[k]; }
 applyLand(S.land); buildFarmBG();
 TREES = S.trees; for (const k in TREES) { const [x, y] = k.split(',').map(Number); if (isEdge(x, y)) delete TREES[k]; } rebuildTrees();
 
@@ -1814,11 +1814,11 @@ function helpHTML(intro) {
   return h + `<div class="foot">${intro ? '' : '<button class="btn red" data-act="new">Neues Spiel<span class="kb">Y</span></button><button class="btn" data-act="save">Speichern<span class="kb">X</span></button>'}<button class="btn${intro ? ' primary' : ''}" data-act="close">${intro ? "Los geht's!" : 'Schließen'}${intro ? '' : '<span class="kb">B</span>'}</button></div>`;
 }
 const T = (ic, txt) => `<h2>${ic ? `<img src="${ICONURL[ic]}" alt="">` : ''}<span>${txt}</span></h2>`;
-let invSel = null;
+let invSel = null, invMoving = false;
 function slotHTML(c, i) {
   const id = S[c][i], sel = invSel && invSel[0] === c && invSel[1] === i;
   if (!id) return `<div class="slot empty${sel ? ' sel' : ''}" data-act="slot:${c}:${i}"></div>`;
-  return `<div class="slot${sel ? ' sel' : ''}" data-act="slot:${c}:${i}" title="${itemName(id)}"><img src="${ICONURL[iconOf(id)]}" alt="">${ITEM[id].dura ? duraBar(id, 'dbar') : ''}${ITEM[id].tool && cnt(id) < 2 ? '' : `<span class="n">${cnt(id)}</span>`}</div>`;
+  return `<div class="slot${sel ? ' sel' : ''}${sel && invMoving ? ' moving' : ''}" data-act="slot:${c}:${i}" title="${itemName(id)}"><img src="${ICONURL[iconOf(id)]}" alt="">${ITEM[id].dura ? duraBar(id, 'dbar') : ''}${ITEM[id].tool && cnt(id) < 2 ? '' : `<span class="n">${cnt(id)}</span>`}</div>`;
 }
 function invHTML() {
   let h = T('bag', 'Rucksack') + `<div class="sinfo"><span class="money" title="Geld"><span class="p-coin"></span>${S.gold.toLocaleString('de-DE')}</span><span class="money" title="Energie"><img src="${ICONURL.heart}" alt="">${Math.round(S.energy)}/${S.maxEnergy}</span></div>`;
@@ -1832,8 +1832,9 @@ function invHTML() {
     let d = it.desc;
     if (id === 'can') d += ` Füllstand ${S.water}/${S.canCap}.`;
     h += `<div class="ssec detail"><img src="${ICONURL[iconOf(id)]}" alt=""><div class="t"><b>${itemName(id)}</b>${it.tool ? '' : ` <small>×${cnt(id)}</small>`}<br><small>${d}</small>${it.eat ? `<br><small>Essen: +${it.eat} Energie</small>` : ''}${it.dura ? `<div class="dura"><span>Haltbarkeit</span>${duraBar(id, 'obar')}<b>${duraOf(id)}/${it.dura}</b></div>` : ''}<div class="acts">`;
+    h += `<button class="btn${invMoving ? ' primary' : ''}" data-act="mvstart">${invMoving ? 'Abbrechen' : 'Verschieben'}<span class="kb">X</span></button>`;
     if (it.eat) h += `<button class="btn" data-act="eat" ${S.energy >= S.maxEnergy ? 'disabled' : ''}>Essen</button>`;
-    h += `</div><small class="tip">Tipp: Danach ein freies Feld ${padMode ? 'auswählen' : 'antippen'}, um es dorthin zu legen.</small></div></div>`;
+    h += `</div><small class="tip">${invMoving ? `Jetzt das Ziel-Feld ${padMode ? 'auswählen und A drücken' : 'antippen'}. Ist es belegt, werden die Gegenstände getauscht.` : `Mit „Verschieben“ legst du den Gegenstand auf ein anderes Feld.`}</small></div></div>`;
   } else h += `<div class="ssec detail empty"><small>${padMode ? 'Wähle einen Gegenstand aus und drück A, um ihn anzusehen oder zu verschieben.' : 'Tippe auf einen Gegenstand, um ihn anzusehen oder zu verschieben.'}</small></div>`;
   h += '</div></div>';
   return h + '<div class="foot"><button class="btn" data-act="close">Schließen</button></div>';
@@ -1842,18 +1843,27 @@ function rerenderInv() { const sc = $('dlg').scrollTop; $('dlg').innerHTML = inv
 function openInv() {
   if (fading) return;
   if (paused) { if ($('dlg').dataset.inv) closeDlg(); return; }
-  invSel = S.bar[S.sel] ? ['bar', S.sel] : null;
+  invSel = S.bar[S.sel] ? ['bar', S.sel] : null; invMoving = false;
   openDlg(invHTML()); $('dlg').dataset.inv = 1;
 }
 function invClick(c, i) {
   i = +i;
   const src = invSel ? S[invSel[0]][invSel[1]] : null;
-  if (src && !S[c][i] && !(invSel[0] === c && invSel[1] === i)) {
-    S[c][i] = src; S[invSel[0]][invSel[1]] = null;
-    if (invSel[0] === 'bar' && invSel[1] === S.sel && c === 'bar') S.sel = i;
-    invSel = [c, i]; snd('plant');
-  } else { invSel = S[c][i] ? [c, i] : null; snd('sel'); }
+  if (invMoving && src) {
+    // Verschieben: auf freies Feld legen oder mit belegtem Feld tauschen
+    if (!(invSel[0] === c && invSel[1] === i)) {
+      const dst = S[c][i]; S[c][i] = src; S[invSel[0]][invSel[1]] = dst;
+      if (invSel[0] === 'bar' && invSel[1] === S.sel && c === 'bar') S.sel = i;
+      invSel = [c, i]; snd('plant');
+    }
+    invMoving = false;
+  } else { invSel = S[c][i] ? [c, i] : null; invMoving = false; snd('sel'); }
   rerenderInv();
+}
+function invMoveStart() {
+  if (!invSel || !S[invSel[0]][invSel[1]]) return;
+  invMoving = !invMoving; snd('sel'); rerenderInv();
+  if (invMoving) { const el = $('dlg').querySelector(`[data-act="slot:${invSel[0]}:${invSel[1]}"]`); if (el && padMode) dlgFocus(el); }
 }
 function invMove() {
   const id = S[invSel[0]][invSel[1]], other = invSel[0] === 'bar' ? 'bag' : 'bar', j = S[other].indexOf(null);
@@ -2101,6 +2111,7 @@ $('dlg').addEventListener('click', e => {
   else if (a.startsWith('buy:')) { const [, id, n] = a.split(':'); buy(id, +n); }
   else if (a.startsWith('slot:')) { const [, c, i] = a.split(':'); invClick(c, i); }
   else if (a === 'mv') invMove();
+  else if (a === 'mvstart') invMoveStart();
   else if (a.startsWith('ss:')) { const [, side, id] = a.split(':'); standSel = [side, id]; standQ = side === 'bag' ? 1 : S.stand[id]; snd('sel'); rerenderShip(); }
   else if (a.startsWith('sq:')) { standQ += +a.slice(3); snd('sel'); rerenderShip(); }
   else if (a === 'sqa') { const [side, id] = standSel; standQ = side === 'bag' ? cnt(id) : S.stand[id]; snd('sel'); rerenderShip(); }
@@ -2424,12 +2435,12 @@ addEventListener('keydown', e => {
     const nav = { ArrowLeft: 'l', ArrowRight: 'r', ArrowUp: 'u', ArrowDown: 'd' }[e.key];
     if (nav) { e.preventDefault(); dlgNav(nav); return; }
     if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); if (!e.repeat) dlgPress(); return; }
-    const kbtn = { x: '[data-act="save"]', y: '[data-act="new"],[data-act="newc"]' }[e.key.toLowerCase()], kel = kbtn && $('dlg').querySelector(kbtn);
+    const kbtn = { x: '[data-act="save"],[data-act="mvstart"]', y: '[data-act="new"],[data-act="newc"]' }[e.key.toLowerCase()], kel = kbtn && $('dlg').querySelector(kbtn);
     if (kel) { e.preventDefault(); if (!e.repeat) kel.click(); return; }
     if (e.key === 'PageUp' || e.key === 'PageDown') { e.preventDefault(); $('dlg').scrollBy({ top: (e.key === 'PageDown' ? 1 : -1) * $('dlg').clientHeight * .6, behavior: 'smooth' }); return; }
   }
   if (e.key === 'ScrollDown' || e.key === 'ScrollUp') { padScroll = e.key === 'ScrollDown' ? 1 : -1; return; }
-  if (e.key === 'Escape') { if (paused && !fading) closeDlg(); return; }
+  if (e.key === 'Escape') { if (invMoving && $('dlg').dataset.inv) { invMoving = false; rerenderInv(); return; } if (paused && !fading) closeDlg(); return; }
   if (KMAP[e.key]) { keys.add(KMAP[e.key]); e.preventDefault(); return; }
   if (e.key === 'i' || e.key === 'I' || e.key === 'Tab' || e.key === 'x' || e.key === 'y') { e.preventDefault(); openInv(); return; }
   if (e.key === 'F1') { e.preventDefault(); if (!fading && !paused) openDlg(helpHTML(false)); return; }
@@ -2884,8 +2895,8 @@ function pollPad() {
       if (hit(12)) dlgNav('u'); if (hit(13)) dlgNav('d'); if (hit(14)) dlgNav('l'); if (hit(15)) dlgNav('r');
       if (hit(0)) dlgPress();
     }
-    if (hit(1) && !fading) closeDlg();
-    const xb = hit(2), yb = hit(3), kq = xb ? '[data-act="save"]' : yb ? '[data-act="new"],[data-act="newc"]' : null, kel = kq && !fading && $('dlg').querySelector(kq);
+    if (hit(1) && !fading) { if (invMoving && $('dlg').dataset.inv) { invMoving = false; rerenderInv(); } else closeDlg(); }
+    const xb = hit(2), yb = hit(3), kq = xb ? '[data-act="save"],[data-act="mvstart"]' : yb ? '[data-act="new"],[data-act="newc"]' : null, kel = kq && !fading && $('dlg').querySelector(kq);
     if (kel) kel.click();
     else if ((xb || yb) && $('dlg').dataset.inv && !fading) closeDlg();
     const ry = gp.axes[3] || 0; if (Math.abs(ry) > .3) $('dlg').scrollTop += ry * 14;
