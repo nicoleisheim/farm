@@ -438,18 +438,18 @@ body.port #hint{bottom:.3em}
 #dlg .townimg{margin:.2em 0 .4em;border:.4em solid transparent;border-image:var(--t-dsec) 4 fill / .4em stretch}
 #dlg .townimg img{display:block;width:100%;image-rendering:pixelated}
 
-/* Leiste und Rucksack: Bild oben, darunter ein Streifen für Balken und Anzahl */
-#hotbar .slot,#dlg .inv .slot{flex-direction:column;justify-content:flex-start}
-#hotbar .slot img{width:58%;height:58%;margin:.08em 0 0}
-#dlg .inv .slot img{width:68%;height:68%;margin:0 auto}
-#hotbar .slot .n,#dlg .inv .slot .n{top:auto;left:auto;bottom:.05em;right:.18em;background:none;border:0;padding:0;min-width:0;font-size:.55em;line-height:1;color:#c4527e}
-#dlg .inv .slot .n{bottom:-.1em;right:.1em;font-size:1em}
-#hotbar .slot .wl{left:.35em;right:.35em;bottom:.2em;height:.2em}
-#hotbar .slot .wl.wa{bottom:.48em}
-#hotbar .slot .wl.wa i{background:#4fb3ff}
-#hotbar .slot.hasn .wl{right:1.05em}
-#dlg .inv .slot .dbar{left:0;right:0;bottom:-.05em;height:.25em}
-#dlg .inv .slot.hasn .dbar{right:1em}
+/* Leiste und Rucksack: Bild in ganzzahliger Vergrößerung, darunter Balken, Anzahl oben rechts */
+#hotbar .slot,#dlg .inv .slot{flex-direction:column;justify-content:center}
+#hotbar .slot img{width:var(--ico,64%);height:var(--ico,64%);margin:0 0 .3em}
+#dlg .inv .slot img{width:72%;height:72%;margin:0 auto}
+#hotbar .slot .n,#dlg .inv .slot .n{top:.12em;right:.15em;bottom:auto;left:auto;background:none;border:0;padding:0;min-width:0;font-size:.55em;line-height:1;color:#c4527e;text-shadow:0 .08em 0 #fff}
+#dlg .inv .slot .n{top:0;right:.1em;font-size:.85em}
+#hotbar .slot .wl,#hotbar .slot .wl.du,#hotbar .slot .wl.wa{left:50%;right:auto;width:var(--ico,64%);transform:translateX(-50%);bottom:.3em;height:.16em;border-radius:0;box-shadow:0 0 0 .06em #6a3a4a;background:#6a3a4a}
+#hotbar .slot .wl.wa{left:auto;right:.2em;transform:none;width:.16em;height:var(--ico,64%);bottom:auto;top:50%;margin-top:calc(var(--ico,64%) / -2 - .15em);display:flex;align-items:flex-end}
+#hotbar .slot .wl.wa i{background:#4fb3ff;width:100%}
+body.pad #hotbar .slot .n{right:auto;left:.2em}
+#invBtn{font-size:inherit}
+#dlg .inv .slot .dbar{left:14%;right:14%;bottom:0;height:.25em}
 </style>
 </head>
 <body>
@@ -1400,8 +1400,8 @@ function slotIcon(name) {
   let x0 = 16, y0 = 16, x1 = -1, y1 = -1;
   for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) if (d[(y * 16 + x) * 4 + 3] > 0) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
   if (x1 < 0) return ICONURL[name];
-  const w = x1 - x0 + 1, h = y1 - y0 + 1, n = Math.max(w, h), [c, g] = mk(n, n);
-  g.drawImage(src, x0, y0, w, h, (n - w) >> 1, (n - h) >> 1, w, h);
+  const w = x1 - x0 + 1, h = y1 - y0 + 1, [c, g] = mk(16, 16);
+  g.drawImage(src, x0, y0, w, h, (16 - w) >> 1, (16 - h) >> 1, w, h);
   return SLOTURL[name] = c.toDataURL();
 }
 icon('hoe', g => {
@@ -1769,6 +1769,11 @@ function useItem(id, n = 1) {
 const held = () => S.bar[S.sel] || null;
 function visSlots() { return S.bar.map((id, i) => id ? i : -1).filter(i => i >= 0); }
 let hbKey = '';
+function fitHotbarIcons() {
+  const sl = $('hotbar').querySelector('.slot'); if (!sl) return;
+  const k = Math.max(1, Math.floor(sl.clientWidth * .66 / 16)), dp = devicePixelRatio || 1;
+  $('hotbar').style.setProperty('--ico', Math.floor(16 * k * dp) / dp + 'px');
+}
 function buildHotbar() {
   const hb = $('hotbar'), v = visSlots(); hb.innerHTML = ''; hbKey = S.bar.join(','); hudCache = '';
   hb.style.display = v.length ? '' : 'none';
@@ -1778,6 +1783,7 @@ function buildHotbar() {
     d.addEventListener('pointerdown', e => { e.preventDefault(); setSel(bi); });
     hb.appendChild(d);
   });
+  requestAnimationFrame(fitHotbarIcons);
 }
 function setSel(bi) {
   const id = S.bar[bi]; if (!id) return;
@@ -1810,10 +1816,10 @@ function updateHUD() {
       const n = d.querySelector('.n');
       const showN = !ITEM[id].tool || cnt(id) > 1;
       n.textContent = showN ? cnt(id) : '';
-      n.style.display = showN ? '' : 'none'; d.classList.toggle('hasn', showN);
+      n.style.display = showN ? '' : 'none';
       d.title = itemName(id);
-      if (id === 'can') d.querySelector('.wa i').style.width = (S.water / S.canCap * 100) + '%';
-      if (ITEM[id].dura) { const f = duraOf(id) / ITEM[id].dura, i = d.querySelector('.wl i'); i.style.width = Math.max(4, f * 100) + '%'; i.style.background = duraCol(f); }
+      if (id === 'can') d.querySelector('.wa i').style.height = (S.water / S.canCap * 100) + '%';
+      if (ITEM[id].dura) { const f = duraOf(id) / ITEM[id].dura, i = d.querySelector('.wl.du i'); i.style.width = Math.max(4, f * 100) + '%'; i.style.background = duraCol(f); }
     });
   }
   // interaction hint
@@ -3055,7 +3061,7 @@ function fit() {
   HUDT = port ? 0 : Math.ceil(($('clock').offsetHeight + 8) / s);
   if (C.width !== VW || C.height !== VH) { C.width = VW; C.height = VH; X.imageSmoothingEnabled = false; }
 }
-addEventListener('resize', fit); addEventListener('orientationchange', () => setTimeout(fit, 200));
+addEventListener('resize', () => setTimeout(fitHotbarIcons, 60)); addEventListener('resize', fit); addEventListener('orientationchange', () => setTimeout(fit, 200));
 if (window.visualViewport) visualViewport.addEventListener('resize', fit);
 fit(); if (document.fonts) document.fonts.ready.then(fit);
 buildHotbar();
