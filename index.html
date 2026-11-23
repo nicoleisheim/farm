@@ -441,11 +441,12 @@ body.port #hint{bottom:.3em}
 /* Leiste und Rucksack: Bild in ganzzahliger Vergrößerung, darunter eine Zeile mit Balken (links) und Anzahl (rechts) */
 #hotbar .slot,#dlg .inv .slot{flex-direction:column;justify-content:center}
 #hotbar{gap:.22em;padding:.18em}
-#hotbar .slot img{width:var(--ico,64%);height:var(--ico,64%);margin:0 0 .3em}
+#hotbar .slot{border-width:.26em;border-image-width:.26em}
+#hotbar .slot img{width:var(--ico,80%);height:var(--ico,80%);margin:0 0 .16em}
 #hotbar .slot .n,#dlg .inv .slot .n{top:auto;left:auto;background:none;border:0;padding:0;min-width:0;line-height:1;color:#b8406e;font-weight:700;
   text-shadow:.05em 0 0 #fff,-.05em 0 0 #fff,0 .05em 0 #fff,0 -.05em 0 #fff}
-#hotbar .slot .n{right:.1em;top:.08em;bottom:auto;font-size:.45em}
-#hotbar .slot .wl,#hotbar .slot .wl.du,#hotbar .slot .wl.wa{left:calc(50% - var(--ico,64%) / 2);right:auto;top:auto;margin:0;width:var(--ico,64%);transform:none;bottom:.2em;height:.14em;border-radius:0;box-shadow:0 0 0 .05em #6a3a4a;background:#6a3a4a;display:block}
+#hotbar .slot .n{right:.04em;top:.02em;bottom:auto;font-size:.45em}
+#hotbar .slot .wl,#hotbar .slot .wl.du,#hotbar .slot .wl.wa{left:calc(50% - var(--ico,64%) / 2);right:auto;top:auto;margin:0;width:var(--ico,64%);transform:none;bottom:.1em;height:.13em;border-radius:0;box-shadow:0 0 0 .05em #6a3a4a;background:#6a3a4a;display:block}
 #hotbar .slot .wl.wa i{background:#4fb3ff;height:100%}
 /* gewählt: rosa Rahmen, leicht angehoben */
 #hotbar .slot.sel{outline:.16em solid #f06a8c;outline-offset:-.16em;border-image-source:var(--t-slot);transform:translateY(-.14em);filter:drop-shadow(0 .12em 0 rgba(184,64,110,.4))}
@@ -1820,7 +1821,7 @@ function visSlots() { return S.bar.map((id, i) => id ? i : -1).filter(i => i >= 
 let hbKey = '';
 function fitHotbarIcons() {
   const sl = $('hotbar').querySelector('.slot'); if (!sl) return;
-  const k = Math.max(1, Math.floor(sl.clientWidth * .68 / 16)), dp = devicePixelRatio || 1;
+  const k = Math.max(1, Math.floor(sl.clientWidth * .84 / 16)), dp = devicePixelRatio || 1;
   $('hotbar').style.setProperty('--ico', Math.floor(16 * k * dp) / dp + 'px');
 }
 function buildHotbar() {
