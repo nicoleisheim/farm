@@ -1142,7 +1142,7 @@ function drawStore(g) {
 function drawFence(g) {
   // Holzzaun mit Kreuzstreben: Pfosten gleichmäßig verteilt, je Feld ein sauberes X zwischen zwei Latten
   const P = PAST, L = '#e0a874', M = '#c08a64', D = '#a86d48';
-  const post = (x, y) => { R(g, x - 1, y + 1, 5, 1, 'rgba(60,20,40,.15)'); R(g, x, y - 11, 3, 12, M); R(g, x, y - 11, 1, 12, L); R(g, x + 2, y - 11, 1, 12, D); R(g, x, y - 12, 3, 1, '#f6cf9c'); };
+  const posts = []; const post = (x, y) => { posts.push([x, y]); R(g, x - 1, y + 1, 5, 1, 'rgba(60,20,40,.15)'); R(g, x, y - 11, 3, 12, M); R(g, x, y - 11, 1, 12, L); R(g, x + 2, y - 11, 1, 12, D); R(g, x, y - 12, 3, 1, '#f6cf9c'); };
   const xs = (a, b) => { const n = Math.max(1, Math.round((b - a) / 12)); return Array.from({ length: n + 1 }, (_, k) => a + Math.round(k * (b - a) / n)); };
   const seg = (a, b, y) => {
     const ps = xs(a, b);
@@ -1155,6 +1155,15 @@ function drawFence(g) {
   const n = Math.round((P.y1 - P.y0) / 12);
   for (let k = 1; k < n; k++) { const y = P.y0 + Math.round(k * (P.y1 - P.y0) / n); post(P.x0, y); post(P.x1, y); }
   seg(P.x0, P.g0 - 3, P.y0); seg(P.g1, P.x1, P.y0); seg(P.x0, P.x1, P.y1);
+  // Rosenranke über den Latten
+  const vine = (a, b, y) => { for (let x = a; x <= b; x++) { const o = Math.round(Math.sin(x / 2.2) * 1.2); R(g, x, y - 10 + o, 1, 1, '#5aa040'); if (x % 5 === 0) R(g, x, y - 11 + o, 1, 1, '#8fd16a'); } for (let x = a + 4; x < b - 2; x += 9) { R(g, x - 1, y - 12, 3, 3, '#ee8fb0'); R(g, x, y - 11, 1, 1, '#cf6890'); R(g, x - 1, y - 12, 1, 1, '#ffd6e5'); } };
+  vine(P.x0, P.g0 - 1, P.y0); vine(P.g1 + 2, P.x1 + 2, P.y0); vine(P.x0, P.x1 + 2, P.y1);
+  // Ranke auch an den Seiten des Zauns
+  for (const sx of [P.x0, P.x1]) {
+    for (let y = P.y0 - 8; y <= P.y1 - 10; y++) { const o = Math.round(Math.sin(y / 2.2) * 1.2); R(g, sx + 1 + o, y, 1, 1, '#5aa040'); if (y % 5 === 0) R(g, sx + 1 + o + (sx === P.x0 ? -1 : 1), y, 1, 1, '#8fd16a'); }
+    for (let y = P.y0 - 3; y < P.y1 - 11; y += 9) { R(g, sx, y - 1, 3, 3, '#ee8fb0'); R(g, sx + 1, y, 1, 1, '#cf6890'); R(g, sx + (sx === P.x0 ? 0 : 2), y - 1, 1, 1, '#ffd6e5'); }
+  }
+
 }
 
 function drawSign(g) {
