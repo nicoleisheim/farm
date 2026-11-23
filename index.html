@@ -1572,9 +1572,9 @@ icon('milk', g => {
   const B = ['......pp......', '.....pPPp.....', '......oo......', '.....oWWo.....', '....oWWWWo....', '....oWWWWo....', '....oPPPPo....', '....oWWWWo....', '....oWWWWo....', '....oWWWWo....', '....odddWo....', '.....oooo.....'];
   B.forEach((r, j) => [...r].forEach((ch, i) => { const c = { p: '#d9608c', P: '#ff8fb8', o: '#8cc6e2', W: '#ffffff', d: '#e2f2fa' }[ch]; if (c) R(g, i + 1, j + 2, 1, 1, c); }));
 });
-icon('bucket', g => {
-  const B = ['....oooooo....', '...o......o...', '..o........o..', '.PPPPPPPPPPPP.', '.pWWWWWWWWWWp.', '..pWWWWWWWWp..', '..pWWWWWWWWp..', '..pPPPPPPPPp..', '..pWWWWWWWWp..', '...pWWWWWWp...', '...pppppppp...'];
-  B.forEach((r, j) => [...r].forEach((ch, i) => { const c = { o: '#6f6470', P: '#ee8fb0', p: '#7d8a99', W: '#cfdbe6' }[ch]; if (c) R(g, i + 1, j + 3, 1, 1, c); }));
+icon('bucket', g => { // rosa Melkeimer passend zu den Werkzeugen
+  const A = [".....abbaaa.....", "...aa......aa...", "..a..........a..", "..a..........a..", ".a.aaaaaaaaaa.a.", ".aacbbbbbbbbcaa.", ".addeeeeeeeecca.", "..aefffffffcca..", "..aedffffffcca..", "...afccccccca...", "...aedffffcca...", "...aedffffcca...", "...afccccccca...", "....aefffcca....", "....acbbbbba....", ".....aaaaaa....."], C = {"a": "#3b1c2b", "b": "#821643", "c": "#d52e74", "d": "#ffffff", "e": "#fdc1da", "f": "#f471a8"};
+  A.forEach((r, y) => [...r].forEach((ch, x) => { if (C[ch]) R(g, x, y, 1, 1, C[ch]); }));
 });
 icon('helper', g => {
   R(g, 3, 4, 10, 2, '#e8c47e'); R(g, 1, 6, 14, 1, '#dcae62'); R(g, 4, 3, 8, 1, '#e8c47e'); R(g, 4, 5, 8, 1, '#ee8fb0');
