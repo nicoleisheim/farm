@@ -1434,8 +1434,10 @@ icon('can', g => { // kantige Gießkanne mit Blume
   A.forEach((r, y) => [...r].forEach((ch, x) => { if (C[ch]) R(g, x, y, 1, 1, C[ch]); }));
 });
 // Gießkanne in der Hand: aufrecht und gekippt (je rechts/links)
-const CANH = [[["................", "................", "................", "...aaaa....aa...", "..abbcca..abba..", "..acaada..aeca..", ".abbbbbba.afca..", ".addddddaabaa...", ".abfgffcabca....", ".abghgfcbca.....", ".abfgffcca......", ".adddddda.......", "..aaaaaa........", "................"], {"a": "#6a3a52", "b": "#ffc8dc", "c": "#dc79a0", "d": "#c25f88", "e": "#8a4a66", "f": "#f59ab8", "g": "#ffffff", "h": "#ffd84a"}], [["................", "................", "................", "....aaaa........", "...abbcca.......", "...acaada.......", "..abbbbbba......", "..adddddda......", ".abefeecaaaaaa..", ".abfgfecbbbbbba.", ".abefeecccceeea.", ".addddddaaahcha.", "..aaaaaa...aaa..", "................"], {"a": "#6a3a52", "b": "#ffc8dc", "c": "#dc79a0", "d": "#c25f88", "e": "#f59ab8", "f": "#ffffff", "g": "#ffd84a", "h": "#8a4a66"}]].map(([A, C]) => [1, -1].map(dir => { const [c, g] = mk(16, 14);
-  A.forEach((r, y) => [...r].forEach((ch, x) => { if (C[ch]) R(g, dir > 0 ? x : 15 - x, y, 1, 1, C[ch]); })); return c; }));
+// Gießkanne in der Hand: aufrecht, halb und ganz gekippt (gedreht um den Henkel), je rechts/links
+const CAN_N = 22, CAN_PIV = [11, 7], CAN_ROSE = [[6.5, 3], [5.6, 5], [4.2, 7]];
+const CANH = [[["......................", "......................", "......................", "......................", "......................", "......................", ".........aaaa....aa...", "........abbbba..acca..", "........abaaba..acca..", ".......adddddda.acea..", ".......adccccbaadaa...", ".......adcfccbadba....", ".......adfgfcbdba.....", ".......adcfccbba......", ".......ahhhhhha.......", "........aaaaaa........", "......................", "......................", "......................", "......................", "......................", "......................"], {"a": "#6a3a52", "b": "#dc79a0", "c": "#f59ab8", "d": "#ffc8dc", "e": "#8a4a66", "f": "#ffffff", "g": "#ffd84a", "h": "#c25f88"}], [["......................", "......................", "......................", "......................", "......................", ".........a............", "........abaaa.........", ".......aabbbba........", "......acccaaba...a....", "......acddccca..ada...", "......acedddba.adda...", ".....acefeddbaaadga...", ".....acdedddhcbbaa....", ".....ahhhddbcbaa......", "......aaahhhba........", ".........aaaa.........", "......................", "......................", "......................", "......................", "......................", "......................"], {"a": "#6a3a52", "b": "#dc79a0", "c": "#ffc8dc", "d": "#f59ab8", "e": "#ffffff", "f": "#ffd84a", "g": "#8a4a66", "h": "#c25f88"}], [["......................", "......................", "......................", "......................", "......................", ".........aa...........", ".......aabba..........", "......accbaba.........", ".....acddcabba........", "....acdeddcca.........", "....acefeddga..aa.....", "....agdeddba..adda....", ".....agdddgaaaddda....", "......agggbbbbaha.....", ".......aaaaaaa.a......", "......................", "......................", "......................", "......................", "......................", "......................", "......................"], {"a": "#6a3a52", "b": "#dc79a0", "c": "#ffc8dc", "d": "#f59ab8", "e": "#ffffff", "f": "#ffd84a", "g": "#c25f88", "h": "#8a4a66"}]].map(([A, C]) => [1, -1].map(dir => { const [c, g] = mk(CAN_N, CAN_N);
+  A.forEach((r, y) => [...r].forEach((ch, x) => { if (C[ch]) R(g, dir > 0 ? x : CAN_N - 1 - x, y, 1, 1, C[ch]); })); return c; }));
 let canPour = 0;
 icon('sickle', g => {
   R(g, 3, 9, 2, 6, '#c98a5a'); R(g, 3, 9, 1, 6, '#e0a874'); R(g, 3, 12, 2, 2, '#ff8fb8'); R(g, 3, 14, 2, 1, '#8a5a40');
@@ -2890,20 +2892,21 @@ function moveAxis(dx, dy, other) {
 const vel = { x: 0, y: 0 };
 const rain = Array.from({ length: 80 }, () => ({ x: Math.random() * W, y: Math.random() * H, s: 180 + Math.random() * 80 }));
 // Gießkanne in der Hand (Spielerin und Ben): ph = Fortschritt 0..1
-function drawCan(px, py, d, ph) {
-  const c = canPos(px, py, d), tilt = ph > .15 && ph < .85 ? 1 : 0;
-  X.drawImage(CANH[tilt][c.dir > 0 ? 0 : 1], c.x, c.y + tilt);
-}
-function canPos(px, py, d) {
+const canFrame = ph => ph < .1 || ph > .9 ? 0 : ph < .2 || ph > .8 ? 1 : 2;
+function canPos(px, py, d) {   // Lage der Hand (Drehpunkt am Henkel)
   const dir = d === 'left' ? -1 : 1;
-  const x = d === 'right' ? px + 3 : d === 'left' ? px - 19 : px - 12;
-  const y = d === 'down' ? py - 5 : d === 'up' ? py - 27 : py - 15;
+  const x = d === 'right' ? px + 6 : d === 'left' ? px - 7 : px - 6;
+  const y = d === 'up' ? py - 18 : d === 'down' ? py - 6 : py - 12;
   return { dir, x: Math.round(x), y: Math.round(y) };
 }
+function drawCan(px, py, d, ph) {
+  const c = canPos(px, py, d), f = canFrame(ph), ox = c.dir > 0 ? CAN_PIV[0] : CAN_N - 1 - CAN_PIV[0];
+  X.drawImage(CANH[f][c.dir > 0 ? 0 : 1], c.x - ox, c.y - CAN_PIV[1]);
+}
 function canDrops(px, py, d, ph, dt) {
-  if (!(ph > .2 && ph < .85) || Math.random() >= dt * 40) return;
-  const c = canPos(px, py, d), rx = c.x + (c.dir > 0 ? 11 : 2) + Math.floor(Math.random() * 3), ry = c.y + 13;
-  parts.push({ x: rx, y: ry, vx: 0, vy: 30 + Math.random() * 10, life: .1 + Math.random() * .05, col: Math.random() < .5 ? '#4fb3ff' : '#8fd0ff', dr: 1 });
+  if (d === 'up' || canFrame(ph) !== 2 || Math.random() >= dt * 40) return;   // von hinten sieht man kein Wasser
+  const c = canPos(px, py, d), [rx, ry] = CAN_ROSE[2];
+  parts.push({ x: c.x + c.dir * rx - 1 + Math.random() * 2, y: c.y + ry, vx: c.dir * 6, vy: 30 + Math.random() * 10, life: .12 + Math.random() * .05, col: Math.random() < .5 ? '#4fb3ff' : '#8fd0ff', dr: 1 });
 }
 const myCanPh = () => canPour ? 1 - actT / CAN_T : 0;
 function update(dt) {
