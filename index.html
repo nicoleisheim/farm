@@ -440,14 +440,25 @@ body.port #hint{bottom:.3em}
 
 /* Leiste und Rucksack: Bild in ganzzahliger Vergrößerung, darunter eine Zeile mit Balken (links) und Anzahl (rechts) */
 #hotbar .slot,#dlg .inv .slot{flex-direction:column;justify-content:center}
+#hotbar{gap:.22em;padding:.18em}
 #hotbar .slot img{width:var(--ico,64%);height:var(--ico,64%);margin:0 0 .3em}
 #hotbar .slot .n,#dlg .inv .slot .n{top:auto;left:auto;background:none;border:0;padding:0;min-width:0;line-height:1;color:#b8406e;font-weight:700;
   text-shadow:.05em 0 0 #fff,-.05em 0 0 #fff,0 .05em 0 #fff,0 -.05em 0 #fff}
 #hotbar .slot .n{right:calc(50% - var(--ico,64%) / 2);bottom:.12em;font-size:.45em}
-#hotbar .slot .wl,#hotbar .slot .wl.du{left:calc(50% - var(--ico,64%) / 2);right:auto;width:var(--ico,64%);transform:none;bottom:.2em;height:.14em;border-radius:0;box-shadow:0 0 0 .05em #6a3a4a;background:#6a3a4a}
-#hotbar .slot.hasn .wl.du{width:calc(var(--ico,64%) - .7em)}
-#hotbar .slot .wl.wa{left:calc(50% + var(--ico,64%) / 2 + .1em);right:auto;width:.14em;height:var(--ico,64%);bottom:auto;top:50%;margin-top:calc(var(--ico,64%) / -2 - .15em);transform:none;box-shadow:0 0 0 .05em #6a3a4a;background:#6a3a4a;display:flex;align-items:flex-end}
-#hotbar .slot .wl.wa i{background:#4fb3ff;width:100%}
+#hotbar .slot .wl,#hotbar .slot .wl.du,#hotbar .slot .wl.wa{left:calc(50% - var(--ico,64%) / 2);right:auto;top:auto;margin:0;width:var(--ico,64%);transform:none;bottom:.2em;height:.14em;border-radius:0;box-shadow:0 0 0 .05em #6a3a4a;background:#6a3a4a;display:block}
+#hotbar .slot.hasn .wl{width:calc(var(--ico,64%) - .7em)}
+#hotbar .slot .wl.wa i{background:#4fb3ff;height:100%}
+/* gewählt: rosa Rahmen, leicht angehoben */
+#hotbar .slot.sel{outline:.16em solid #f06a8c;outline-offset:-.16em;border-image-source:var(--t-slot);transform:translateY(-.14em);filter:drop-shadow(0 .12em 0 rgba(184,64,110,.4))}
+/* abgenutzte Kanne: kleiner roter Punkt */
+#hotbar .slot .warn{display:none;position:absolute;right:calc(50% - var(--ico,64%) / 2 - .05em);top:.2em;width:.2em;height:.2em;background:#e0503a;box-shadow:0 0 0 .05em #fff}
+#hotbar .slot.worn .warn{display:block}
+/* Tastenhinweise nur mit Controller */
+.bkb{display:none}
+body.pad .bkb{display:inline-flex;align-items:center;justify-content:center;font-size:.48em;font-weight:700;line-height:1;color:#fff;background:#c4527e;padding:.22em .32em;border:.12em solid #fff;box-shadow:0 0 0 .1em #7a3a52;align-self:center;flex:none}
+body.pad #invBtn{position:relative}
+body.pad .bkb.sm{position:absolute;bottom:-.5em;left:50%;transform:translateX(-50%);font-size:.34em}
+body.pad #kbR{margin-right:.35em}
 body.pad #hotbar .slot{width:3.3em;height:3.3em}
 body.pad #invBtn{width:3.9em;height:3.9em}
 body.pad #hint{bottom:7.9em}
@@ -473,7 +484,7 @@ body.pad #hint{bottom:7.9em}
     <div id="hint" class="panel"></div>
     <div id="toast" class="panel"></div>
     <div id="bottom">
-      <div id="barRow"><div id="hotbar" class="panel"></div><button id="invBtn" class="panel" title="Rucksack (I)" aria-label="Rucksack"><img id="invIcon" alt=""></button></div>
+      <div id="barRow"><span class="bkb" id="kbL">L1</span><div id="hotbar" class="panel"></div><span class="bkb" id="kbR">R1</span><button id="invBtn" class="panel" title="Rucksack (I)" aria-label="Rucksack"><img id="invIcon" alt=""><span class="bkb sm">SELECT</span></button></div>
       <div id="energy" class="panel" title="Energie"><div id="elabel"><img id="heartIcon" alt=""></div><div id="ebar"><div id="efill"></div></div></div>
     </div>
   </div>
@@ -1819,7 +1830,7 @@ function buildHotbar() {
   hb.style.display = v.length ? '' : 'none';
   v.forEach((bi, n) => {
     const id = S.bar[bi], d = document.createElement('div'); d.className = 'slot'; d.dataset.bi = bi;
-    d.innerHTML = `<span class="k">${n + 1}</span><img src="${slotIcon(iconOf(id))}" alt=""><span class="n"></span>` + (id === 'can' ? '<span class="wl wa"><i></i></span>' : '') + (ITEM[id].dura ? '<span class="wl du"><i></i></span>' : '');
+    d.innerHTML = `<span class="k">${n + 1}</span><img src="${slotIcon(iconOf(id))}" alt=""><span class="n"></span>` + (id === 'can' ? '<span class="wl wa"><i></i></span><span class="warn"></span>' : ITEM[id].dura ? '<span class="wl du"><i></i></span>' : '');
     d.addEventListener('pointerdown', e => { e.preventDefault(); setSel(bi); });
     hb.appendChild(d);
   });
@@ -1858,8 +1869,8 @@ function updateHUD() {
       n.textContent = showN ? cnt(id) : '';
       n.style.display = showN ? '' : 'none'; d.classList.toggle('hasn', showN);
       d.title = itemName(id);
-      if (id === 'can') d.querySelector('.wa i').style.height = (S.water / S.canCap * 100) + '%';
-      if (ITEM[id].dura) { const f = duraOf(id) / ITEM[id].dura, i = d.querySelector('.wl.du i'); i.style.width = Math.max(4, f * 100) + '%'; i.style.background = duraCol(f); }
+      if (id === 'can') { d.querySelector('.wa i').style.width = (S.water / S.canCap * 100) + '%'; d.classList.toggle('worn', duraOf(id) / ITEM[id].dura <= .2); }
+      if (ITEM[id].dura && id !== 'can') { const f = duraOf(id) / ITEM[id].dura, i = d.querySelector('.wl.du i'); i.style.width = Math.max(4, f * 100) + '%'; i.style.background = duraCol(f); }
     });
   }
   // interaction hint
