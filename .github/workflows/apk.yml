@@ -163,7 +163,8 @@ jobs:
                 case KeyEvent.KEYCODE_BUTTON_X: k = "x"; break;
                 case KeyEvent.KEYCODE_BUTTON_Y: k = "y"; break;
                 case KeyEvent.KEYCODE_BUTTON_SELECT: k = "i"; break;
-                case KeyEvent.KEYCODE_BUTTON_L1: case KeyEvent.KEYCODE_BUTTON_L2: k = "PageUp"; break;
+                case KeyEvent.KEYCODE_BUTTON_L1: k = "PageUp"; break;
+                case KeyEvent.KEYCODE_BUTTON_L2: k = "End"; break;
                 case KeyEvent.KEYCODE_BUTTON_R1: case KeyEvent.KEYCODE_BUTTON_R2: k = "PageDown"; break;
                 case KeyEvent.KEYCODE_BUTTON_START: k = "F1"; break;
               }
