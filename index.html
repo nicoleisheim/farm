@@ -2049,23 +2049,33 @@ function benTasks() {
   S.cows.forEach((c, i) => { if (!c.m && cows[i]) L.push({ k: 'milk', i, x: cows[i].x + 12, y: cows[i].y }); });
   return L;
 }
-function benRoute(tx, ty) {
-  // durch das Tor der Kuhweide statt über den Zaun
-  const gx = (PAST.g0 + PAST.g1) / 2, inA = inPast(ben.x, ben.y), inB = inPast(tx, ty), r = [];
-  if (inA && !inB) r.push([gx, PAST.y0 + 8], [gx, PAST.y0 - 6]);
-  if (!inA && inB) r.push([gx, PAST.y0 - 6], [gx, PAST.y0 + 8]);
-  // nicht quer über die Weide laufen: seitlich am Zaun vorbei
-  const [ax, ay] = r.length ? r[r.length - 1] : [ben.x, ben.y];
-  if (!inA && !inB && segHitsPast(ax, ay, tx, ty)) {
-    const sx = Math.abs(ax + tx - PAST.x0 * 2) < Math.abs(ax + tx - PAST.x1 * 2) ? PAST.x0 - 12 : PAST.x1 + 12;
-    r.push([sx, ay], [sx, ty]);
+// Wegsuche für Ben: Breitensuche auf einem 8-px-Raster, um Zaun, Häuser und Wasser herum
+const BG8 = 8, BCW = W / BG8, BCH = H / BG8;
+const benFree = (x, y) => !blocked(x, y) && !blocked(x - 4, y) && !blocked(x + 4, y) && !blocked(x, y - 3);
+function benLine(ax, ay, bx, by) { const n = Math.ceil(Math.hypot(bx - ax, by - ay) / 3); for (let i = 1; i < n; i++) if (!benFree(ax + (bx - ax) * i / n, ay + (by - ay) * i / n)) return false; return true; }
+function benRoute(tx, ty) { const pl = LOC; LOC = 'farm'; try { return benRoute0(tx, ty); } finally { LOC = pl; } }
+function benRoute0(tx, ty) {
+  const cell = (x, y) => [Math.max(0, Math.min(BCW - 1, Math.floor(x / BG8))), Math.max(0, Math.min(BCH - 1, Math.floor(y / BG8)))];
+  const [sx, sy] = cell(ben.x, ben.y), [ex, ey] = cell(tx, ty), prev = new Int32Array(BCW * BCH).fill(-1), q = [sy * BCW + sx];
+  prev[q[0]] = q[0];
+  const ok = (cx, cy) => (cx === ex && cy === ey) || benFree(cx * BG8 + 4, cy * BG8 + 4);
+  for (let qi = 0; qi < q.length; qi++) {
+    const c = q[qi], cx = c % BCW, cy = (c / BCW) | 0;
+    if (cx === ex && cy === ey) break;
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]]) {
+      const nx = cx + dx, ny = cy + dy; if (nx < 0 || ny < 0 || nx >= BCW || ny >= BCH) continue;
+      const n = ny * BCW + nx; if (prev[n] !== -1 || !ok(nx, ny)) continue;
+      if (dx && dy && (!ok(cx + dx, cy) || !ok(cx, cy + dy))) continue;
+      prev[n] = c; q.push(n);
+    }
   }
-  r.push([tx, ty]); return r;
-}
-function segHitsPast(ax, ay, bx, by) {
-  const x0 = PAST.x0 - 6, x1 = PAST.x1 + 6, y0 = PAST.y0 - 14, y1 = PAST.y1 + 4;
-  for (let i = 0; i <= 40; i++) { const x = ax + (bx - ax) * i / 40, y = ay + (by - ay) * i / 40; if (x > x0 && x < x1 && y > y0 && y < y1) return true; }
-  return false;
+  const end = ey * BCW + ex; if (prev[end] === -1) return [[tx, ty]];
+  const pts = []; for (let c = end; c !== prev[c]; c = prev[c]) pts.push([(c % BCW) * BG8 + 4, ((c / BCW) | 0) * BG8 + 4]);
+  pts.reverse(); pts.push([tx, ty]);
+  // glätten: Punkte überspringen, solange die gerade Linie frei ist
+  const out = []; let ax = ben.x, ay = ben.y, i = 0;
+  while (i < pts.length) { let j = pts.length - 1; while (j > i && !benLine(ax, ay, pts[j][0], pts[j][1])) j--; out.push(pts[j]); [ax, ay] = pts[j]; i = j + 1; }
+  return out;
 }
 function updateBen(dt) {
   if (ben.on) { if (ben.lastT != null && S.time > ben.lastT) S.benMin = (S.benMin || 0) + S.time - ben.lastT; ben.lastT = S.time; } else ben.lastT = null;
@@ -2081,7 +2091,7 @@ function updateBen(dt) {
     else { ben.task = { k: 'home' }; ben.wp = benRoute(home[0], home[1]); S.benDone = S.day; } // alles erledigt: Ben geht durchs Tor nach Hause
   }
   const T0 = ben.task;
-  if (T0.k === 'milk' && cows[T0.i] && ben.wp.length) { const last = ben.wp[ben.wp.length - 1]; last[0] = cows[T0.i].x + 12; last[1] = cows[T0.i].y; }
+  if (T0.k === 'milk' && cows[T0.i] && ben.wp.length === 1 && inPast(ben.x, ben.y)) { ben.wp[0][0] = cows[T0.i].x + 12; ben.wp[0][1] = cows[T0.i].y; }
   if (ben.wp.length) {
     const [wx, wy] = ben.wp[0], dx = wx - ben.x, dy = wy - ben.y, d = Math.hypot(dx, dy);
     if (d < 1.5) { ben.wp.shift(); return; }
@@ -2680,8 +2690,8 @@ function updateSoilLayer() {
 /* ---------- Tierchen ---------- */
 const critters = [];
 ['#ff8fb8', '#ffffff', '#d9b8ff', '#ffe066'].forEach((col, i) => critters.push({ k: 'fly', x: 60 + i * 70, y: 130 + (i % 2) * 50, gx: 0, gy: 0, t: Math.random() * 9, col }));
-[[180, 190], [250, 140]].forEach(([x, y]) => critters.push({ k: 'bun', x, y, gx: x, gy: y, wait: 1 + Math.random() * 2, dir: 1, hop: 0 }));
-function freeAt(x, y) { return !blocked(x - 3, y - 2) && !blocked(x + 3, y - 2) && !blocked(x, y); }
+[[120, 200], [300, 140]].forEach(([x, y]) => critters.push({ k: 'bun', x, y, gx: x, gy: y, wait: 1 + Math.random() * 2, dir: 1, hop: 0 }));
+function freeAt(x, y) { return !blocked(x - 3, y - 2) && !blocked(x + 3, y - 2) && !blocked(x, y) && !inPast(x, y) && !inPast(x, y - 8); } // Hasen bleiben außerhalb der Kuhweide
 function updateCritters(dt) {
   for (const c of critters) {
     if (c.k === 'fly') {
