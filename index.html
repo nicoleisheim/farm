@@ -757,10 +757,14 @@ function drawSapling(g, tx, ty, big, cherry) {
     else { R(g, x0 + 6, y0 + 1, 4, 2, '#7dcb6c'); R(g, x0 + 5, y0 + 3, 6, 2, '#58ae55'); R(g, x0 + 4, y0 + 5, 8, 2, '#3f8f45'); R(g, x0 + 6, y0 + 1, 1, 1, '#a5e08a'); R(g, x0 + 5, y0 + 3, 1, 1, '#7dcb6c'); }
   }
 }
+// grüner Baum als Pixel Art (17×16), links oben bei (x0 + Versatz, y0 − 1)
+const TREE_ROWS = ["......aaaa.......", "....aaaaabbb.....", "...aacbccbccb....", "...accccccccb....", "..adcebccccbba...", "..acdcbcceccba...", "..abcdccccdbdba..", ".acccbeccbbdbba..", ".acebbbebbdbaba..", ".aacebbdbdbbbaa..", "..aacebddaaaaa...", "......eeda.......", ".......ed........", ".......ed........", ".......ed........", "......eedd......."];
+const TREE_PAL = {"a": "#32470e", "b": "#4f6512", "c": "#678928", "d": "#412109", "e": "#603813"};
 function drawTree(g, tx, ty) {
   const x0 = tx * 16, y0 = ty * 16, s = Math.floor(hash(tx, ty, 3) * 3) - 1, cherry = isCherry(tx, ty), cx = x0 + 8 + s;
-  const P = cherry ? ['#c9628f', '#e47fa8', '#f7a6c8', '#ffcfe2'] : ['#2f7a3d', '#4f9f4d', '#6fbf62', '#a5e08a'];
-  R(g, x0 + 3, y0 + 14, 10, 2, 'rgba(60,20,40,.18)'); R(g, x0 + 6, y0 + 10, 4, 5, '#8a5a40'); R(g, x0 + 6, y0 + 10, 1, 5, '#a8735a');
+  R(g, x0 + 3, y0 + 14, 10, 2, 'rgba(60,20,40,.18)');
+  if (!cherry) { TREE_ROWS.forEach((r, y) => [...r].forEach((ch, x) => { if (TREE_PAL[ch]) R(g, x0 + s + x, y0 - 1 + y, 1, 1, TREE_PAL[ch]); })); return; }
+  const P = ['#c9628f', '#e47fa8', '#f7a6c8', '#ffcfe2']; R(g, x0 + 6, y0 + 10, 4, 5, '#8a5a40'); R(g, x0 + 6, y0 + 10, 1, 5, '#a8735a');
   const B = [[-3, 8, 4], [3, 8, 4], [0, 5, 5]];
   B.forEach(([dx, dy, r]) => disc(g, cx + dx, y0 + dy, r + 1, P[0]));
   B.forEach(([dx, dy, r]) => disc(g, cx + dx, y0 + dy, r, P[1]));
