@@ -1055,7 +1055,7 @@ const LH_ROWS = ["................................k.............................
 const LH_PAL = {"0": "#fbf4f6", "1": "#e59ab6", "A": "#fbd3e0", "O": "#f2d7e0", "E": "#f6c0d3", "W": "#ffffff", "L": "#c08a64", "P": "#d7ecf8", "T": "#c08e53", "b": "#d8c0c8", "d": "#a66e42", "f": "#e5ba7b", "H": "#deb160", "J": "#e9a9c2", "U": "#dfaa6e", "k": "#91613b", "o": "#dfa972"};
 function drawStore(g) {
   const x0 = STO.x0, y0 = STO.y0, cx = x0 + 32;
-  R(g, x0 + 1, y0 + 47, 63, 3, 'rgba(60,20,40,.18)'); R(g, cx - 8, y0 + 50, 17, 1, 'rgba(60,20,40,.14)');
+  R(g, x0 + 1, y0 + 47, 63, 3, 'rgba(60,20,40,.18)'); R(g, x0 + 21, y0 + 50, 22, 1, 'rgba(60,20,40,.14)');
   LH_ROWS.forEach((r, y) => [...r].forEach((ch, x) => { if (LH_PAL[ch]) R(g, x0 + 0 + x, y0 + 50 - LH_ROWS.length + y, 1, 1, LH_PAL[ch]); }));
 }
 function drawFence(g) {
