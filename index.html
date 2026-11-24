@@ -1232,7 +1232,7 @@ function drawCrate(g) {
   // Laterne am Haken: rosa Dach, Glas wie die Hausfenster (leuchtet nachts)
   R(g, x0 + 30, y0 + 1, 5, 1, '#a86d48'); R(g, x0 + 30, y0 + 2, 1, 1, '#a86d48'); R(g, x0 + 34, y0 + 2, 1, 1, '#a86d48');
   const L = ['..PPP..', '.PpppP.', 'PPPPPPP', '.wGGGw.', '.wGcGw.', '.wGcGw.', '.wGGGw.', '.PPPPP.', '...P...'];
-  L.forEach((r, j) => [...r].forEach((ch, i) => { const c = { P: '#d9608c', p: '#ff8fb8', w: '#ffffff', G: '#c4ecff', c: '#fff4e6' }[ch]; if (c) R(g, x0 + 31 + i, y0 + 3 + j, 1, 1, c); }));
+  L.forEach((r, j) => [...r].forEach((ch, i) => { const c = { P: '#f296b7', p: '#f7b7cf', w: '#ffffff', G: '#c4ecff', c: '#fff4e6' }[ch]; if (c) R(g, x0 + 31 + i, y0 + 3 + j, 1, 1, c); }));
   R(g, x0 + 33, y0 + 4, 1, 1, '#ffd0e2');
 }
 function drawStump(g, tx, ty) {
