@@ -1471,7 +1471,9 @@ function seedBag(g, a, b) {
   disc(g, 8, 9, 2, a); R(g, 7, 8, 1, 1, b);
 }
 icon('seed_ruebe', g => seedBag(g, '#e8c46a', '#fbe6a8'));
-icon('seed_kohl', g => seedBag(g, '#a0569f', '#e3b6e8'));
+// Rübensamen: braune Papiertüte mit Rübe (aus der 32×32-Vorlage auf 16×16 verkleinert)
+const SEED_KOHL = ["................", "......aaaa......", "....aabccbaa....", "...adddddddda...", "...acccccccca...", "...accbeebcca...", "...acbefgebca...", "...acbfghgbca...", "...acbehgebca...", "...acbjkkibca...", "...acbkkiibca...", "...acbllmmbca...", "...accbnmbcca...", "...acccbbccca...", "...aaaaaaaaaa...", "................"], SEED_KOHL_PAL = {"a": "#4a2c1a", "b": "#9f633c", "c": "#b98250", "d": "#81482e", "e": "#122020", "f": "#14a02d", "g": "#197a3e", "h": "#24523b", "i": "#403453", "j": "#242234", "k": "#793a80", "l": "#dca463", "m": "#bb7547", "n": "#322b27"};
+icon('seed_kohl', g => SEED_KOHL.forEach((r, y) => [...r].forEach((ch, x) => { if (SEED_KOHL_PAL[ch]) R(g, x, y, 1, 1, SEED_KOHL_PAL[ch]); })));
 icon('seed_kuerbis', g => seedBag(g, '#e07b24', '#f6b060'));
 for (const t of ['ruebe', 'kohl', 'kuerbis']) icon(t, g => { const c = CROPSPR[t].icon; g.drawImage(c, 8 - (c.width >> 1), 16 - c.height); });
 icon('snack', g => {
