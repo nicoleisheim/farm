@@ -1218,14 +1218,13 @@ function makeTown() {
 }
 function goTown() { LOC = 'town'; if (!BG_T) makeTown(); S.px = 22; S.py = 8 * 16 + 13; S.dir = 'right'; S.time += 10; fadeT = .35; snd('sel'); toast('Innenstadt'); }
 function goFarm() { LOC = 'farm'; S.px = GATE[0] * 16 - 2; S.py = GATE[1] * 16 + 13; S.dir = 'left'; S.time += 10; fadeT = .35; snd('sel'); toast('Sonnenhof'); }
+// Beerenstrauch ausgewachsen (16×16): mit Beeren / ohne Beeren
+const BUSH_RIPE = ["................", "......aaaaa.....", "....aabbbbbaa...", "..aabccdcccbea..", ".aebccccccccba..", ".aebcccccdeccea.", "aebcdcecccbccbea", ".abccedcccbdbbea", "fgbeebbccebbeee.", "fegbbbbbdbbbbef.", "feegbebbbbbdeeef", "fgeedebbebbheggf", ".fgegedbbdeeggf.", ".fgghgeeeehgggf.", "..fhgggggggghf..", "....hhghghhh...."], BUSH_EMPTY = ["................", "......aaaaa.....", "....aabbbbbaa...", "..aabccccccbea..", ".aebccccccccba..", ".aebccccceeccea.", "aebcccecccbccbea", ".abcceccccbebbea", "fgbeebbccebbeee.", "fegbbbbbebbbbef.", "feegbebbbbbbeeef", "fgeeeebbebbheggf", ".fgegegbbheeggf.", ".fgghgeeeehgggf.", "..fhgggggggghf..", "....hhghghhh...."], BUSH_PAL = {"a": "#1f4c2e", "b": "#3d995c", "c": "#6fc377", "d": "#ad3b5f", "e": "#2a6d49", "f": "#15321f", "g": "#20543f", "h": "#174232"};
 function drawBerryBush(g, tx, ty, st) {
   const x0 = tx * 16, y0 = ty * 16;
   R(g, x0 + 2, y0 + 13, 12, 2, 'rgba(60,20,40,.18)');
   if (st.d < 2) { disc(g, x0 + 8, y0 + 10, 3, '#3f8f45'); disc(g, x0 + 7, y0 + 9, 2, '#68bb5f'); R(g, x0 + 6, y0 + 8, 1, 1, '#93d982'); return; }
-  disc(g, x0 + 8, y0 + 9, 6, '#3f8f45'); disc(g, x0 + 7, y0 + 8, 5, '#58ae55'); R(g, x0 + 5, y0 + 5, 2, 1, '#93d982');
-  const pts = [[4, 7], [9, 5], [11, 9], [6, 11], [8, 8], [12, 6]];
-  if (st.ripe) pts.forEach(([a, b]) => { R(g, x0 + a, y0 + b, 2, 2, '#e0466e'); R(g, x0 + a, y0 + b, 1, 1, '#ffb3c6'); });
-  else pts.slice(0, 3).forEach(([a, b]) => { R(g, x0 + a, y0 + b, 1, 1, '#ffffff'); R(g, x0 + a + 1, y0 + b, 1, 1, '#ffe066'); });
+  (st.ripe ? BUSH_RIPE : BUSH_EMPTY).forEach((r, y) => [...r].forEach((ch, x) => { if (BUSH_PAL[ch]) R(g, x0 + x, y0 + y, 1, 1, BUSH_PAL[ch]); }));
 }
 function drawStandAwning(g) { drawStandRows(g, 0, 13); }
 function drawCrate(g) {
