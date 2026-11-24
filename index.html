@@ -1358,11 +1358,9 @@ icon('shovel', g => { // rosa (nach Pixel Farming Tools, Silber umgefärbt)
   const A = ["................", "................", "..........aaa...", ".........abbca..", "........abbcdca.", ".......aeecdeba.", ".......aaadeeba.", "........afaeda..", ".......agaada...", "......aga.aa....", ".....aha........", ".aa.aha.........", ".afaia..........", "..aia...........", "...aia..........", "....aa.........."], C = {"a": "#3b1c2b", "b": "#fdc1da", "c": "#ffffff", "d": "#d52e74", "e": "#f471a8", "f": "#a62654", "g": "#ff4f4f", "h": "#54293e", "i": "#411f2f"};
   A.forEach((r, y) => [...r].forEach((ch, x) => { if (C[ch]) R(g, x, y, 1, 1, C[ch]); }));
 });
-icon('wood', g => {
-  R(g, 2, 8, 12, 4, '#a8693e'); R(g, 2, 8, 12, 1, '#c48a5e'); R(g, 4, 4, 11, 4, '#b87a4a'); R(g, 4, 4, 11, 1, '#d39a64');
-  disc(g, 3, 10, 2, '#e8c094'); R(g, 3, 10, 1, 1, '#c49060'); disc(g, 14, 6, 2, '#e8c094'); R(g, 14, 6, 1, 1, '#c49060');
-  R(g, 6, 12, 7, 1, '#8a5a40');
-});
+// Holz: Stämme (16×16)
+const WOOD_ICON = ["................", "..aaaaaaaaaaaa..", ".abbbacccccccca.", "abdddbabbbbbbbba", "abdedbaeeeeeeeea", "abdddbabbbbbbbba", ".abbbacccccccca.", "..aaaaaaaaaaaa..", ".abbbacccccccca.", "abdddbabbbbbbbba", "abdedbaeeeeeeeea", "abdddbabbbbbbbba", ".abbbacccccccca.", "..aaaaaaaaaaaa..", "................", "................"], WOOD_PAL = {"a": "#4a2c1a", "b": "#8a5530", "c": "#6e4024", "d": "#ba9159", "e": "#a7733f"};
+icon('wood', g => WOOD_ICON.forEach((r, y) => [...r].forEach((ch, x) => { if (WOOD_PAL[ch]) R(g, x, y, 1, 1, WOOD_PAL[ch]); })));
 icon('sap_green', g => { drawSapling(g, 0, 0, false, false); R(g, 4, 13, 8, 3, '#c98a5a'); R(g, 4, 13, 8, 1, '#e0a874'); });
 icon('sap_cherry', g => { drawSapling(g, 0, 0, false, true); R(g, 4, 13, 8, 3, '#c98a5a'); R(g, 4, 13, 8, 1, '#e0a874'); });
 icon('sap_berry', g => { drawBerryBush(g, 0, 0, { d: 2, ripe: true }); R(g, 3, 13, 10, 3, '#c98a5a'); R(g, 3, 13, 10, 1, '#e0a874'); });
