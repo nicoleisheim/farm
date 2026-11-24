@@ -763,10 +763,16 @@ const TREE_PAL = {"a": "#32470e", "b": "#4f6512", "c": "#678928", "d": "#412109"
 // Kirschbaum als Pixel Art (17×16), gleiche Lage wie der grüne Baum
 const CHERRY_ROWS = ["......aaaa.......", "....aaaaabbb.....", "...aacbccbccb....", "...accccccccb....", "..adcebccccbba...", "..acdcbcceccba...", "..abcdccccdbdba..", ".acccbeccbbdbba..", ".acebbbebbdbfba..", ".aacebbdbdbbbaa..", "..aacebddaaaaa...", "......eeda.......", ".......ed........", ".......ed........", ".......ed........", "......eedd......."];
 const CHERRY_PAL = {"a": "#c9628f", "b": "#e47fa8", "c": "#f7a6c8", "d": "#412109", "e": "#603813", "f": "#ce6894"};
+const TREE2_ROWS = [".......aaa......", "....abbbbaa.....", "...abccccbcda...", "..abccccccbcda..", ".abcccbbbbcbba..", ".acbcbbbcccbbaa.", ".abbbbbbbbbbbda.", "acbbbbbbbbbbbda.", "acbbbbbbbbbbbcda", "acbdbbbbbbbbbbda", "acdddbbbbbdbdbaa", "addddbddbddbdda.", ".aaddddddddbdaa.", "...addaaaaaaa...", ".....aaeeef.....", "......ggef......", "......ggef......", "......egef......", ".....feeeef.....", "....feeeffff...."];
+const TREE2_PAL = {"a": "#32470e", "b": "#719646", "c": "#9dc56b", "d": "#48661e", "e": "#764c24", "f": "#41210b", "g": "#8c6338"};
 function drawTree(g, tx, ty) {
   const x0 = tx * 16, y0 = ty * 16, s = Math.floor(hash(tx, ty, 3) * 3) - 1, cherry = isCherry(tx, ty), cx = x0 + 8 + s;
   R(g, x0 + 3, y0 + 14, 10, 2, 'rgba(60,20,40,.18)');
-  if (!cherry) { TREE_ROWS.forEach((r, y) => [...r].forEach((ch, x) => { if (TREE_PAL[ch]) R(g, x0 + s + x, y0 - 1 + y, 1, 1, TREE_PAL[ch]); })); return; }
+  if (!cherry) {   // 3/4 der grünen Bäume im neuen Design (16×20, Stammfuß bei y0 + 14), der Rest im alten; oberste Reihe alt, sonst wäre die Krone abgeschnitten
+    if (ty > 0 && hash(tx, ty, 25) < .75) TREE2_ROWS.forEach((r, y) => [...r].forEach((ch, x) => { if (TREE2_PAL[ch]) R(g, x0 + s + x, y0 - 5 + y, 1, 1, TREE2_PAL[ch]); }));
+    else TREE_ROWS.forEach((r, y) => [...r].forEach((ch, x) => { if (TREE_PAL[ch]) R(g, x0 + s + x, y0 - 1 + y, 1, 1, TREE_PAL[ch]); }));
+    return;
+  }
   CHERRY_ROWS.forEach((r, y) => [...r].forEach((ch, x) => { if (CHERRY_PAL[ch]) R(g, x0 + s + x, y0 - 1 + y, 1, 1, CHERRY_PAL[ch]); }));
   CHERRY.push([tx, ty]);
 }
