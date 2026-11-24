@@ -1080,14 +1080,18 @@ function drawStore(g) {
 function drawFence(g) {
   // Holzzaun mit Kreuzstreben: Pfosten gleichmäßig verteilt, je Feld ein sauberes X zwischen zwei Latten
   const P = PAST, L = '#e0a874', M = '#c08a64', D = '#a86d48';
-  const posts = []; const post = (x, y) => { posts.push([x, y]); R(g, x - 1, y + 1, 5, 1, 'rgba(60,20,40,.15)'); R(g, x, y - 11, 3, 12, M); R(g, x, y - 11, 1, 12, L); R(g, x + 2, y - 11, 1, 12, D); R(g, x, y - 12, 3, 1, '#f6cf9c'); };
+  const posts = []; const post = (x, y, sh = true) => { posts.push([x, y]); if (sh) R(g, x - 1, y + 1, 5, 1, 'rgba(60,20,40,.15)'); R(g, x, y - 11, 3, 12, M); R(g, x, y - 11, 1, 12, L); R(g, x + 2, y - 11, 1, 12, D); R(g, x, y - 12, 3, 1, '#f6cf9c'); };
   const xs = (a, b) => { const n = Math.max(1, Math.round((b - a) / 12)); return Array.from({ length: n + 1 }, (_, k) => a + Math.round(k * (b - a) / n)); };
   const seg = (a, b, y) => {
     const ps = xs(a, b);
     R(g, a, y - 10, b - a + 3, 1, L); R(g, a, y - 9, b - a + 3, 1, M); R(g, a, y - 1, b - a + 3, 1, L); R(g, a, y, b - a + 3, 1, M);
     for (let k = 0; k + 1 < ps.length; k++) { const xa = ps[k] + 3, w = ps[k + 1] - xa; for (let i = 0; i < 7; i++) { const d0 = Math.round(i * w / 7), d1 = Math.max(d0 + 1, Math.round((i + 1) * w / 7)); R(g, xa + w - d1, y - 8 + i, d1 - d0, 1, D); R(g, xa + d0, y - 8 + i, d1 - d0, 1, M); } }
-    ps.forEach(x => post(x, y));
+    ps.forEach(x => post(x, y, false));
   };
+  // Schatten auf dem Boden (Licht von oben links): unter den Zaunreihen ein Band, rechts neben den Seitenlatten ein Streifen
+  const SH = 'rgba(60,20,40,.22)', SH2 = 'rgba(60,20,40,.1)';
+  for (const [a, b, y] of [[P.x0, P.g0 - 3, P.y0], [P.g1, P.x1, P.y0], [P.x0, P.x1, P.y1]]) { R(g, a + 1, y + 1, b - a + 3, 2, SH); R(g, a + 2, y + 3, b - a + 2, 1, SH2); }
+  for (const x of [P.x0, P.x1]) { R(g, x + 3, P.y0 + 3, 1, P.y1 - P.y0 - 2, SH); R(g, x + 4, P.y0 + 3, 1, P.y1 - P.y0 - 2, SH2); }
   // Seiten: Latte von oben gesehen, Pfosten im gleichen Abstand
   for (const x of [P.x0, P.x1]) { R(g, x, P.y0 - 9, 3, P.y1 - P.y0, M); R(g, x, P.y0 - 9, 1, P.y1 - P.y0, L); R(g, x + 2, P.y0 - 9, 1, P.y1 - P.y0, D); }
   const n = Math.round((P.y1 - P.y0) / 12);
