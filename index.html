@@ -742,7 +742,12 @@ function drawPaths(g) {
     else if (!P[y * W + x + 1]) R(g, x - 1, y, 2, 1, '#6aae4a');
   }
 }
-const isCherry = (tx, ty) => { const st = TREES[tx + ',' + ty]; return st && st.k ? st.k === 'cherry' : hash(tx, ty, 21) < .4; };
+// Baumart aus einem vorab optimierten 24×24-Muster (wiederholt sich), damit sich die vier Bäume gut mischen:
+// A = Kirschbaum hoch, B = Kirschbaum klein, C = grün hoch, D = grün klein (je 3/4 hoch, 40 % Kirschbäume)
+const TREE_MIX = 'ACBCCBACCDACCBCADCADCACDBCADACCABCCBACACACBCABCACADCCADCCADCCADCBACADCACACCADCCACBCADCCACCACCACDCDACCACDACABCACDABCDADCACACDACACBCDCADACCCACCCADACBACCDACACABCCADACBDACCCDACDACBCBCDCABCACDACCDACACACBACDCACADCACDACDACBDCBCACDCACDCBCACBACBACACACADCACBCACACDCACCACCADCCDCACBCACDADCACDABCADCCACABCDCACBACCACBCCADCACADACACACBCACDACDCABCABCABCCDCACACDCACBACADCACCADCACACBCCBACBACDACCACDACCADACDCADACACDACCDACBCCABCCCBACCACBCACCBACBCCADCADADACADCCADCBACDACADCABCACACBCCADCACCCACBACCACCACBCDCABCACCBADCACCDACDACDADACDCDCADCCACBCACCACCBACACACACBCCADCACDCADCBACCBCDCADACDACCADCABCACACDAC';
+const treeMix = (tx, ty) => TREE_MIX[(((ty % 24) + 24) % 24) * 24 + (((tx % 24) + 24) % 24)];
+const isCherry = (tx, ty) => { const st = TREES[tx + ',' + ty]; return st && st.k ? st.k === 'cherry' : 'AB'.includes(treeMix(tx, ty)); };
+const isTall = (tx, ty) => 'AC'.includes(treeMix(tx, ty));
 function drawSapling(g, tx, ty, big, cherry) {
   const x0 = tx * 16, y0 = ty * 16;
   R(g, x0 + 3, y0 + 13, 10, 2, 'rgba(60,20,40,.18)'); R(g, x0 + 4, y0 + 12, 8, 2, '#8a5a3a'); R(g, x0 + 5, y0 + 12, 6, 1, '#a8734a');
@@ -772,14 +777,14 @@ const CHERRY2_ROWS = [".......aaa......", "....abbbbaa.....", "...abccccbcda..."
 const CHERRY2_PAL = {"a": "#c9628f", "b": "#f7a6c8", "c": "#ffcfe2", "d": "#e47fa8", "e": "#764c24", "f": "#41210b", "g": "#8c6338"};
 // 3/4 der Kirschbäume im neuen hohen Design (16×20, Stammfuß bei y0 + 14); oberste Reihe alt, sonst wäre die Krone abgeschnitten
 function cherrySprite(g, tx, ty, x, y0) {
-  if (tallOk(ty) && hash(tx, ty, 39) < .75) CHERRY2_ROWS.forEach((r, y) => [...r].forEach((ch, i) => { if (CHERRY2_PAL[ch]) R(g, x + i, y0 - 5 + y, 1, 1, CHERRY2_PAL[ch]); }));
+  if (tallOk(ty) && isTall(tx, ty)) CHERRY2_ROWS.forEach((r, y) => [...r].forEach((ch, i) => { if (CHERRY2_PAL[ch]) R(g, x + i, y0 - 5 + y, 1, 1, CHERRY2_PAL[ch]); }));
   else CHERRY_ROWS.forEach((r, y) => [...r].forEach((ch, i) => { if (CHERRY_PAL[ch]) R(g, x + i, y0 - 1 + y, 1, 1, CHERRY_PAL[ch]); }));
 }
 function drawTree(g, tx, ty) {
   const x0 = tx * 16, y0 = ty * 16, s = Math.floor(hash(tx, ty, 3) * 3) - 1, cherry = isCherry(tx, ty), cx = x0 + 8 + s;
   R(g, x0 + 3, y0 + 14, 10, 2, 'rgba(60,20,40,.18)');
   if (!cherry) {   // 3/4 der grünen Bäume im neuen Design (16×20, Stammfuß bei y0 + 14), der Rest im alten; oberste Reihe alt, sonst wäre die Krone abgeschnitten
-    if (tallOk(ty) && hash(tx, ty, 25) < .75) TREE2_ROWS.forEach((r, y) => [...r].forEach((ch, x) => { if (TREE2_PAL[ch]) R(g, x0 + s + x, y0 - 5 + y, 1, 1, TREE2_PAL[ch]); }));
+    if (tallOk(ty) && isTall(tx, ty)) TREE2_ROWS.forEach((r, y) => [...r].forEach((ch, x) => { if (TREE2_PAL[ch]) R(g, x0 + s + x, y0 - 5 + y, 1, 1, TREE2_PAL[ch]); }));
     else TREE_ROWS.forEach((r, y) => [...r].forEach((ch, x) => { if (TREE_PAL[ch]) R(g, x0 + s + x, y0 - 1 + y, 1, 1, TREE_PAL[ch]); }));
     return;
   }
