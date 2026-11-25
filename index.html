@@ -2901,6 +2901,10 @@ function updateCritters(dt) {
       const d = Math.hypot(c.gx - c.x, c.gy - c.y);
       c.x += (c.gx - c.x) / d * 16 * dt; c.y += (c.gy - c.y) / d * 16 * dt + Math.sin(c.t * 5) * 12 * dt;
     } else {
+      if (!freeAt(c.x, c.y)) {   // steckt in einem Baum, Zaun oder im Wasser fest (z. B. nach Änderung der Karte): an einen freien Platz setzen
+        for (let k = 0; k < 60; k++) { const nx = 24 + Math.random() * (W - 48), ny = 24 + Math.random() * (curH() - 48); if (freeAt(nx, ny) && Math.hypot(nx - S.px, ny - S.py) > 60) { c.x = c.gx = nx; c.y = c.gy = ny; c.wait = 1; break; } }
+        continue;
+      }
       const near = Math.hypot(S.px - c.x, S.py - c.y) < 20;
       if (near && c.wait > 0) { c.wait = 0; c.gx = c.x + Math.sign(c.x - S.px || 1) * 30; c.gy = c.y + Math.sign(c.y - S.py || 1) * 10; if (!freeAt(c.gx, c.gy)) { c.gx = c.x; c.gy = c.y; c.wait = 1; } }
       if (c.wait > 0) { c.wait -= dt; c.hop = 0; if (c.wait <= 0) { for (let k = 0; k < 8; k++) { const nx = c.x + (Math.random() - .5) * 80, ny = c.y + (Math.random() - .5) * 50; if (freeAt(nx, ny)) { c.gx = nx; c.gy = ny; break; } } } continue; }
