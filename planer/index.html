@@ -55,7 +55,7 @@ input,select,textarea{font-size:16px}
 <div id="opts" hidden><b>Zufällig verteilen:</b>
   <label>Dichte <input id="dens" type="range" min="5" max="80" value="30"> <span id="densv">30 %</span></label>
   <span id="kinds"></span>
-  <span class="hint">Zieh ein Rechteck über die Fläche. Nur freie Wiesenfelder werden bepflanzt.</span>
+  <span class="hint">Zieh ein Rechteck über die Fläche. Die Pflanzen landen an zufälligen Stellen auf freier Wiese, ohne Raster.</span>
 </div>
 <div id="wrap"><canvas id="cv" width="384" height="608"></canvas></div>
 <div id="tools"></div>
@@ -77,11 +77,11 @@ const mkc = (w, h) => { const c = document.createElement('canvas'); c.width = w;
 
 /* ---------- Zustand ---------- */
 const BIDS = Object.keys(DATA.blds), BLD0 = Object.fromEntries(BIDS.map(k => [k, [0, 0]]));
-const ORIG = { ground: DATA.ground.map(r => [...r]), obj: DATA.obj.map(r => [...r]), water: DATA.water.map(r => [...r].map(Number)), bld: clone0(BLD0), past: DATA.past.map(r => [...r].map(Number)) };
+const ORIG = { ground: DATA.ground.map(r => [...r]), obj: DATA.obj.map(r => [...r]), water: DATA.water.map(r => [...r].map(Number)), bld: clone0(BLD0), past: DATA.past.map(r => [...r].map(Number)), free: [] };
 function clone0(o) { return JSON.parse(JSON.stringify(o)); }
 const clone = s => JSON.parse(JSON.stringify(s));
 let st = clone(ORIG);
-const pad = d => { if (!d.past) d.past = clone0(ORIG.past); if (d.bld && d.bld.weide) delete d.bld.weide; if (!d.bld) d.bld = clone0(BLD0); for (const k of BIDS) if (!d.bld[k]) d.bld[k] = [0, 0]; if (d.ground.length === 24) { d.ground = [...ORIG.ground.slice(0, OFF), ...d.ground, ...ORIG.ground.slice(OFF + 24)]; d.obj = [...ORIG.obj.slice(0, OFF), ...d.obj, ...ORIG.obj.slice(OFF + 24)]; } return d; };
+const pad = d => { if (!d.free) d.free = []; if (!d.past) d.past = clone0(ORIG.past); if (d.bld && d.bld.weide) delete d.bld.weide; if (!d.bld) d.bld = clone0(BLD0); for (const k of BIDS) if (!d.bld[k]) d.bld[k] = [0, 0]; if (d.ground.length === 24) { d.ground = [...ORIG.ground.slice(0, OFF), ...d.ground, ...ORIG.ground.slice(OFF + 24)]; d.obj = [...ORIG.obj.slice(0, OFF), ...d.obj, ...ORIG.obj.slice(OFF + 24)]; } return d; };
 try { const d = JSON.parse(localStorage.getItem(KEY) || localStorage.getItem('farmplaner-v1')); if (d && d.ground && d.obj && d.water) st = pad(d); } catch (e) {}
 // Gebäude: Grundfläche (Felder) verschiebt sich mit; LOCK und BT werden daraus berechnet
 let LOCK = [], BT = [], OWNER = [];
@@ -228,6 +228,11 @@ function drawFenceTile(g, x, y, isF = (a, b) => a >= 0 && b >= 0 && a < COLS && 
   if (isF(x + 1, y)) fenceRun(g, t, cx + 3, cx + 16, by);
   fencePost(g, t, cx, by);
 }
+function drawFree(g, f) {
+  const sp = SPR[f.t], A = sp[0], w = A[0].length, h = A.length;
+  if ('AaCcU'.includes(f.t)) R(g, f.x - 5, f.y - 1, 10, 2, 'rgba(60,20,40,.18)');
+  spr(g, sp, f.x - (w >> 1), f.y - h + 1 + (f.t === 'a' || f.t === 'c' ? 0 : 0));
+}
 function drawObj(g, x, y) {
   const o = st.obj[y][x], x0 = x * 16, y0 = y * 16;
   if (o === '.' || BT[y][x] !== '.') return;
@@ -254,9 +259,15 @@ function draw() {
   X.clearRect(0, 0, W, H); X.drawImage(base, 0, 0);
   // Blumen liegen wie im Spiel unter den Gebäuden, Zäune, Sträucher und Bäume davor
   for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) if ('1234'.includes(st.obj[y][x])) drawObj(X, x, y);
+  for (const f of [...st.free].sort((a, b) => a.y - b.y)) if ('1234'.includes(f.t)) drawFree(X, f);
   for (const k of BIDS) { if (!BIMG[k].complete) continue; let [dx, dy] = st.bld[k]; if (moving && moving.k === k) { dx = moving.dx; dy = moving.dy; X.globalAlpha = moving.ok ? .85 : .45; } X.drawImage(BIMG[k], DATA.blds[k].x + dx * 16, DATA.blds[k].y + (dy + OFF) * 16); X.globalAlpha = 1;
     if (moving && moving.k === k) { X.strokeStyle = moving.ok ? '#ffffff' : '#ff4d6d'; X.lineWidth = 1; for (const [x, y] of DATA.blds[k].fp) X.strokeRect((x + dx) * 16 + .5, (y + dy + OFF) * 16 + .5, 15, 15); } }
-  for (let y = 0; y < ROWS; y++) { for (let x = 0; x < COLS; x++) if (isFence(st.obj[y][x])) drawObj(X, x, y); for (let x = 0; x < COLS; x++) if ('AaCcU'.includes(st.obj[y][x])) drawObj(X, x, y); }
+  { // Zäune, Sträucher und Bäume von oben nach unten (Feld-Objekte und frei platzierte gemeinsam), damit Kronen richtig überlappen
+    const L = [];
+    for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) { const o = st.obj[y][x]; if (isFence(o)) L.push([y * 16 + 12, 0, () => drawObj(X, x, y)]); else if ('AaCcU'.includes(o)) L.push([y * 16 + 14, 1, () => drawObj(X, x, y)]); }
+    for (const f of st.free) if ('AaCcU'.includes(f.t)) L.push([f.y, 1, () => drawFree(X, f)]);
+    L.sort((a, b) => a[0] - b[0] || a[1] - b[1]).forEach(e => e[2]());
+  }
   // Weidefläche: zart gelb, gestrichelter Rand
   X.fillStyle = 'rgba(255,236,140,.28)'; X.strokeStyle = 'rgba(160,110,40,.8)'; X.lineWidth = 1;
   for (let y = 0; y < 24; y++) for (let x = 0; x < COLS; x++) if (st.past[y][x]) { const Y0 = (y + OFF) * 16, X0 = x * 16; X.fillRect(X0, Y0, 16, 16);
@@ -318,18 +329,24 @@ for (const [id, name, on] of RKINDS) { const l = document.createElement('label')
 dens.oninput = () => document.getElementById('densv').textContent = dens.value + ' %';
 function showOpts() { optsEl.hidden = tool !== 'r'; }
 let rect = null;   // Rechteck beim zufälligen Verteilen
-function scatter(r) {
+function freeOk(px, py) {   // Fußpunkt auf freier Wiese, nicht zu dicht an anderen frei gesetzten Pflanzen
+  const x = px >> 4, y = py >> 4, my = y - OFF;
+  if (x < 0 || y < 0 || x >= COLS || y >= ROWS) return false;
+  if (LOCK[y][x] || st.obj[y][x] !== '.' || st.ground[y][x] !== 'g' || waterIn(x, y) || (my >= 0 && my < 24 && st.past[my][x])) return false;
+  return !st.free.some(f => Math.abs(f.x - px) < 7 && Math.abs(f.y - py) < 5);
+}
+function scatter(r) {   // wirklich zufällig: freie Pixelpositionen statt Feldraster
   const kinds = [...kindsEl.querySelectorAll('input:checked')].map(c => c.dataset.k);
   if (!kinds.length) { toast('Wähle oben mindestens eine Art aus.'); return false; }
-  const p = dens.value / 100; let n = 0;
   const [x0, x1] = [Math.min(r.x0, r.x1), Math.max(r.x0, r.x1)], [y0, y1] = [Math.min(r.y0, r.y1), Math.max(r.y0, r.y1)];
-  for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
-    if (x < 0 || y < 0 || x >= COLS || y >= ROWS) continue;
-    const my = y - OFF;
-    if (LOCK[y][x] || st.obj[y][x] !== '.' || st.ground[y][x] !== 'g' || waterIn(x, y) || (my >= 0 && my < 24 && st.past[my][x])) continue;
-    if (Math.random() < p) { st.obj[y][x] = kinds[Math.floor(Math.random() * kinds.length)]; n++; }
+  const area = (x1 - x0 + 1) * (y1 - y0 + 1), want = Math.round(area * dens.value / 100 * (0.7 + Math.random() * 0.6));
+  let n = 0;
+  for (let k = 0; k < want * 12 && n < want; k++) {
+    const px = Math.floor((x0 * 16) + Math.random() * (x1 - x0 + 1) * 16), py = Math.floor((y0 * 16) + Math.random() * (y1 - y0 + 1) * 16);
+    if (!freeOk(px, py)) continue;
+    st.free.push({ t: kinds[Math.floor(Math.random() * kinds.length)], x: px, y: py }); n++;
   }
-  toast(n ? n + (n === 1 ? ' Pflanze gesetzt' : ' Pflanzen gesetzt') : 'Hier war kein freies Wiesenfeld.');
+  toast(n ? n + (n === 1 ? ' Pflanze gesetzt' : ' Pflanzen gesetzt') : 'Hier war kein freier Platz.');
   return n > 0;
 }
 
@@ -337,9 +354,11 @@ const toastEl = document.getElementById('toast'); let tt = 0;
 function toast(m) { toastEl.textContent = m; toastEl.classList.add('show'); clearTimeout(tt); tt = setTimeout(() => toastEl.classList.remove('show'), 1600); }
 function waterIn(tx, ty) { ty -= OFF; if (ty < 0 || ty >= 24) return false; for (let dy = 0; dy < 2; dy++) for (let dx = 0; dx < 2; dx++) if (st.water[ty * 2 + dy][tx * 2 + dx]) return true; return false; }
 let lastMsg = '';
+const clearFreeTile = (tx, ty) => { const n0 = st.free.length; st.free = st.free.filter(f => (f.x >> 4) !== tx || (f.y >> 4) !== ty); return st.free.length !== n0; };
 function apply(px, py) {   // px,py in Spielpixeln
   if (px < 0 || py < 0 || px >= W || py >= H) return false;
   const tx = px >> 4, ty = py >> 4;
+  if (['w', 'wf', 'p', 'k'].includes(tool) || isFence(tool)) clearFreeTile(tx, ty);
   const warn = m => { if (lastMsg !== m) { toast(m); lastMsg = m; } return false; };
   if (LOCK[ty][tx]) return warn('Hier steht ein Gebäude oder die Kuhweide.');
   const my = ty - OFF;
@@ -353,7 +372,7 @@ function apply(px, py) {   // px,py in Spielpixeln
     return ch && 'b';
   }
   if (tool === 'k' || tool === 'kx') { if (my < 1 || my > 22 || tx < 1 || tx > 22) return warn('Die Weide muss innerhalb des Zauns liegen.'); const v = tool === 'k' ? 1 : 0; if (st.past[my][tx] === v) return false; if (v && waterIn(tx, ty)) return warn('Die Weide kann nicht im Wasser liegen.'); st.past[my][tx] = v; return 'o'; }
-  if (tool === 'x') { if (st.obj[ty][tx] === '.') return false; st.obj[ty][tx] = '.'; return 'o'; }
+  if (tool === 'x') { const n0 = st.free.length; st.free = st.free.filter(f => Math.hypot(f.x - px, (f.y - 6) - py) > 8); if (st.free.length !== n0) return 'o'; if (st.obj[ty][tx] === '.') return false; st.obj[ty][tx] = '.'; return 'o'; }
   if (waterIn(tx, ty)) return warn('Im Wasser kann nichts stehen.');
   if (!isFence(tool) && st.ground[ty][tx] === 'p') return warn('Auf dem Weg kann nur ein Zaun stehen.');
   if (st.obj[ty][tx] === tool) return false;
@@ -377,7 +396,7 @@ function moveEnd() {
   if (err) { toast(err); redraw(); return false; }
   if (m.dx === m.ox && m.dy === m.oy) { redraw(); return false; }
   st.bld[m.k] = [m.dx, m.dy]; calcBld();
-  for (const [x, y] of DATA.blds[m.k].fp) { const X0 = x + m.dx, Y0 = y + m.dy + OFF; st.obj[Y0][X0] = '.'; }
+  for (const [x, y] of DATA.blds[m.k].fp) { const X0 = x + m.dx, Y0 = y + m.dy + OFF; st.obj[Y0][X0] = '.'; clearFreeTile(X0, Y0); }
   redraw(true); toast(DATA.blds[m.k].name + ' verschoben'); return true;
 }
 /* ---------- Eingabe: malen, zoomen, verschieben ---------- */
@@ -451,6 +470,7 @@ function exportText() {
     '\nObjekte (A/a Baum groß/klein, C/c Kirschbaum groß/klein, U Beerenstrauch, 1 Sonnenblume, 2 Blümchen orange, 3 Blümchen rosa, 4 Lavendel, V Weidezaun mit Rosen, F Holzzaun, W Lattenzaun weiß, R Lattenzaun rosa, S Bretterzaun, M Steinmauer, E Hecke, . leer):\n' + st.obj.map(r => r.join('')).join('\n') +
     '\nWasser (48x48, je 8 Pixel):\n' + st.water.map(r => r.join('')).join('\n') +
     '\nWeide (24x24, 1 = Weidefläche):\n' + st.past.map(r => r.join('')).join('\n') +
+    '\nFrei gesetzt (Art x y, Fußpunkt in Spielpixeln): ' + (st.free.map(f => `${f.t} ${f.x} ${f.y - OFF * 16}`).join('; ') || '-') +
     '\nGebäude (Verschiebung in Feldern x y): ' + BIDS.map(k => `${k} ${st.bld[k][0]} ${st.bld[k][1]}`).join('; ');
 }
 let dlgOk = null;
@@ -470,7 +490,8 @@ document.getElementById('imp').onclick = () => openDlg('Plan einfügen', 'Füge 
   if (i1 < 0 || i2 < 0 || i3 < 0 || g.some(r => r.length !== 24) || o.some(r => r.length !== 24) || w.length !== 48 || w.some(r => r.length !== 48)) { toast('Das ist kein gültiger Farmplan.'); return; }
   const bl = clone0(BLD0); const ib = L.findIndex(s => s.startsWith('Gebäude')); if (ib >= 0) for (const part of L[ib].split(':')[1].split(';')) { const m = part.trim().match(/^(\w+) (-?\d+) (-?\d+)$/); if (m && bl[m[1]]) bl[m[1]] = [+m[2], +m[3]]; }
   const ip = L.findIndex(s => s.startsWith('Weide')), pw = ip >= 0 ? L.slice(ip + 1, ip + 25) : null;
-  push(); st = pad({ ground: g.map(r => [...r]), obj: o.map(r => [...r]), water: w.map(r => [...r].map(Number)), bld: bl, past: pw && pw.every(r => r.length === 24) ? pw.map(r => [...r].map(Number)) : undefined }); calcBld(); save(); redraw(true); dlg.close(); toast('Plan geladen');
+  const ifr = L.findIndex(s => s.startsWith('Frei')), fr = []; if (ifr >= 0) for (const part of L[ifr].split(':').slice(1).join(':').split(';')) { const m = part.trim().match(/^([AaCcU1-4]) (-?\d+) (-?\d+)$/); if (m) fr.push({ t: m[1], x: +m[2], y: +m[3] + OFF * 16 }); }
+  push(); st = pad({ ground: g.map(r => [...r]), obj: o.map(r => [...r]), water: w.map(r => [...r].map(Number)), bld: bl, past: pw && pw.every(r => r.length === 24) ? pw.map(r => [...r].map(Number)) : undefined, free: fr }); calcBld(); save(); redraw(true); dlg.close(); toast('Plan geladen');
 });
 draw();
 </script>
