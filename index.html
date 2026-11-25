@@ -810,9 +810,9 @@ function cherrySprite(g, tx, ty, x, y0) {
   else CHERRY_ROWS.forEach((r, y) => [...r].forEach((ch, i) => { if (CHERRY_PAL[ch]) R(g, x + i, y0 - 1 + y, 1, 1, CHERRY_PAL[ch]); }));
 }
 function drawTree(g, tx, ty) {
-  const x0 = tx * 16, y0 = ty * 16, s = Math.floor(hash(tx, ty, 3) * 3) - 1, cherry = isCherry(tx, ty), cx = x0 + 8 + s;
+  const x0 = tx * 16, y0 = ty * 16, s = 0, cherry = isCherry(tx, ty), cx = x0 + 8 + s;
   R(g, x0 + 3, y0 + 14, 10, 2, 'rgba(60,20,40,.18)');
-  if (!cherry) {   // 3/4 der grünen Bäume im neuen Design (16×20, Stammfuß bei y0 + 14), der Rest im alten; oberste Reihe alt, sonst wäre die Krone abgeschnitten
+  if (!cherry) {   // grüne Bäume ohne seitlichen Versatz, damit sich Nachbarbäume nicht überlappen
     if (tallOk(ty) && treeBig(tx, ty)) TREE2_ROWS.forEach((r, y) => [...r].forEach((ch, x) => { if (TREE2_PAL[ch]) R(g, x0 + s + x, y0 - 5 + y, 1, 1, TREE2_PAL[ch]); }));
     else TREE_ROWS.forEach((r, y) => [...r].forEach((ch, x) => { if (TREE_PAL[ch]) R(g, x0 + s + x, y0 - 1 + y, 1, 1, TREE_PAL[ch]); }));
     return;
