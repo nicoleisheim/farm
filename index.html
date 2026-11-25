@@ -730,22 +730,17 @@ function pathPix(x, y) {
 function drawPaths(g) {
   const bld = (x, y) => { const t = tileAt(Math.floor(x / 16), Math.floor(y / 16)); return t === 'H' || t === 'S' || t === 'B' || t === 'F' || t === 'K'; };
   const edge = (x, y) => [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => !pathPix(x + dx, y + dy) && !bld(x + dx, y + dy));
+
+  // Rosa Kiesweg
+  const EDGE='#d49a9a';
+  const fill=(x,y,near)=>{const p=hash(x,y,5),b=hash(x>>1,y>>1,3);let c=near?'#e9bdb6':'#f1cfc8';if(!near&&b<.15)c='#f6ddd7';if(p<.06)c='#dba79f';else if(p>.97)c='#fff3ef';return c};
+  const PEB=['#ffffff','#d69a92'];
   const P = new Uint8Array(W * H);
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (pathPix(x, y)) P[y * W + x] = edge(x, y) ? 2 : 1;
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
     const v = P[y * W + x];
-    if (v === 2) R(g, x, y, 1, 1, '#b07a4c');
-    else if (v === 1) {
-      const nearEdge = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => P[(y + dy) * W + x + dx] === 2);
-      const blk = hash(x >> 1, y >> 1, 3), px = hash(x, y, 5);
-      let c = '#d29e6c';
-      if (nearEdge) c = '#c48f5e';
-      else if (blk < .14) c = '#dcad7d';
-      else if (blk > .9) c = '#c99463';
-      if (px < .035) c = '#b8834f';
-      else if (px > .985) c = '#e8c49a';
-      R(g, x, y, 1, 1, c);
-    }
+    if (v === 2) R(g, x, y, 1, 1, EDGE);
+    else if (v === 1) { const near = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => P[(y + dy) * W + x + dx] === 2); R(g, x, y, 1, 1, fill(x, y, near)); }
   }
   // Kleine Kiesel
   for (let ty = 0; ty < ROWS; ty++) for (let tx = 0; tx < COLS; tx++) {
@@ -753,16 +748,16 @@ function drawPaths(g) {
     for (let k = 0; k < 2; k++) {
       const x = tx * 16 + 3 + Math.floor(hash(tx, ty, k + 20) * 10), y = ty * 16 + 3 + Math.floor(hash(tx, ty, k + 30) * 10);
       if (P[y * W + x] !== 1 || P[y * W + x + 1] !== 1 || hash(tx, ty, k + 40) < .4) continue;
-      R(g, x, y, 2, 1, '#ead2b6'); R(g, x, y + 1, 2, 1, '#b8834f');
+      if (!PEB) continue; R(g, x, y, 2, 1, PEB[0]); R(g, x, y + 1, 2, 1, PEB[1]);
     }
   }
   // Gras wächst über den Rand
   for (let y = 1; y < H - 1; y++) for (let x = 1; x < W - 1; x++) {
     if (P[y * W + x] !== 2 || hash(x, y, 8) > .16) continue;
-    if (!P[(y - 1) * W + x]) R(g, x, y, 1, 2, '#6aae4a');
-    else if (!P[(y + 1) * W + x]) R(g, x, y - 1, 1, 2, '#7bbf55');
-    else if (!P[y * W + x - 1]) R(g, x, y, 2, 1, '#6aae4a');
-    else if (!P[y * W + x + 1]) R(g, x - 1, y, 2, 1, '#6aae4a');
+    if (!P[(y - 1) * W + x]) R(g, x, y, 1, 2, '#7dc35a');
+    else if (!P[(y + 1) * W + x]) R(g, x, y - 1, 1, 2, '#87ca60');
+    else if (!P[y * W + x - 1]) R(g, x, y, 2, 1, '#7dc35a');
+    else if (!P[y * W + x + 1]) R(g, x - 1, y, 2, 1, '#7dc35a');
   }
 }
 // Baumart aus einem vorab optimierten 24×24-Muster (wiederholt sich), damit sich die vier Bäume gut mischen:
