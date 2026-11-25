@@ -858,7 +858,21 @@ const CHERRY_ROWS = ["......aaaa.......", "....aaaaabbb.....", "...aacbccbccb...
 const CHERRY_PAL = {"a": "#c9628f", "b": "#e47fa8", "c": "#f7a6c8", "d": "#412109", "e": "#603813", "f": "#ce6894"};
 // hohe Bäume (16×20) nur, wo über dem Feld Platz für die Krone ist: nicht in der obersten Kartenreihe und nicht in der ersten Reihe eines unteren Randstreifens
 let EDGE_ROW0 = null; var EDGE_PLAN = false;   // EDGE_PLAN: Randstreifen der Farm wird gerade aus dem Farmplan gezeichnet
-const tallOk = ty => ty !== EDGE_ROW0 && (ty > 0 || EDGE_PLAN);
+// große Bäume sind 32 × 40 (Krone ragt 24 px über das Feld): in den ersten beiden Reihen eines Randstreifens und oben in der Stadt nur kleine
+const tallOk = ty => EDGE_ROW0 !== null ? ty > EDGE_ROW0 + 1 : EDGE_PLAN || (LOC === 'town' ? ty >= 2 : ty > 0);
+// großer Baum, Nicoles Design doppelt so groß (32 × 40), gleiche Form für grün und rosa
+const BIG_ROWS = ["...............aaaa.............","..............aaaaaaa...........",".........abbbbbbbaaaa...........",".......aabbbbbbbbbbaaa..........",".......aabbccccccbbbccdda.......",".....aabbcccccccccbbbccddaa.....",".....aabbcccccccccccbbcddaa.....","...aabbcccccccccccccbbbcddaa....","...aabcccccccbbbbbbbcccbbbaa....","..aabccccccbbbbbbbbbccbbbbaaa...","..aaccbbcccbbbbbccccccbbbbaaa...","..aaccbbccbbbbbbcccccbbbbbaaaa..","..aabbbbbbbbbbbbbbbbbbbbbbdaaa..",".aaabbbbbbbbbbbbbbbbbbbbbbddaa..",".aacbbbbbbbbbbbbbbbbbbbbbbddaa..","aaccbbbbbbbbbbbbbbbbbbbbbbdddaa.","aaccbbbbbbbbbbbbbbbbbbbbbbcddaa.","aaccbbbbbbbbbbbbbbbbbbbbbbbcddaa","aaccbbddbbbbbbbbbbbbbbbbbbbbddaa","aaccbddddbbbbbbbbbbbbbbbbbbbdaaa","aaccdddddbbbbbbbbbbbddbbddbbaaaa","aacdddddddbbbbbbbbbdddbbdddbaaa.","aaddddddddbbbddbbbbdddbbddddaaa.",".aadddddddbbddddbbddddbbdddaaa..",".aaaadddddddddddddddddbbdddaaa..","...aaaadddddddddddddddbbdaaaa...",".....aaddddddaaaaaaaaaaaaaa.....",".......adddaaaaaaaaaaaaaa.......","..........aaaaaeeeeeff..........","...........aaaeeeeeff...........","............gggeeeeff...........","............ggggeeff............","............ggggeeff............","............ggggeeff............","............egggeeff............","............eeggeeeff...........","...........feeeeeeeef...........",".........ffeeeeeeeeefff.........","........fffeeeeeefffffff........","........ffeeeeeeffffffff........"];
+const bigTreeCanvas = P => { const [c, g] = mk(32, 40); BIG_ROWS.forEach((r, y) => [...r].forEach((ch, x) => { if (P[ch]) R(g, x, y, 1, 1, P[ch]); })); return c; };
+let BIG_GREEN = null, BIG_PINK = null;
+// Bäume vor der Spielerin werden nach ihr noch einmal gezeichnet, damit sie hinter Kronen verschwindet
+let TREE_SINK = null; const FRONT_FARM = [], FRONT_TOWN = [];
+function bigTree(g, x0, y0, pink) {
+  if (!BIG_GREEN) { BIG_GREEN = bigTreeCanvas(TREE2_PAL); BIG_PINK = bigTreeCanvas(CHERRY2_PAL); }
+  const c = pink ? BIG_PINK : BIG_GREEN, x = x0 - 8, y = y0 + 15 - 39;
+  R(g, x0 - 1, y0 + 13, 18, 3, 'rgba(60,20,40,.18)');
+  g.drawImage(c, x, y);
+  if (TREE_SINK) TREE_SINK.push({ c, x, y, base: y0 + 14 });
+}
 const TREE2_ROWS = [".......aaa......", "....abbbbaa.....", "...abccccbcda...", "..abccccccbcda..", ".abcccbbbbcbba..", ".acbcbbbcccbbaa.", ".abbbbbbbbbbbda.", "acbbbbbbbbbbbda.", "acbbbbbbbbbbbcda", "acbdbbbbbbbbbbda", "acdddbbbbbdbdbaa", "addddbddbddbdda.", ".aaddddddddbdaa.", "...addaaaaaaa...", ".....aaeeef.....", "......ggef......", "......ggef......", "......egef......", ".....feeeef.....", "....feeeffff...."];
 const TREE2_PAL = {"a": "#32470e", "b": "#719646", "c": "#9dc56b", "d": "#48661e", "e": "#764c24", "f": "#41210b", "g": "#8c6338"};
 const CHERRY2_ROWS = [".......aaa......", "....abbbbaa.....", "...abccccbcda...", "..abccccccbcda..", ".abcccbbbbcbba..", ".acbcbbbcccbbaa.", ".abbbbbbbbbbbda.", "acbbbbbbbbbbbda.", "acbbbbbbbbbbbcda", "acbdbbbbbbbbbbda", "acdddbbbbbdbdbaa", "addddbddbddbdda.", ".aaddddddddbdaa.", "...addaaaaaaa...", ".....aaeeef.....", "......ggef......", "......ggef......", "......egef......", ".....feeeef.....", "....feeeffff...."];
@@ -870,10 +884,10 @@ function cherrySprite(g, tx, ty, x, y0) {
 }
 function drawTree(g, tx, ty) {
   const x0 = tx * 16, y0 = ty * 16, s = 0, cherry = isCherry(tx, ty), cx = x0 + 8 + s;
+  if (tallOk(ty) && treeBig(tx, ty)) { bigTree(g, x0, y0, cherry); if (cherry) CHERRY.push([tx, ty]); return; }
   R(g, x0 + 3, y0 + 14, 10, 2, 'rgba(60,20,40,.18)');
   if (!cherry) {   // grüne Bäume ohne seitlichen Versatz, damit sich Nachbarbäume nicht überlappen
-    if (tallOk(ty) && treeBig(tx, ty)) TREE2_ROWS.forEach((r, y) => [...r].forEach((ch, x) => { if (TREE2_PAL[ch]) R(g, x0 + s + x, y0 - 5 + y, 1, 1, TREE2_PAL[ch]); }));
-    else TREE_ROWS.forEach((r, y) => [...r].forEach((ch, x) => { if (TREE_PAL[ch]) R(g, x0 + s + x, y0 - 1 + y, 1, 1, TREE_PAL[ch]); }));
+    TREE_ROWS.forEach((r, y) => [...r].forEach((ch, x) => { if (TREE_PAL[ch]) R(g, x0 + s + x, y0 - 1 + y, 1, 1, TREE_PAL[ch]); }));
     return;
   }
   cherrySprite(g, tx, ty, x0 + s, y0);
@@ -1224,6 +1238,7 @@ function makeLit(src, rects) {
 }
 function cherryTree(g, tx, ty) {
   const x0 = tx * 16, y0 = ty * 16;
+  if (tallOk(ty) && treeBig(tx, ty)) { bigTree(g, x0, y0, true); return; }
   R(g, x0 + 3, y0 + 14, 10, 2, 'rgba(60,20,40,.18)');
   cherrySprite(g, tx, ty, x0, y0);
 }
@@ -1288,7 +1303,9 @@ function makeTown0() {
   const TT = TOWN_TREES.map(([x, y], i) => [x, y, i % 2 ? drawTree : cherryTree]);
   for (let x = 0; x < COLS; x++) { if (!TOWN_TREES.some(t => t[0] === x && t[1] === 0)) TT.push([x, 0, drawTree]); if (!TOWN_TREES.some(t => t[0] === x && t[1] === TROWS - 1)) TT.push([x, TROWS - 1, drawTree]); }
   for (let y = 1; y < TROWS - 1; y++) { if (y < 7 || y > 9) TT.push([0, y, drawTree]); TT.push([COLS - 1, y, drawTree]); }
+  FRONT_TOWN.length = 0; TREE_SINK = FRONT_TOWN;
   TT.sort((p, q) => p[1] - q[1] || p[0] - q[0]).forEach(([x, y, f]) => f(g, x, y));
+  TREE_SINK = null;
   // Laternen
   TOWN_LAMPS.forEach(([tx, ty]) => { const x = tx * 16 + 7, y = ty * 16; R(g, x - 2, y + 13, 6, 2, 'rgba(60,20,40,.18)'); R(g, x, y + 2, 2, 13, '#5a4050'); R(g, x - 2, y - 3, 6, 6, '#5a4050'); R(g, x - 1, y - 2, 4, 4, '#ffe6a0'); R(g, x - 3, y - 4, 8, 1, '#3a2a34'); });
   // Wimpelkette zwischen den Laternen
@@ -1763,9 +1780,9 @@ icon('coin', g => { disc(g, 8, 8, 6, '#9c6b12'); disc(g, 8, 8, 5, '#f2c13a'); R(
 
 /* ---------- static background ---------- */
 const CHERRY = [];
-const [TL, tl] = mk(W, H);
+const [TL, tl] = mk(W, H + 32); tl.translate(0, 32);   // 32 px Platz über der Karte für hohe Kronen
 function rebuildTrees() {
-  tl.clearRect(0, 0, W, H); CHERRY.length = 0;
+  tl.clearRect(0, -32, W, H + 32); CHERRY.length = 0; FRONT_FARM.length = 0; TREE_SINK = FRONT_FARM;
   for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
     const st = TREES[x + ',' + y];
     if (!st) { if (MAP[y][x] === 'T') drawTree(tl, x, y); continue; }
@@ -1775,6 +1792,7 @@ function rebuildTrees() {
     else if (st.s === 'stump') drawStump(tl, x, y);
     else if (st.s === 'sap') drawSapling(tl, x, y, st.d >= 2, st.k === 'cherry');
   }
+  TREE_SINK = null;
 }
 const [BG, bg] = mk(W, H);
 let LIT = null, EDGE_TOP = null, EDGE_BOT = null, EDGE_BOT_T = null, EDGE_TOP_T = null;
@@ -3417,11 +3435,11 @@ function render(t) {
   X.drawImage(BG, 0, 0);
   drawPondAnim(t); drawStandGoods(t);
   updateSoilLayer(); X.drawImage(SL, 0, 0);
-  X.drawImage(TL, 0, 0);   // Bäume nach Teich und Äckern, damit hohe Kronen nicht überdeckt werden
   }
   // Waldrand unten weiterführen, wenn die Kamera über den Kartenrand hinaus schaut
   // Waldrand außerhalb der Karte: gemischte Bäume im Raster
   if (!home && (camY < 0 || camY + VH > curH())) { if (!EDGE_TOP) buildEdge(); if (camY < 0) X.drawImage(LOC === 'town' ? EDGE_TOP_T : EDGE_TOP, 0, -EDGE_H); if (camY + VH > curH()) X.drawImage(LOC === 'town' ? EDGE_BOT_T : EDGE_BOT, 0, curH()); }
+  if (farm) X.drawImage(TL, 0, -32);   // Bäume nach Teich, Äckern und Randstreifen, damit hohe Kronen nicht überdeckt werden
   if (farm) for (const k in S.soil) if (S.soil[k].w && Math.floor(t * 1.5 + hash(...k.split(',').map(Number), 12) * 4) % 4 === 0) {
     const [tx, ty] = k.split(',').map(Number); R(X, tx * 16 + 3 + Math.floor(hash(tx, ty, 13) * 9), ty * 16 + 5 + Math.floor(hash(tx, ty, 14) * 7), 1, 1, '#b8dcf0');
   }
@@ -3451,6 +3469,7 @@ function render(t) {
   R(X, Math.round(S.px) - 5, Math.round(S.py) - 2, 10, 2, 'rgba(0,0,0,.25)');
   if (flip) { X.save(); X.translate(ox + 16, oy); X.scale(-1, 1); X.drawImage(PC, 0, 0); X.restore(); }
   else X.drawImage(PC, ox, oy);
+  for (const b of (farm ? FRONT_FARM : LOC === 'town' ? FRONT_TOWN : [])) if (b.base > S.py && b.y < S.py && Math.abs(b.x + 16 - S.px) < 26) X.drawImage(b.c, b.x, b.y);
   // tool swing
   if (actT > 0 && actTool === 'can') { if (S.dir !== 'up') drawCan(S.px, S.py, S.dir, myCanPh()); } else if (actT > 0 && actTool) {
     const d = DIRS[S.dir], lift = actT > .14 ? -5 : 0;
