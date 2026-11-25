@@ -243,7 +243,7 @@ function drawObj(g, x, y) {
     const gy = y - OFF, px = x0 + 4 + Math.floor(hash(x, gy, 7) * 8), py = y0 + 4 + Math.floor(hash(x, gy, 8) * 8);
     return spr(g, SPR[o], px - (w >> 1), Math.max(y0, py + 4 - h));
   }
-  const s = Math.floor(hash(x, y - OFF, 3) * 3) - 1, tall = o === 'A' || o === 'C';
+  const s = 0, tall = o === 'A' || o === 'C';   // kein Versatz: Bäume nebeneinander berühren sich, überlappen aber nicht
   R(g, x0 + 3, y0 + 14, 10, 2, 'rgba(60,20,40,.18)');
   spr(g, SPR[o], x0 + s, y0 - (tall ? 5 : 1));
 }
