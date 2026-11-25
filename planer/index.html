@@ -55,7 +55,7 @@ input,select,textarea{font-size:16px}
 <div id="opts" hidden><b>Zufällig verteilen:</b>
   <label>Dichte <input id="dens" type="range" min="5" max="80" value="30"> <span id="densv">30 %</span></label>
   <span id="kinds"></span>
-  <span class="hint">Zieh ein Rechteck über die Fläche. Die Pflanzen landen an zufälligen Stellen auf freier Wiese, ohne Raster.</span>
+  <span class="hint">Zieh ein Rechteck über die Fläche. Aus den freien Wiesenfeldern darin werden zufällig welche bepflanzt.</span>
 </div>
 <div id="wrap"><canvas id="cv" width="384" height="608"></canvas></div>
 <div id="tools"></div>
@@ -333,20 +333,18 @@ function freeOk(px, py) {   // Fußpunkt auf freier Wiese, nicht zu dicht an and
   const x = px >> 4, y = py >> 4, my = y - OFF;
   if (x < 0 || y < 0 || x >= COLS || y >= ROWS) return false;
   if (LOCK[y][x] || st.obj[y][x] !== '.' || st.ground[y][x] !== 'g' || waterIn(x, y) || (my >= 0 && my < 24 && st.past[my][x])) return false;
-  return !st.free.some(f => Math.abs(f.x - px) < 7 && Math.abs(f.y - py) < 5);
+  return !st.free.some(f => (f.x >> 4) === x && (f.y >> 4) === y);
 }
-function scatter(r) {   // wirklich zufällig: freie Pixelpositionen statt Feldraster
+function scatter(r) {   // zufällig im Raster: aus allen freien Wiesenfeldern im Rechteck wird zufällig ausgewählt
   const kinds = [...kindsEl.querySelectorAll('input:checked')].map(c => c.dataset.k);
   if (!kinds.length) { toast('Wähle oben mindestens eine Art aus.'); return false; }
   const [x0, x1] = [Math.min(r.x0, r.x1), Math.max(r.x0, r.x1)], [y0, y1] = [Math.min(r.y0, r.y1), Math.max(r.y0, r.y1)];
-  const area = (x1 - x0 + 1) * (y1 - y0 + 1), want = Math.round(area * dens.value / 100 * (0.7 + Math.random() * 0.6));
-  let n = 0;
-  for (let k = 0; k < want * 12 && n < want; k++) {
-    const px = Math.floor((x0 * 16) + Math.random() * (x1 - x0 + 1) * 16), py = Math.floor((y0 * 16) + Math.random() * (y1 - y0 + 1) * 16);
-    if (!freeOk(px, py)) continue;
-    st.free.push({ t: kinds[Math.floor(Math.random() * kinds.length)], x: px, y: py }); n++;
-  }
-  toast(n ? n + (n === 1 ? ' Pflanze gesetzt' : ' Pflanzen gesetzt') : 'Hier war kein freier Platz.');
+  const free = [];
+  for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) if (freeOk(x * 16 + 8, y * 16 + 8)) free.push([x, y]);
+  for (let i = free.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [free[i], free[j]] = [free[j], free[i]]; }
+  const n = Math.round(free.length * dens.value / 100);
+  free.slice(0, n).forEach(([x, y]) => { st.obj[y][x] = kinds[Math.floor(Math.random() * kinds.length)]; });
+  toast(n ? n + (n === 1 ? ' Pflanze gesetzt' : ' Pflanzen gesetzt') : 'Hier war kein freies Wiesenfeld.');
   return n > 0;
 }
 
