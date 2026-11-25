@@ -660,6 +660,7 @@ const tileAt = (x, y) => {
 
 /* ---------- tile art ---------- */
 function heart(g, x, y, c) { R(g, x, y, 2, 1, c); R(g, x + 3, y, 2, 1, c); R(g, x, y + 1, 5, 1, c); R(g, x + 1, y + 2, 3, 1, c); R(g, x + 2, y + 3, 1, 1, c); }
+const FLOWER_ROSA = [".aba.", "bbcbb", "acbca", "bbcbb", ".aba.", "..d..", "..e.e", "e.ee.", ".ee..", "..e.."], FLOWER_ROSA_PAL = {"a": "#ca468c", "b": "#d4749f", "c": "#d78aa6", "d": "#526c15", "e": "#748c1f"};
 function drawGrass(g, tx, ty) {
   const x0 = tx * 16, y0 = ty * 16;
   R(g, x0, y0, 16, 16, '#8ccf63');
@@ -674,7 +675,12 @@ function drawGrass(g, tx, ty) {
   const f = hash(tx, ty, 999);
   const px = x0 + 4 + Math.floor(hash(tx, ty, 7) * 8), py = y0 + 4 + Math.floor(hash(tx, ty, 8) * 8);
   if (f < .17) {
-    const col = ['#ff9ec4', '#ffc2dc', '#ffffff', '#ff7fb0', '#ffa94d', '#ffb870'][Math.floor(hash(tx, ty, 9) * 6)];
+    const ci = Math.floor(hash(tx, ty, 9) * 6), col = ['#ff9ec4', '#ffc2dc', '#ffffff', '#ff7fb0', '#ffa94d', '#ffb870'][ci];
+    if (ci === 0) {   // rosa Blümchen: eigenes Design (5×10), Stielende wie bisher bei py + 3, ganz im Feld
+      const oy = Math.max(y0, py - 6);
+      FLOWER_ROSA.forEach((r, y) => [...r].forEach((ch, x) => { if (FLOWER_ROSA_PAL[ch]) R(g, px - 2 + x, oy + y, 1, 1, FLOWER_ROSA_PAL[ch]); }));
+      return;
+    }
     R(g, px, py + 2, 1, 2, '#5aa040');
     R(g, px - 1, py, 3, 1, col); R(g, px, py - 1, 1, 3, col); R(g, px, py, 1, 1, '#ffd84a');
   } else if (f < .21) {
