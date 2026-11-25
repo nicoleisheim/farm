@@ -545,13 +545,13 @@ const ITEM = {
   bucket: { name: 'Melkeimer', kind: 'bucket', tool: 1, desc: 'Zum Melken der Kühe. Vor eine Kuh stellen und A drücken.' },
   can: { name: 'Gießkanne', kind: 'can', tool: 1, dura: 80, price: 100, desc: 'Gießt aufgelockerten Boden. Am Teich auffüllen.' },
   sickle: { name: 'Sichel', kind: 'sickle', tool: 1, dura: 50, price: 60, desc: 'Erntet eine reife Pflanze auf dem Feld vor dir.' },
-  axe: { name: 'Axt', kind: 'axe', tool: 1, dura: 40, price: 120, desc: 'Fällt Bäume (3 Schläge, 5–8 Holz) und entfernt Baumstümpfe (2 Holz).' },
+  axe: { name: 'Axt', kind: 'axe', tool: 1, dura: 40, price: 120, desc: 'Fällt Bäume: große 3 Schläge, 5–8 Holz; junge (kleine) 2 Schläge, 2–4 Holz. Entfernt Baumstümpfe (2 Holz).' },
   shovel: { name: 'Schaufel', kind: 'shovel', tool: 1, dura: 40, price: 70, desc: 'Gräbt Pflanzen aus und macht Felder wieder zu Wiese.' },
   wood: { name: 'Holz', kind: 'mat', sell: 8, desc: 'Frisch gehacktes Holz. Bringt 8 Taler am Verkaufsstand.' },
-  'sap-green': { name: 'Baumsetzling', kind: 'sapling', k: 'green', desc: 'Auf freier Wiese pflanzen. Wird in 4 Tagen zu einem Baum.' },
+  'sap-green': { name: 'Baumsetzling', kind: 'sapling', k: 'green', desc: 'Auf freier Wiese pflanzen. Wird in 4 Tagen zu einem jungen Baum, 3 Tage später ist er groß.' },
   'sap-berry': { name: 'Beerenstrauch', kind: 'sapling', k: 'berry', desc: 'Auf freier Wiese pflanzen. Trägt nach 3 Tagen Beeren, danach alle 2 Tage.' },
   berry: { name: 'Beeren', kind: 'crop', eat: 10, sell: 25, desc: 'Süße Beeren vom eigenen Strauch. Bringen 25 Taler am Verkaufsstand.' },
-  'sap-cherry': { name: 'Kirschbaum-Setzling', kind: 'sapling', k: 'cherry', desc: 'Auf freier Wiese pflanzen. Wird in 4 Tagen zu einem blühenden Kirschbaum.' },
+  'sap-cherry': { name: 'Kirschbaum-Setzling', kind: 'sapling', k: 'cherry', desc: 'Auf freier Wiese pflanzen. Wird in 4 Tagen zu einem jungen Kirschbaum, 3 Tage später ist er groß.' },
   snack: { name: 'Gartensalat', kind: 'food', eat: 40, desc: 'Ein knackiger Salat aus dem Dorfladen.' },
   milk: { name: 'Milch', kind: 'mat', sell: 45, desc: 'Frische Milch von deinen Kühen. Bringt 45 Taler am Verkaufsstand.' },
 };
@@ -766,6 +766,15 @@ const TREE_MIX = 'ACBCCBACCDACCBCADCADCACDBCADACCABCCBACACACBCABCACADCCADCCADCCA
 const treeMix = (tx, ty) => TREE_MIX[(((ty % 24) + 24) % 24) * 24 + (((tx % 24) + 24) % 24)];
 const isCherry = (tx, ty) => { const st = TREES[tx + ',' + ty]; return st && st.k ? st.k === 'cherry' : 'AB'.includes(treeMix(tx, ty)); };
 const isTall = (tx, ty) => 'AC'.includes(treeMix(tx, ty));
+// Kleine Bäume sind die Vorstufe der großen: wilde kleine Bäume werden je nach Baum nach 2–9 Spieltagen groß,
+// aus Setzlingen gewachsene Bäume 3 Tage nachdem sie zum Baum geworden sind. Kleine Bäume geben beim Fällen weniger Holz.
+function treeBig(tx, ty) {
+  if (LOC === 'town') return isTall(tx, ty);
+  let day = 1, st = null;
+  try { day = S.day; st = TREES[tx + ',' + ty]; } catch (e) {}
+  if (st && st.born !== undefined) return day - st.born >= 3;
+  return isTall(tx, ty) || day >= 2 + Math.floor(hash(tx, ty, 77) * 8);
+}
 function drawSapling(g, tx, ty, big, cherry) {
   const x0 = tx * 16, y0 = ty * 16;
   R(g, x0 + 3, y0 + 13, 10, 2, 'rgba(60,20,40,.18)'); R(g, x0 + 4, y0 + 12, 8, 2, '#8a5a3a'); R(g, x0 + 5, y0 + 12, 6, 1, '#a8734a');
@@ -795,14 +804,14 @@ const CHERRY2_ROWS = [".......aaa......", "....abbbbaa.....", "...abccccbcda..."
 const CHERRY2_PAL = {"a": "#c9628f", "b": "#f7a6c8", "c": "#ffcfe2", "d": "#e47fa8", "e": "#764c24", "f": "#41210b", "g": "#8c6338"};
 // 3/4 der Kirschbäume im neuen hohen Design (16×20, Stammfuß bei y0 + 14); oberste Reihe alt, sonst wäre die Krone abgeschnitten
 function cherrySprite(g, tx, ty, x, y0) {
-  if (tallOk(ty) && isTall(tx, ty)) CHERRY2_ROWS.forEach((r, y) => [...r].forEach((ch, i) => { if (CHERRY2_PAL[ch]) R(g, x + i, y0 - 5 + y, 1, 1, CHERRY2_PAL[ch]); }));
+  if (tallOk(ty) && treeBig(tx, ty)) CHERRY2_ROWS.forEach((r, y) => [...r].forEach((ch, i) => { if (CHERRY2_PAL[ch]) R(g, x + i, y0 - 5 + y, 1, 1, CHERRY2_PAL[ch]); }));
   else CHERRY_ROWS.forEach((r, y) => [...r].forEach((ch, i) => { if (CHERRY_PAL[ch]) R(g, x + i, y0 - 1 + y, 1, 1, CHERRY_PAL[ch]); }));
 }
 function drawTree(g, tx, ty) {
   const x0 = tx * 16, y0 = ty * 16, s = Math.floor(hash(tx, ty, 3) * 3) - 1, cherry = isCherry(tx, ty), cx = x0 + 8 + s;
   R(g, x0 + 3, y0 + 14, 10, 2, 'rgba(60,20,40,.18)');
   if (!cherry) {   // 3/4 der grünen Bäume im neuen Design (16×20, Stammfuß bei y0 + 14), der Rest im alten; oberste Reihe alt, sonst wäre die Krone abgeschnitten
-    if (tallOk(ty) && isTall(tx, ty)) TREE2_ROWS.forEach((r, y) => [...r].forEach((ch, x) => { if (TREE2_PAL[ch]) R(g, x0 + s + x, y0 - 5 + y, 1, 1, TREE2_PAL[ch]); }));
+    if (tallOk(ty) && treeBig(tx, ty)) TREE2_ROWS.forEach((r, y) => [...r].forEach((ch, x) => { if (TREE2_PAL[ch]) R(g, x0 + s + x, y0 - 5 + y, 1, 1, TREE2_PAL[ch]); }));
     else TREE_ROWS.forEach((r, y) => [...r].forEach((ch, x) => { if (TREE_PAL[ch]) R(g, x0 + s + x, y0 - 1 + y, 1, 1, TREE_PAL[ch]); }));
     return;
   }
@@ -2397,16 +2406,16 @@ function act(tx, ty) {
     const cherry = isCherry(tx, ty);
     snd('chop'); burst(tx, ty, ['#c48a5e', '#e8c094'], 5, 50); wear('axe');
     if (t === 'T') {
-      const st = TREES[key] || (TREES[key] = { s: 'tree' });
-      if (st.hp === undefined) st.hp = 3;
+      const st = TREES[key] || (TREES[key] = { s: 'tree' }), big = treeBig(tx, ty);
+      if (st.hp === undefined) st.hp = big ? 3 : 2;
       st.hp--;
       burst(tx, ty, cherry ? ['#ffb6d3', '#ffcfe2'] : ['#58ae55', '#7dcb6c'], 6, 40);
       if (st.hp <= 0) {
-        const n = 5 + Math.floor(Math.random() * 4);
+        const n = big ? 5 + Math.floor(Math.random() * 4) : 2 + Math.floor(Math.random() * 3);   // groß 5–8 Holz, klein 2–4
         TREES[key] = { s: 'stump', hp: 2 }; rebuildTrees();
         burst(tx, ty, cherry ? ['#ffb6d3', '#ffcfe2', '#fff'] : ['#58ae55', '#7dcb6c', '#a5e08a'], 22, 90);
-        let msg = `Baum gefällt! +${n} Holz`;
-        if (Math.random() < .3) { const sp = cherry ? 'sap-cherry' : 'sap-green'; if (addItem(sp, 1)) msg += ` · +1 ${ITEM[sp].name}`; }
+        let msg = `${big ? 'Baum' : 'Junger Baum'} gefällt! +${n} Holz`;
+        if (Math.random() < (big ? .3 : .1)) { const sp = cherry ? 'sap-cherry' : 'sap-green'; if (addItem(sp, 1)) msg += ` · +1 ${ITEM[sp].name}`; }
         if (addItem('wood', n)) toast(msg);
         snd('harvest');
       }
@@ -2500,7 +2509,7 @@ function endDay(passedOut) {
       const st = TREES[k];
       if (st.s === 'tree') { if (st.k) delete st.hp; else delete TREES[k]; }
       else if (st.s === 'stump') delete st.d;
-      else if (st.s === 'sap' && ++st.d >= 4) { st.s = 'tree'; delete st.d; regrow = true; }
+      else if (st.s === 'sap' && ++st.d >= 4) { st.s = 'tree'; delete st.d; st.born = S.day + 1; regrow = true; }
       else if (st.s === 'bush') { st.d++; if (!st.ripe) { st.c = (st.c || 0) + 1; if (st.d === 3 || (st.d > 3 && st.c >= 2)) { st.ripe = true; st.c = 0; } } }
     }
     rebuildTrees();
