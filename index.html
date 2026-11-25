@@ -1502,36 +1502,58 @@ function makeHome() {
   g.fillStyle = 'rgba(255,248,220,.2)'; for (let y = 0; y < 30; y++) g.fillRect(Math.round(166 + y * .7), FY + 1 + y, 52, 1);
   // Schatten der Rückwand und Ecken
   R(g, X0, FY, 192, 2, 'rgba(110,50,50,.22)'); R(g, X0, FY + 2, 192, 2, 'rgba(110,50,50,.1)');
-  R(g, X0, FY, 2, 96, 'rgba(110,50,50,.14)'); R(g, X1 - 2, FY, 2, 96, 'rgba(110,50,50,.14)');
-  // Rückwand: Zierleiste, Tapete mit kleinen Blümchen, helle Holzvertäfelung, Fußleiste
-  R(g, X0, 40, 192, 3, '#fff6f2'); R(g, X0, 43, 192, 1, '#e2cbc4');
-  R(g, X0, 44, 192, 22, '#f7d4de');
-  for (let y = 47, k = 0; y < 64; y += 7, k++) for (let x = X0 + 3 + (k % 2) * 6; x < X1; x += 12) { R(g, x, y, 1, 1, '#eebccb'); R(g, x - 1, y + 1, 3, 1, '#f2c6d3'); R(g, x, y + 2, 1, 1, '#eebccb'); }
-  R(g, X0, 66, 192, 1, '#ffffff'); R(g, X0, 67, 192, 1, '#e8d6d0');
-  R(g, X0, 68, 192, 9, '#fbf2ee'); for (let x = X0 + 8; x < X1; x += 16) { R(g, x, 70, 1, 6, '#ead9d3'); R(g, x + 1, 70, 1, 6, '#ffffff'); }
-  R(g, X0, 77, 192, 3, '#e6d2cb'); R(g, X0, 77, 192, 1, '#f5e8e3');
-  // Seitenwände (Mauerkrone) und Vorderwand mit Türöffnung
-  const cap = (x, y, w, h) => { R(g, x, y, w, h, '#f1e2dc'); R(g, x, y, w, 1, '#ffffff'); };
-  cap(90, 38, 6, 150); cap(X1, 38, 6, 150); R(g, 89, 38, 1, 150, '#7a4f45'); R(g, 294, 38, 1, 150, '#7a4f45'); R(g, 90, 38, 205, 1, '#7a4f45');
-  cap(90, FB, 86, 8); cap(208, FB, 87, 8); R(g, 90, 184, 86, 4, '#d9c2ba'); R(g, 208, 184, 87, 4, '#d9c2ba'); R(g, 89, 188, 206, 1, '#7a4f45');
-  R(g, 176, FB, 32, 12, '#c99566'); R(g, 176, FB, 32, 1, '#e0b080'); R(g, 175, FB, 1, 12, '#7a4f45'); R(g, 208, FB, 1, 12, '#7a4f45');
-  R(g, 180, 178, 24, 8, '#e48aac'); R(g, 181, 179, 22, 6, '#f5aac6'); for (let x = 183; x < 202; x += 3) R(g, x, 180, 1, 4, '#fbd0de');
-  // Fenster mit Vorhängen
-  R(g, 160, 45, 64, 22, '#ffffff'); R(g, 160, 66, 64, 1, '#e2cbc4');
-  for (const [px, py] of [[162, 47], [193, 47], [162, 57], [193, 57]]) { R(g, px, py, 29, 8, '#bfe7fb'); R(g, px, py + 5, 29, 3, '#d6f0fd'); }
-  R(g, 166, 49, 7, 2, '#ffffff'); R(g, 169, 48, 4, 1, '#ffffff'); R(g, 200, 50, 9, 2, '#ffffff'); R(g, 204, 49, 4, 1, '#ffffff');
-  R(g, 158, 67, 68, 3, '#fbf2ee'); R(g, 158, 70, 68, 1, '#d9c2ba');
-  for (const [x, dir] of [[152, 1], [224, -1]]) {
-    for (let y = 43; y < 68; y++) { const w = y > 58 ? 6 - Math.floor((y - 58) / 3) : 8; const xs = dir > 0 ? x : x + 8 - w; R(g, xs, y, w, 1, '#f4a7c1'); R(g, xs + (dir > 0 ? 2 : w - 3), y, 1, 1, '#e889ab'); R(g, xs + (dir > 0 ? 5 : 1), y, 1, 1, '#f9c5d7'); }
-    R(g, x + (dir > 0 ? 1 : 2), 58, 5, 2, '#d4688e');
+  // Wände in Perspektive: Rückwand 48 px hoch (oben breiter), Seiten- und Vorderwand zeigen ihre Innenseite schräg nach außen,
+  // ringsum eine gleich dicke Mauerkrone (6 px). Höhe h über dem Boden: Rückwand y = 80 − h; Seiten x = Kante ∓ h/6; vorn y = 176 + h/6
+  const WP = '#f7d4de', WPd = '#eebccb', WS = '#efc4d1', WF = '#f3cbd7', PAN = '#fbf2ee', PANs = '#efe2dd', LN = '#d9b9b5';
+  for (let y = 32; y < 80; y++) for (let x = 88; x < 296; x++) {
+    const h = 80 - y;
+    if (x < 96 && (96 - x) * 6 >= h) continue;   // gehört zur linken Seitenwand
+    if (x >= 288 && (x - 287) * 6 >= h) continue;
+    let c = h < 14 ? PAN : WP;
+    if (h === 14) c = '#ffffff'; else if (h === 13) c = '#e8d6d0'; else if (h < 3) c = h === 2 ? '#f5e8e3' : '#e6d2cb';
+    else if (h < 13 && (x - 96) % 16 === 8) c = '#ead9d3'; else if (h < 13 && (x - 96) % 16 === 9) c = '#ffffff';
+    else if (h > 14 && h < 46) { const k = Math.floor((h - 15) / 7), yy = (h - 15) % 7, xx = (x - 99 - (k % 2) * 6 + 120) % 12; if ((yy === 1 || yy === 3) && xx === 0 || yy === 2 && xx >= 11 || yy === 2 && xx <= 1) c = WPd; }
+    else if (h >= 46) c = h === 47 ? '#e2cbc4' : '#fff6f2';
+    R(g, x, y, 1, 1, c);
   }
-  R(g, 150, 42, 84, 2, '#b98a6a'); R(g, 149, 41, 3, 4, '#b98a6a'); R(g, 232, 41, 3, 4, '#b98a6a');
+  // Seitenwände (Innenseite, im Schatten): Spalte x entspricht Höhe (96 − x) · 6
+  for (const side of [0, 1]) for (let i = 0; i < 8; i++) {
+    const h = (i + 1) * 6, x = side ? 288 + i : 95 - i, y0 = 80 - h;
+    const c = h <= 12 ? PANs : h === 18 ? '#e8d0d0' : WS;
+    R(g, x, y0, 1, 176 - y0 + i + 1, c);
+    if (h > 12 && h < 48) for (let y = y0 + 3 + (i % 2) * 4; y < 176; y += 8) R(g, x, y, 1, 1, WPd);
+  }
+  // Vorderwand (Innenseite, nur ein schmaler Streifen) mit Türöffnung
+  for (let i = 0; i < 8; i++) { const h = (i + 1) * 6, y = 176 + i, c = h <= 12 ? PANs : WF; R(g, 96 - i, y, 192 + 2 * i, 1, c); }
+  // Kanten: Ecklinien hinten, Übergang Boden/Wand
+  for (let i = 0; i < 8; i++) { R(g, 95 - i, 80 - (i + 1) * 6, 1, 6, LN); R(g, 288 + i, 80 - (i + 1) * 6, 1, 6, LN); R(g, 95 - i, 176 + i, 1, 1, LN); R(g, 288 + i, 176 + i, 1, 1, LN); }
+  R(g, 96, 80, 1, 96, 'rgba(110,50,50,.18)'); R(g, 287, 80, 1, 96, 'rgba(110,50,50,.18)');
+  // Mauerkrone ringsum, überall 6 px
+  const crown = (x, y, w, h) => { R(g, x, y, w, h, '#f1e2dc'); };
+  crown(82, 26, 220, 6); crown(82, 26, 6, 164); crown(296, 26, 6, 164); crown(82, 184, 220, 6);
+  R(g, 88, 31, 208, 1, '#d9c2ba'); R(g, 87, 31, 1, 153, '#d9c2ba'); R(g, 296, 31, 1, 153, '#d9c2ba'); R(g, 88, 184, 208, 1, '#ffffff');
+  R(g, 81, 25, 222, 1, '#7a4f45'); R(g, 81, 25, 1, 166, '#7a4f45'); R(g, 302, 25, 1, 166, '#7a4f45'); R(g, 81, 190, 222, 1, '#7a4f45');
+  R(g, 82, 26, 220, 1, '#ffffff'); R(g, 82, 26, 1, 164, '#ffffff');
+  // Tür in der Vorderwand: Öffnung mit Schwelle und Fußmatte
+  R(g, 176, 176, 32, 15, '#c99566'); R(g, 176, 176, 32, 1, '#e0b080'); R(g, 176, 189, 32, 1, '#a06c47');
+  R(g, 174, 176, 2, 15, '#b07a52'); R(g, 208, 176, 2, 15, '#b07a52'); R(g, 173, 176, 1, 15, '#7a4f45'); R(g, 210, 176, 1, 15, '#7a4f45');
+  R(g, 180, 178, 24, 9, '#e48aac'); R(g, 181, 179, 22, 7, '#f5aac6'); for (let x = 183; x < 202; x += 3) R(g, x, 180, 1, 5, '#fbd0de');
+  // Fenster mit Vorhängen
+  R(g, 160, 40, 64, 25, '#ffffff'); R(g, 160, 64, 64, 1, '#e2cbc4');
+  for (const [px, py] of [[162, 42], [193, 42], [162, 53], [193, 53]]) { R(g, px, py, 29, 10, '#bfe7fb'); R(g, px, py + 6, 29, 4, '#d6f0fd'); }
+  R(g, 166, 45, 7, 2, '#ffffff'); R(g, 169, 44, 4, 1, '#ffffff'); R(g, 200, 46, 9, 2, '#ffffff'); R(g, 204, 45, 4, 1, '#ffffff');
+  R(g, 158, 65, 68, 2, '#fbf2ee'); R(g, 158, 67, 68, 1, '#d9c2ba');
+  for (const [x, dir] of [[152, 1], [224, -1]]) {
+    for (let y = 38; y < 66; y++) { const w = y > 56 ? 6 - Math.floor((y - 56) / 4) : 8; const xs = dir > 0 ? x : x + 8 - w; R(g, xs, y, w, 1, '#f4a7c1'); R(g, xs + (dir > 0 ? 2 : w - 3), y, 1, 1, '#e889ab'); R(g, xs + (dir > 0 ? 5 : 1), y, 1, 1, '#f9c5d7'); }
+    R(g, x + (dir > 0 ? 1 : 2), 55, 5, 2, '#d4688e');
+  }
+  R(g, 150, 37, 84, 2, '#b98a6a'); R(g, 149, 36, 3, 4, '#b98a6a'); R(g, 232, 36, 3, 4, '#b98a6a');
   // Bild und Uhr
-  R(g, 132, 49, 14, 12, '#b98a6a'); R(g, 133, 50, 12, 10, '#fff8f4'); R(g, 134, 55, 10, 4, '#bfe7a8'); disc(g, 139, 54, 2, '#f7a6c8'); R(g, 139, 54, 1, 1, '#ffffff');
-  disc(g, 242, 54, 6, '#b98a6a'); disc(g, 242, 54, 5, '#fff8f4'); R(g, 242, 50, 1, 4, '#5a3a2a'); R(g, 242, 54, 3, 1, '#5a3a2a');
+  R(g, 130, 43, 16, 14, '#b98a6a'); R(g, 131, 44, 14, 12, '#fff8f4'); R(g, 132, 51, 12, 4, '#bfe7a8'); disc(g, 138, 49, 2, '#f7a6c8'); R(g, 138, 49, 1, 1, '#ffffff');
+  disc(g, 243, 48, 6, '#b98a6a'); disc(g, 243, 48, 5, '#fff8f4'); R(g, 243, 44, 1, 4, '#5a3a2a'); R(g, 243, 48, 3, 1, '#5a3a2a');
   // Wandregal über dem Mischtisch
-  R(g, 258, 60, 28, 2, '#c99566'); R(g, 258, 62, 28, 1, '#8a5a3a'); R(g, 261, 62, 2, 3, '#8a5a3a'); R(g, 281, 62, 2, 3, '#8a5a3a');
-  for (const [x, col, h] of [[260, '#bfe0a8', 6], [266, '#f5d76e', 5], [272, '#f7a6c8', 7], [279, '#c3a8ef', 5]]) { R(g, x, 60 - h, 5, h, '#ffffff'); R(g, x, 60 - h + 2, 5, h - 2, col); R(g, x, 60 - h - 1, 5, 1, '#c99566'); R(g, x, 60 - h + 2, 1, h - 3, 'rgba(255,255,255,.6)'); }
+  R(g, 258, 58, 28, 2, '#c99566'); R(g, 258, 60, 28, 1, '#8a5a3a'); R(g, 261, 60, 2, 3, '#8a5a3a'); R(g, 281, 60, 2, 3, '#8a5a3a');
+  for (const [x, col, h] of [[260, '#bfe0a8', 6], [266, '#f5d76e', 5], [272, '#f7a6c8', 7], [279, '#c3a8ef', 5]]) { R(g, x, 58 - h, 5, h, '#ffffff'); R(g, x, 58 - h + 2, 5, h - 2, col); R(g, x, 58 - h - 1, 5, 1, '#c99566'); R(g, x, 58 - h + 2, 1, h - 3, 'rgba(255,255,255,.6)'); }
   // Bett (Kopfteil an der Wand, Matratze, Decke, Fußteil)
   R(g, 98, 112, 30, 2, 'rgba(90,40,40,.18)');
   R(g, 97, 64, 30, 18, '#a56f4b'); R(g, 99, 66, 26, 14, '#c08a64'); R(g, 99, 66, 26, 1, '#d9a87e'); R(g, 97, 62, 3, 20, '#8a5a3a'); R(g, 124, 62, 3, 20, '#8a5a3a'); R(g, 97, 61, 3, 1, '#c08a64'); R(g, 124, 61, 3, 1, '#c08a64');
@@ -1595,8 +1617,8 @@ function drawHomeDyn(t) {
   // Fenster: abends dämmert es, nachts Sterne und Mond
   const tm = S.time, nt = tm > 1080 ? Math.min(1, (tm - 1080) / 180) : 0;
   if (nt > 0) {
-    X.fillStyle = `rgba(40,30,80,${.9 * nt})`; for (const [x, y, w, h] of [[162, 47, 29, 8], [193, 47, 29, 8], [162, 57, 29, 8], [193, 57, 29, 8]]) X.fillRect(x, y, w, h);
-    if (nt > .6) { for (const [x, y] of [[167, 49], [176, 60], [186, 51], [197, 59], [216, 49], [205, 62]]) R(X, x, y, 1, 1, '#fff6c0'); R(X, 208, 48, 4, 4, '#fff1b0'); R(X, 210, 48, 2, 2, '#3a2c6a'); }
+    X.fillStyle = `rgba(40,30,80,${.9 * nt})`; for (const [x, y, w, h] of [[162, 42, 29, 10], [193, 42, 29, 10], [162, 53, 29, 10], [193, 53, 29, 10]]) X.fillRect(x, y, w, h);
+    if (nt > .6) { for (const [x, y] of [[167, 44], [176, 57], [186, 47], [197, 58], [216, 44], [205, 61]]) R(X, x, y, 1, 1, '#fff6c0'); R(X, 208, 44, 4, 4, '#fff1b0'); R(X, 210, 44, 2, 2, '#3a2c6a'); }
   }
   for (let i = 0; i < POT_N; i++) {
     const p = (S.pots || [])[i], x0 = (POT_X0 + i) * 16, y = 80;
