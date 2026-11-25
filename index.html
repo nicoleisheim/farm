@@ -661,7 +661,7 @@ const tileAt = (x, y) => {
 /* ---------- tile art ---------- */
 function heart(g, x, y, c) { R(g, x, y, 2, 1, c); R(g, x + 3, y, 2, 1, c); R(g, x, y + 1, 5, 1, c); R(g, x + 1, y + 2, 3, 1, c); R(g, x + 2, y + 3, 1, 1, c); }
 // eigene Blümchen-Designs (5×10) je Farbindex: 0 = rosa, 1 = hellrosa
-const FLOWER_SPR = { 0: [[".aba.", "bbcbb", "acbca", "bbcbb", ".aba.", "..d..", "..e.e", "e.ee.", ".ee..", "..e.."], {"a": "#ca468c", "b": "#d4749f", "c": "#d78aa6", "d": "#526c15", "e": "#748c1f"}], 1: [[".aba.", "bbcbb", "acdca", "bbcbb", ".aba.", "..e..", "..f.f", "f.ff.", ".ff..", "..f.."], {"a": "#c75c94", "b": "#d48aab", "c": "#d89cb2", "d": "#d4749f", "e": "#526c15", "f": "#748c1f"}] };
+const FLOWER_SPR = { 0: [[".aba.", "bbcbb", "acbca", "bbcbb", ".aba.", "..d..", "..e.e", "e.ee.", ".ee..", "..e.."], {"a": "#ca468c", "b": "#d4749f", "c": "#d78aa6", "d": "#526c15", "e": "#748c1f"}], 1: [[".aba.", "bbcbb", "acbca", "bbcbb", ".ada.", "..e..", "..f.f", "f.ff.", ".ff..", "..f.."], {"a": "#c56699", "b": "#d494b1", "c": "#d8a5b8", "d": "#d48aab", "e": "#526c15", "f": "#748c1f"}] };
 function drawGrass(g, tx, ty) {
   const x0 = tx * 16, y0 = ty * 16;
   R(g, x0, y0, 16, 16, '#8ccf63');
