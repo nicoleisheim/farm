@@ -528,7 +528,7 @@ function mk(w, h) { const c = document.createElement('canvas'); c.width = w; c.h
 
 /* ---------- game data ---------- */
 const CROPS = {
-  ruebe:   { name: 'Weizen', seed: 'Weizensamen', days: 2, buy: 20, sell: 35,  eat: 15 },   // Schlüssel bleiben (Spielstände)
+  ruebe:   { name: 'Tomate', seed: 'Tomatensamen', days: 3, buy: 30, sell: 60,  eat: 20 },   // Schlüssel bleiben (Spielstände)
   kohl:    { name: 'Rübe',   seed: 'Rübensamen',   days: 3, buy: 45, sell: 90,  eat: 30 },
   kuerbis: { name: 'Kürbis', seed: 'Kürbissamen', days: 5, buy: 90, sell: 200, eat: 50 },
   // Blumen: im Dorfladen als Samen, wachsen auf dem Acker, reif mit der Hand pflücken, am Verkaufsstand verkaufen
@@ -653,7 +653,7 @@ const TOWN_TREES = [[1, 1], [8, 2], [14, 2], [22, 1], [1, 11], [7, 14], [16, 14]
 [[3, 11], [4, 11], [5, 11], [3, 12], [4, 12], [5, 12], [17, 11], [18, 11], [19, 11], [20, 11], [2, 6], [3, 6], [5, 6], [6, 6], [17, 6], [18, 6], [20, 6], [21, 6]].forEach(([x, y]) => setT(x, y, 'O'));
 TOWN_TREES.forEach(([x, y]) => setT(x, y, 'T'));
 const TOWN_NPC = [{ x: 4, y: 13, p: 1, d: 'up', say: ['Schöner Tag heute!', 'Die Kirschbäume blühen so schön.', 'Warst du schon im Dorfladen?'] },
-  { x: 15, y: 12, p: 3, d: 'left', say: ['Dein Weizen ist der beste im Dorf!', 'Früher war hier alles nur Wiese.', 'Am Brunnen ist es abends so gemütlich.'] }];
+  { x: 15, y: 12, p: 3, d: 'left', say: ['Deine Tomaten sind die besten im Dorf!', 'Früher war hier alles nur Wiese.', 'Am Brunnen ist es abends so gemütlich.'] }];
 TOWN_NPC.forEach(n => setT(n.x, n.y, 'N'));
 const TWIN = [[42, 70, 12, 11], [90, 70, 12, 11], [266, 71, 12, 10], [314, 71, 12, 10]];
 let TREES = {};
@@ -1282,6 +1282,9 @@ const CROPSPR = {};
   // Rüben (ersetzen Mais, Schlüssel bleibt 'kohl'): ganze 16×16-Felder, Stufe 1 = Saat, 2–3 wachsen, 4 = reif
   const RB = [[["................", "................", "...aa...........", "..aba......ca...", "...aa......aba..", "...........aaa..", "......aa........", ".....aba........", "......a.........", "...........a....", "...a......aba...", "..abaa.....aa...", "...aa...........", "................", "................", "................"], {"a": "#422333", "b": "#8e5253", "c": "#5b3138"}], [["................", "................", "................", "................", ".......aa.......", "......abca......", "......abca......", "......acca......", "......aada......", ".....adddda.....", "......aaaa......", "................", "................", "................", "................", "................"], {"a": "#122020", "b": "#197a3e", "c": "#24523b", "d": "#242234"}], [["................", "................", "................", ".......aa.......", "......abba......", ".....aacaa......", ".....adaba......", ".....abaca......", ".....acaca......", ".....aeaee......", "....aeeeeea.....", "....aeeeeea.....", ".....aaaaa......", "................", "................", "................"], {"a": "#122020", "b": "#197a3e", "c": "#24523b", "d": "#14a02d", "e": "#242234"}], [["................", "......aa........", ".....abcaa......", ".....adacda.....", "....abaadaa.....", "....abcaada.....", "....acdabca.....", "....acdacda.....", "....addadda.....", ".....aaeaa......", ".....fggef......", "....fgggeef.....", "....fghheef.....", "....iiiiiii.....", "................", "................"], {"a": "#122020", "b": "#14a02d", "c": "#197a3e", "d": "#24523b", "e": "#403453", "f": "#242234", "g": "#793a80", "h": "#dca463", "i": "#322b27"}]];
   for (const t in FLOWER_ART) { const F = FLOWER_ART[t]; CROPSPR[t] = { full: 1, seed: draw(F.seed), st: F.st.map(draw), icon: draw(F.icon) }; }
+  // Tomaten (ersetzen Weizen, Schlüssel bleibt 'ruebe'): ganze 16×16-Felder, Stufe 1 = Saat, 2–3 wachsen, 4 = reif
+  const TM = [[["................", "................", "....aa.....a....", "...abca...aba...", "....aa....aaa...", ".......aa.......", "...aa.abca......", "..aba..aa.......", "...a......aa....", ".........abca...", "..........aa....", ".......aa.......", "......abca......", ".......aa.......", "................", "................"], {"a": "#422433", "b": "#8e5253", "c": "#ba756a"}], [["................", "................", "......aaa.......", ".....aabca......", "....acaabda.....", "...acdabacda....", "...adbaaaaca....", "...abaaba.aa....", "...aaabba.......", ".....aaba.......", "......abba......", "......abaa......", "......aba.......", "......aa........", "................", "................"], {"a": "#122020", "b": "#24523b", "c": "#14a02d", "d": "#197a3e"}], [["................", ".......aaaa.....", "....aaaabcda....", "...adbacabcda...", "..adbdabcabca...", "..accdaacadbda..", "..addabaaaadba..", "...aabaaba.aaa..", "...aaaeeaa......", "...aeeeeeaa.....", "....aeeeabba....", ".....aaababa....", ".......abaa.....", ".......aba......", ".......aa.......", "................"], {"a": "#122020", "b": "#24523b", "c": "#197a3e", "d": "#14a02d", "e": "#3a1725"}], [["................", ".......aaaa.....", "...aaaaabcca....", "..accdabadbca...", ".acbdcadcadbca..", ".abdbcadbacdba..", ".acbcaacdbabdca.", ".accaadacdacbca.", ".eaadaaadcaacba.", ".efaagggaaeaaca.", ".eghfffgggedaa..", "..efffffgedda...", "...egffgeaada...", "....eeeeda.aa...", ".......ada......", ".......aa......."], {"a": "#122020", "b": "#197a3e", "c": "#14a02d", "d": "#24523b", "e": "#3a1725", "f": "#b4212a", "g": "#73172d", "h": "#df3d24"}]];
+  CROPSPR.ruebe = { full: 1, seed: draw(TM[0]), st: [draw(TM[1]), draw(TM[2]), draw(TM[2]), draw(TM[3])], icon: draw([[".......aaaa..", "...aa..abcca.", "..abcaabcca..", "..aaddacda...", "...aacadae...", "..aacaaaaae..", ".eacdaadcafe.", "effaaffadaffe", "efgggghfaaffe", "ehhgghhhffffe", ".ehghhhhhffe.", ".efhhhhhfffe.", "..eehhfffee..", "....eeeee...."], {"a": "#122020", "b": "#14a02d", "c": "#197a3e", "d": "#24523b", "e": "#3a1725", "f": "#73172d", "g": "#df3d24", "h": "#b4212a"}]) };
   CROPSPR.kohl = { full: 1, seed: draw(RB[0]), st: [draw(RB[1]), draw(RB[2]), draw(RB[2]), draw(RB[3])], icon: draw([[".....aaa........", "....abcdaaa.....", "....aadaddca....", "...abbaaaada....", "...abcdabbaa....", "...accdacbaa....", "....acdacca.....", "....addadda.....", ".....aaeaa......", "....fgggeef.....", "...fggggeeef....", "...fhghheeij....", "...jhhhhiiij....", "....jhhhiij.....", ".....jhiij......", "......jjj......."], {"a": "#122020", "b": "#14a02d", "c": "#197a3e", "d": "#24523b", "e": "#403453", "f": "#242234", "g": "#793a80", "h": "#dca463", "i": "#bb7547", "j": "#322b27"}]) };
 }
 function drawCrop(g, t, v, x0, y0) {
@@ -1491,7 +1494,9 @@ function seedBag(g, a, b) {
   R(g, 3, 5, 1, 8, '#c79f66'); R(g, 12, 5, 1, 8, '#c79f66'); R(g, 4, 14, 8, 1, '#9c7444');
   disc(g, 8, 9, 2, a); R(g, 7, 8, 1, 1, b);
 }
-icon('seed_ruebe', g => seedBag(g, '#e8c46a', '#fbe6a8'));
+// Tomatensamen: braune Papiertüte mit kleiner Tomate
+const SEED_TOM = [[".....aaaaaa.....", "...aabccccbaa...", "..adddddddddda..", "..aeccccccccba..", "..aeccccccccba..", "..aeccccfffcba..", "..aecfgfhgfcba..", "..aeccfgifccba..", "..aecfifigjcba..", "..aekjfjfijkba..", "..aeklmlljjkba..", "..aecjllljjcba..", "..aecckkkkccba..", "..aeccccccccba..", "..aeccccccccba..", "..aaaaaaaaaaaa.."], {"a": "#4a2c1a", "b": "#9f633c", "c": "#b98250", "d": "#81482e", "e": "#cf9a63", "f": "#122020", "g": "#197a3e", "h": "#14a02d", "i": "#24523b", "j": "#73172d", "k": "#3a1725", "l": "#b4212a", "m": "#df3d24"}];
+icon('seed_ruebe', g => { const [A, C] = SEED_TOM; A.forEach((r, y) => [...r].forEach((ch, x) => { if (C[ch]) R(g, x, y, 1, 1, C[ch]); })); });
 // Rübensamen: braune Papiertüte mit Rübe (16×16)
 const SEED_KOHL = [".....aaaaaa.....", "...aabccccbaa...", "..adddddddddda..", "..aeccccccccba..", "..aeccfccfccba..", "..aecfgffhfcba..", "..aecfhghgfcba..", "..aeccfiifccba..", "..aecjkkkljcba..", "..aejkkkklljba..", "..aejmkkllljba..", "..aenmmmmoonba..", "..aecnmmooncba..", "..aeccnnnnccba..", "..aeccccccccba..", "..aaaaaaaaaaaa.."], SEED_KOHL_PAL = {"a": "#4a2c1a", "b": "#9f633c", "c": "#b98250", "d": "#81482e", "e": "#cf9a63", "f": "#122020", "g": "#14a02d", "h": "#197a3e", "i": "#24523b", "j": "#242234", "k": "#793a80", "l": "#403453", "m": "#dca463", "n": "#322b27", "o": "#bb7547"};
 icon('seed_kohl', g => SEED_KOHL.forEach((r, y) => [...r].forEach((ch, x) => { if (SEED_KOHL_PAL[ch]) R(g, x, y, 1, 1, SEED_KOHL_PAL[ch]); })));
@@ -2173,12 +2178,12 @@ function drawStandGoods(t) {
     if (!(S.stand[id] > 0) || i > 3) continue;
     const bx = x0 + 3 + i * 7, by = y0 + 11;
     R(X, bx, by + 3, 6, 3, '#a86d48'); R(X, bx, by + 3, 6, 1, '#c48a5e');
-    const col = { ruebe: '#f1e4bb', kohl: '#793a80', kuerbis: '#e07b24', wood: '#b87a4a', berry: '#e0466e', milk: '#ffffff', ...FLOWER_COL }[id];
+    const col = { ruebe: '#d8402e', kohl: '#793a80', kuerbis: '#e07b24', wood: '#b87a4a', berry: '#e0466e', milk: '#ffffff', ...FLOWER_COL }[id];
     R(X, bx + 1, by + 1, 2, 2, col); R(X, bx + 3, by + 1, 2, 2, col); R(X, bx + 2, by, 2, 2, col);
     i++;
   }
   // Bestellzettel am Auftragsbrett
-  const IC = { ruebe: '#f1e4bb', kohl: '#793a80', kuerbis: '#e07b24', wood: '#b87a4a', berry: '#e0466e', milk: '#ffffff', ...FLOWER_COL };
+  const IC = { ruebe: '#d8402e', kohl: '#793a80', kuerbis: '#e07b24', wood: '#b87a4a', berry: '#e0466e', milk: '#ffffff', ...FLOWER_COL };
   S.orders.forEach((o, k) => {
     if (k > 2) return;
     const nx = BDX + 4 + k * 9, ny = BDY + 5 + (k % 2) * 2, ready = orderReady(o);
