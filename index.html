@@ -532,10 +532,10 @@ const CROPS = {
   kohl:    { name: 'Rübe',   seed: 'Rübensamen',   days: 3, buy: 45, sell: 90,  eat: 30 },
   kuerbis: { name: 'Kürbis', seed: 'Kürbissamen', days: 3, buy: 90, sell: 200, eat: 50 },
   // Blumen: im Dorfladen als Samen, wachsen auf dem Acker, reif mit der Hand pflücken, am Verkaufsstand verkaufen
-  blume_sonne:   { name: 'Sonnenblume',        seed: 'Sonnenblumenkerne',  days: 4, buy: 40, sell: 90, eat: 0, flower: 1, col: '#f2c230' },
+  blume_sonne:   { name: 'Sonnenblume',        seed: 'Sonnenblumenkerne',  days: 2, buy: 40, sell: 90, eat: 0, flower: 1, col: '#f2c230' },
   blume_orange:  { name: 'Oranges Blümchen',   seed: 'Orange Samen',    days: 2, buy: 15, sell: 30, eat: 0, flower: 1, col: '#f5a35c' },
   blume_rosa:    { name: 'Rosa Blümchen',      seed: 'Rosa Samen',      days: 2, buy: 15, sell: 30, eat: 0, flower: 1, col: '#d4749f' },
-  blume_lav:     { name: 'Lavendel',           seed: 'Lavendelsamen',      days: 3, buy: 25, sell: 55, eat: 0, flower: 1, col: '#a184d9' },
+  blume_lav:     { name: 'Lavendel',           seed: 'Lavendelsamen',      days: 2, buy: 25, sell: 55, eat: 0, flower: 1, col: '#a184d9' },
 };
 const FLOWER_COL = {}; for (const t in CROPS) if (CROPS[t].flower) FLOWER_COL[t] = CROPS[t].col;
 // Bilder der Blumen (16×16): Saat, Keimling, Knospe, Knospe, Blüte; Symbol der Blume; Samentüte
@@ -2207,7 +2207,8 @@ function updateHUD() {
     else if (t === 'X' && tool.kind === 'axe') h = 'Stumpf entfernen';
     else if (t === 'Y' && tool.kind === 'shovel') h = 'Setzling ausgraben';
     else if (t === 'G' && !s && tool.kind === 'sapling') h = 'Pflanzen';
-    else if (s && !s.c && (tool.kind === 'seed' || (held() && CROPS[held()] && CROPS[held()].flower))) h = 'Pflanzen';
+    else if (held() && ((tool.kind === 'seed' && CROPS[ITEM[held()].crop].flower) || (CROPS[held()] && CROPS[held()].flower))) h = t === 'G' && !s && wf < 0 && !isEdge(tx, ty) ? 'Blume pflanzen' : '';
+    else if (s && !s.c && tool.kind === 'seed') h = 'Pflanzen';
     else if (t === 'G' && !s && tool.kind === 'hive' && wf < 0) h = 'Bienenstock aufstellen';
     else if (TREES[tx + ',' + ty] && TREES[tx + ',' + ty].s === 'bush' && TREES[tx + ',' + ty].ripe) h = 'Beeren pflücken';
     else if (s && tool.kind === 'shovel') h = s.c ? 'Pflanze ausgraben' : 'Feld entfernen';
@@ -2524,7 +2525,7 @@ function updateBen(dt) {
   if (ben.tool === 'can' && LOC === 'farm') canDrops(ben.x, ben.y, ben.dir, Math.min(1, ben.t / (1.4 / f)), dt);
   if (ben.t < 1.4 / f) return;
   const so = T0.key && S.soil[T0.key];
-  if (T0.k === 'har' && so && so.c && so.c.d >= CROPS[so.c.t].days) { const t = so.c.t; so.c = null; S.store[t] = (S.store[t] || 0) + 1; S.benLog.har[t] = (S.benLog.har[t] || 0) + 1; }
+  if (T0.k === 'har' && so && so.c && so.c.d >= CROPS[so.c.t].days) { const t = so.c.t; so.c = null; if (so.m) for (const kk in S.soil) if (S.soil[kk] === so) delete S.soil[kk]; S.store[t] = (S.store[t] || 0) + 1; S.benLog.har[t] = (S.benLog.har[t] || 0) + 1; }
   else if (T0.k === 'wat' && so && so.c && !so.w) { so.w = true; S.benLog.wat++; }
   else if (T0.k === 'milk' && S.cows[T0.i] && !S.cows[T0.i].m) { S.cows[T0.i].m = true; S.store.milk = (S.store.milk || 0) + 1; S.benLog.milk++; }
   ben.task = null; ben.tool = null; ben.t = 0;
@@ -2751,7 +2752,7 @@ function act(tx, ty) {
   const ripe = s && s.c && s.c.d >= CROPS[s.c.t].days;
   if (ripe && CROPS[s.c.t].flower && kind !== 'shovel') {   // Blumen pflückt man mit der Hand
     const t = s.c.t;
-    if (addItem(t, 1)) { s.c = null; burst(tx, ty, [CROPS[t].col, '#fff6c0', '#ffc2dc'], 8, 70); hearts(tx, ty, 2); snd('harvest'); toast(`+1 ${CROPS[t].name}`); }
+    if (addItem(t, 1)) { s.c = null; if (s.m) delete S.soil[k]; burst(tx, ty, [CROPS[t].col, '#fff6c0', '#ffc2dc'], 8, 70); hearts(tx, ty, 2); snd('harvest'); toast(`+1 ${CROPS[t].name}`); }
     return;
   }
   if (ripe && kind !== 'sickle') { toast('Zum Ernten die Sichel nehmen'); return; }
@@ -2771,7 +2772,7 @@ function act(tx, ty) {
       const cs = S.soil[(tx + ox) + ',' + (ty + oy)];
       if (cs && cs.c && cs.c.d >= CROPS[cs.c.t].days) {
         if (!addItem(cs.c.t, 1)) break;
-        got[cs.c.t] = (got[cs.c.t] || 0) + 1; cs.c = null; n++;
+        got[cs.c.t] = (got[cs.c.t] || 0) + 1; cs.c = null; if (cs.m) delete S.soil[(tx + ox) + ',' + (ty + oy)]; n++;
         burst(tx + ox, ty + oy, ['#ffe066', '#fff6c0', '#ffc2dc'], 6, 70); hearts(tx + ox, ty + oy, 3);
       }
     }
@@ -2823,7 +2824,8 @@ function act(tx, ty) {
     if (!s) { toast('Hier ist kein Feld zum Entfernen.'); return; }
     if (!needEnergy(1)) return;
     burst(tx, ty, ['#7a4d2c', '#93613a', '#7bbf55'], 8);
-    if (s.c) { s.c = null; snd('till'); toast('Pflanze ausgegraben'); }
+    if (s.m) { delete S.soil[k]; snd('till'); toast('Blume ausgegraben'); }
+    else if (s.c) { s.c = null; snd('till'); toast('Pflanze ausgegraben'); }
     else { delete S.soil[k]; snd('till'); toast('Feld entfernt'); }
     wear('shovel');
     return;
@@ -2852,15 +2854,20 @@ function act(tx, ty) {
     if (t !== 'G' || s || wetCount(tx, ty, 2) > 0 || (tx === px && ty === py)) { toast('Hier kann kein Baum wachsen.'); snd('err'); return; }
     useItem(id); TREES[tx + ',' + ty] = ITEM[id].k === 'berry' ? { s: 'bush', d: 0, c: 0 } : { s: 'sap', d: 0, k: ITEM[id].k }; rebuildTrees();
     snd('plant'); burst(tx, ty, ['#7a4d2c', '#6cc04f'], 6, 30); toast(`${ITEM[id].name} gepflanzt`);
+  } else if ((kind === 'seed' && CROPS[ITEM[id].crop].flower) || (kind === 'crop' && CROPS[id] && CROPS[id].flower)) {
+    // Blumen (Samen oder gepflückte Blume) kommen direkt auf die Wiese, nicht auf Ackerboden; gießen, nach 2 Tagen blühen sie
+    const crop = kind === 'seed' ? ITEM[id].crop : id, [px, py] = playerTile();
+    if (s && !s.m) { toast('Blumen pflanzt du direkt auf die Wiese, nicht auf den Acker.'); snd('err'); return; }
+    if (s) { toast('Hier wächst schon eine Blume.'); return; }
+    if (wildFlowerAt(tx, ty) >= 0) { toast('Hier blüht schon eine Blume.'); return; }
+    if (t !== 'G' || wetCount(tx, ty, 2) > 0 || isEdge(tx, ty) || (tx === px && ty === py)) { toast('Hier kann keine Blume wachsen.'); snd('err'); return; }
+    useItem(id); S.soil[k] = { w: S.rain, c: { t: crop, d: 0 }, m: 1 }; snd('plant'); burst(tx, ty, ['#6cc04f', CROPS[crop].col], 4, 20);
+    toast(`${CROPS[crop].name} gepflanzt – 2 Tage gießen`);
   } else if (kind === 'seed') {
     const crop = ITEM[id].crop;
     if (!s) { toast('Erst den Boden mit der Hacke auflockern.'); snd('err'); return; }
     if (s.c) { toast('Hier wächst schon etwas.'); return; }
     useItem(id); s.c = { t: crop, d: 0 }; snd('plant'); burst(tx, ty, ['#3e2613', '#6cc04f'], 4, 20);
-  } else if (kind === 'crop' && CROPS[id] && CROPS[id].flower) {   // gepflückte Blumen lassen sich wie Samen auf ein Feld pflanzen
-    if (!s) { toast('Blumen pflanzt du auf ein Feld – erst mit der Hacke auflockern.'); snd('err'); return; }
-    if (s.c) { toast('Hier wächst schon etwas.'); return; }
-    useItem(id); s.c = { t: id, d: 0 }; snd('plant'); burst(tx, ty, ['#3e2613', CROPS[id].col], 4, 20); toast(`${CROPS[id].name} gepflanzt`);
   } else if (kind === 'food' || kind === 'crop') {
     if (!ITEM[id].eat) { toast('Das kann man nicht essen.'); return; }
     if (S.energy >= S.maxEnergy) { toast('Du bist gerade nicht hungrig.'); return; }
@@ -3109,7 +3116,7 @@ addEventListener('pointerdown', e => { if (e.pointerType === 'touch' && !touchMo
 /* ---------- Felder: Pixel-Ebene, nur bei Änderungen neu gezeichnet ---------- */
 const [SL, sl] = mk(W, H);
 let soilSig = null;
-function soilAt(tx, ty) { return S.soil[tx + ',' + ty]; }
+function soilAt(tx, ty) { const s = S.soil[tx + ',' + ty]; return s && !s.m ? s : undefined; }   // Wiesenblumen haben keinen Ackerboden
 function soilPix(x, y) {
   const tx = Math.floor(x / 16), ty = Math.floor(y / 16), lx = x - tx * 16, ly = y - ty * 16;
   if (!soilAt(tx, ty)) return false;
@@ -3122,6 +3129,7 @@ function updateSoilLayer() {
   sl.clearRect(0, 0, W, H);
   for (const k in S.soil) {
     const [tx, ty] = k.split(',').map(Number), wet = S.soil[k].w;
+    if (S.soil[k].m) { if (wet) { sl.fillStyle = 'rgba(30,80,50,.28)'; sl.fillRect(tx * 16 + 3, ty * 16 + 10, 10, 4); sl.fillRect(tx * 16 + 5, ty * 16 + 9, 6, 6); } continue; }
     const C = wet ? { base: '#5f3d26', ridge: '#76503a', ridgeHi: '#8a6248', groove: '#4a2e1c', edge: '#3e2516', rim: '#6f4b33', clod: '#82593e', speck: '#4f3322' }
                   : { base: '#a3703f', ridge: '#b98550', ridgeHi: '#cc9a62', groove: '#86562f', edge: '#6e4426', rim: '#b27c48', clod: '#c08c58', speck: '#8e5e34' };
     for (let ly = 0; ly < 16; ly++) for (let lx = 0; lx < 16; lx++) {
