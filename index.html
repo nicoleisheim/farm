@@ -611,7 +611,7 @@ const appeal = id => Math.pow(sellOf(id) / priceOf(id), 2);
 const priceTag = id => { const r = priceOf(id) / sellOf(id); return r <= .75 ? 'sehr schnell' : r < .95 ? 'schnell' : r <= 1.05 ? 'normal' : r <= 1.3 ? 'langsam' : 'sehr langsam'; };
 const SEASONS = ['Frühling', 'Sommer', 'Herbst', 'Winter'];
 const WDAYS = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
-const SOLID = new Set(['d', 'w', 'b', 'q', 'm', 'v', 'c', 'I', 'J', 'Q', 'Z', 'T', 'H', 'S', 'B', 'U', 'W', 'L', 'X', 'Y', 'F', 'O', 'N', 'K']);
+const SOLID = new Set(['h', 'd', 'w', 'b', 'q', 'm', 'v', 'c', 'I', 'J', 'Q', 'Z', 'T', 'H', 'S', 'B', 'U', 'W', 'L', 'X', 'Y', 'F', 'O', 'N', 'K']);
 let LOC = 'farm', fadeT = 0;
 const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
 const DOOR = [4, 4];
@@ -657,6 +657,8 @@ for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
   const o = planO(x, y), k = x + ',' + y;
   MAP[y][x] = FENCE_T[k] ? 'J' : TREE_KIND[k] ? 'T' : o === 'U' ? 'U' : planG(x, y) === 'p' ? 'P' : 'G';
 }
+// Felder, die von Dächern, Markise, Kiste oder Schild verdeckt sind, sind fest – sonst läuft man über das Dach
+for (const [x, y] of [[1, 1], [1, 2], [1, 3], [1, 4], [7, 1], [7, 2], [12, 1], [13, 1], [14, 1], [19, 2], [20, 2], [10, 3], [11, 3], [11, 4], [22, 4], [22, 5]]) if ('GP'.includes(MAP[y][x])) MAP[y][x] = 'h';
 const STO = { x0: 184, y0: 32 };
 const HELPER = 'Ben', BEN_MIN = 4, BEN_MAX = 16; // Hofhelfer: gießt, erntet und melkt tagsüber (6–18 Uhr), Stundenlohn
 const benWage = () => S.benWage || 8, benPace = w => w < 6 ? 'gemütlich' : w < 10 ? 'normal' : w < 14 ? 'flink' : 'sehr flink';
