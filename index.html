@@ -1558,6 +1558,12 @@ function drawHerb(g, k, st, x0, by) {   // by: Unterkante der Pflanze
 }
 const herbStage = p => p.d >= HERBS[p.t].days ? 3 : p.d === 0 ? 0 : p.d * 2 < HERBS[p.t].days ? 1 : 2;
 function drawHomeDyn(t) {
+  // Fenster: abends dämmert es, nachts Sterne und Mond
+  const tm = S.time, nt = tm > 1080 ? Math.min(1, (tm - 1080) / 180) : 0;
+  if (nt > 0) {
+    X.fillStyle = `rgba(40,30,80,${.9 * nt})`; for (const [x, y, w, h] of [[164, 50, 27, 7], [193, 50, 27, 7], [164, 58, 27, 8], [193, 58, 27, 8]]) X.fillRect(x, y, w, h);
+    if (nt > .6) { for (const [x, y] of [[168, 52], [177, 61], [186, 54], [197, 60], [214, 52], [206, 63]]) R(X, x, y, 1, 1, '#fff6c0'); R(X, 208, 51, 4, 4, '#fff1b0'); R(X, 210, 51, 2, 2, '#3a2c6a'); }
+  }
   for (let i = 0; i < POT_N; i++) {
     const p = (S.pots || [])[i], x0 = (POT_X0 + i) * 16, y = 80;
     R(X, x0 + 3, y + 1, 10, 2, '#e08a5e'); R(X, x0 + 4, y + 3, 8, 5, '#c8704a'); R(X, x0 + 4, y + 3, 2, 5, '#d98560'); R(X, x0 + 11, y + 3, 1, 5, '#a85a38');
