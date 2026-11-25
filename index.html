@@ -497,7 +497,7 @@ body.pad #hint{bottom:7.9em}
 'use strict';
 const W = 384, H = 384, TS = 16, COLS = 24, ROWS = 24; // Farm: 24 Reihen (unten Land zum Dazukaufen)
 const TH = 256, TROWS = 16; // Innenstadt
-const curH = () => LOC === 'town' ? TH : H;
+const curH = () => LOC === 'farm' ? H : TH;   // Innenstadt und Farmhaus sind gleich hoch
 const C = document.getElementById('c'), X = C.getContext('2d');
 X.imageSmoothingEnabled = false;
 const $ = id => document.getElementById(id);
@@ -554,6 +554,20 @@ const ITEM = {
   'sap-cherry': { name: 'Kirschbaum-Setzling', kind: 'sapling', k: 'cherry', desc: 'Auf freier Wiese pflanzen. Wird in 4 Tagen zu einem jungen Kirschbaum, 3 Tage später ist er groß.' },
   snack: { name: 'Gartensalat', kind: 'food', eat: 40, desc: 'Ein knackiger Salat aus dem Dorfladen.' },
   milk: { name: 'Milch', kind: 'mat', sell: 45, desc: 'Frische Milch von deinen Kühen. Bringt 45 Taler am Verkaufsstand.' },
+  // Kräuter (im Farmhaus in Töpfen) und Medizin vom Mischtisch
+  minze: { name: 'Minze', kind: 'crop', eat: 5, sell: 25, desc: 'Frische Minze aus dem Kräutertopf. Bringt 25 Taler – oder misch daraus Medizin.' },
+  kamille: { name: 'Kamille', kind: 'crop', eat: 5, sell: 35, desc: 'Duftende Kamillenblüten. Bringen 35 Taler – oder misch daraus Medizin.' },
+  salbei: { name: 'Salbei', kind: 'crop', eat: 5, sell: 40, desc: 'Weiche Salbeiblätter. Bringen 40 Taler – oder misch daraus Medizin.' },
+  rosmarin: { name: 'Rosmarin', kind: 'crop', eat: 5, sell: 55, desc: 'Würziger Rosmarin. Bringt 55 Taler – oder misch daraus Medizin.' },
+  'hseed-minze': { name: 'Minzsamen', kind: 'hseed', herb: 'minze', desc: 'Im Farmhaus in einen Kräutertopf pflanzen. Reif nach 2 Tagen, wenn du täglich gießt. Gibt 2 Bund.' },
+  'hseed-kamille': { name: 'Kamillensamen', kind: 'hseed', herb: 'kamille', desc: 'Im Farmhaus in einen Kräutertopf pflanzen. Reif nach 3 Tagen, wenn du täglich gießt. Gibt 2 Bund.' },
+  'hseed-salbei': { name: 'Salbeisamen', kind: 'hseed', herb: 'salbei', desc: 'Im Farmhaus in einen Kräutertopf pflanzen. Reif nach 3 Tagen, wenn du täglich gießt. Gibt 2 Bund.' },
+  'hseed-rosmarin': { name: 'Rosmarinsamen', kind: 'hseed', herb: 'rosmarin', desc: 'Im Farmhaus in einen Kräutertopf pflanzen. Reif nach 4 Tagen, wenn du täglich gießt. Gibt 2 Bund.' },
+  hustensaft: { name: 'Hustensaft', kind: 'mat', sell: 220, desc: 'Aus Minze und Honig. Bringt 220 Taler am Verkaufsstand.' },
+  kamillensalbe: { name: 'Kamillensalbe', kind: 'mat', sell: 190, desc: 'Beruhigende Salbe aus Kamille. Bringt 190 Taler am Verkaufsstand.' },
+  salbeibonbons: { name: 'Salbeibonbons', kind: 'mat', sell: 240, desc: 'Aus Salbei und Honig. Bringen 240 Taler am Verkaufsstand.' },
+  rosmarinoel: { name: 'Rosmarinöl', kind: 'mat', sell: 230, desc: 'Aus Rosmarin und Minze. Bringt 230 Taler am Verkaufsstand.' },
+  elixier: { name: 'Kräuterelixier', kind: 'crop', eat: 60, sell: 300, desc: 'Aus allen vier Kräutern. Gibt 60 Energie oder bringt 300 Taler am Verkaufsstand.' },
   hive: { name: 'Bienenstock', kind: 'hive', desc: 'Auf freie Wiese stellen. Alle 3 Tage gibt es Honig – ab 8 blühenden Blumen in der Nähe 2 Gläser. Die häufigste Blume bestimmt die Sorte.' },
   honig_sonne: { name: 'Sonnenblumenhonig', kind: 'crop', eat: 30, sell: 90, desc: 'Goldgelber Honig von Bienen bei den Sonnenblumen. Bringt 90 Taler am Verkaufsstand.' },
   honig_lav: { name: 'Lavendelhonig', kind: 'crop', eat: 30, sell: 120, desc: 'Feiner Honig von Bienen beim Lavendel. Bringt 120 Taler am Verkaufsstand.' },
@@ -580,7 +594,16 @@ const duraOf = id => (S.dura && S.dura[id] !== undefined) ? S.dura[id] : ITEM[id
 const iconOf = id => id.replace('-', '_');
 const HONEY = ['honig_sonne', 'honig_lav', 'honig_rosa', 'honig_wiese'];
 const HONEY_COL = { honig_sonne: '#f5b52e', honig_lav: '#f7d47a', honig_rosa: '#f3a46a', honig_wiese: '#e09a3a' };
-const SELLABLE = [...Object.keys(CROPS), 'berry', 'wood', 'milk', ...HONEY];
+const HERBS = { minze: { days: 2, buy: 20, col: '#5fae4a' }, kamille: { days: 3, buy: 30, col: '#f4f0d8' }, salbei: { days: 3, buy: 35, col: '#8fb07a' }, rosmarin: { days: 4, buy: 45, col: '#3f6e4a' } };
+const MEDS = {   // Rezepte am Mischtisch; 'honig' = beliebiger Honig
+  hustensaft: { need: { minze: 2, honig: 1 }, col: '#e8962e' },
+  kamillensalbe: { need: { kamille: 3 }, col: '#f5d76e' },
+  salbeibonbons: { need: { salbei: 2, honig: 1 }, col: '#8fd0a0' },
+  rosmarinoel: { need: { rosmarin: 2, minze: 1 }, col: '#c9d36a' },
+  elixier: { need: { minze: 1, kamille: 1, salbei: 1, rosmarin: 1 }, col: '#f07ca4' },
+};
+const HERB_COL = {}; for (const k in HERBS) HERB_COL[k] = HERBS[k].col; for (const k in MEDS) HERB_COL[k] = MEDS[k].col;
+const SELLABLE = [...Object.keys(CROPS), 'berry', 'wood', 'milk', ...HONEY, ...Object.keys(HERBS), ...Object.keys(MEDS)];
 const sellOf = id => ITEM[id].sell || 0;
 const priceOf = id => (S.prices && S.prices[id]) || sellOf(id);
 const prStep = id => Math.max(1, Math.round(sellOf(id) / 10));
@@ -588,7 +611,7 @@ const appeal = id => Math.pow(sellOf(id) / priceOf(id), 2);
 const priceTag = id => { const r = priceOf(id) / sellOf(id); return r <= .75 ? 'sehr schnell' : r < .95 ? 'schnell' : r <= 1.05 ? 'normal' : r <= 1.3 ? 'langsam' : 'sehr langsam'; };
 const SEASONS = ['Frühling', 'Sommer', 'Herbst', 'Winter'];
 const WDAYS = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
-const SOLID = new Set(['I', 'J', 'Q', 'Z', 'T', 'H', 'S', 'B', 'U', 'W', 'L', 'X', 'Y', 'F', 'O', 'N', 'K']);
+const SOLID = new Set(['d', 'w', 'b', 'q', 'm', 'v', 'c', 'I', 'J', 'Q', 'Z', 'T', 'H', 'S', 'B', 'U', 'W', 'L', 'X', 'Y', 'F', 'O', 'N', 'K']);
 let LOC = 'farm', fadeT = 0;
 const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
 const DOOR = [4, 4];
@@ -685,6 +708,7 @@ TOWN_NPC.forEach(n => setT(n.x, n.y, 'N'));
 const TWIN = [[42, 70, 12, 11], [90, 70, 12, 11], [266, 71, 12, 10], [314, 71, 12, 10]];
 let TREES = {};
 const tileAt = (x, y) => {
+  if (LOC === 'home') return x < 0 || y < 0 || x >= COLS || y >= TROWS ? 'd' : MAP_H[y][x];
   if (x < 0 || y < 0 || x >= COLS || y >= (LOC === 'town' ? TROWS : ROWS)) return 'T';
   if (LOC === 'town') return MAP_T[y][x];
   const t = MAP[y][x];
@@ -711,6 +735,7 @@ const WILD_ITEM = ['blume_sonne', 'blume_orange', 'blume_rosa', 'blume_lav'];   
 const wildKey = (tx, ty) => (LOC === 'town' ? 't' : 'f') + tx + ',' + ty;
 function wildPicked(tx, ty) { try { return !!(S.picked && S.picked[wildKey(tx, ty)]); } catch (e) { return false; } }
 function wildFlowerAt(tx, ty) {
+  if (LOC === 'home') return -1;
   const M = LOC === 'town' ? MAP_T : MAP;
   if (!M[ty] || M[ty][tx] !== 'G' || wildPicked(tx, ty)) return -1;
   if (LOC !== 'town') return S.soil[tx + ',' + ty] ? -1 : FLOWER_AT[tx + ',' + ty] ?? -1;
@@ -1278,6 +1303,9 @@ function makeTown0() {
   LIT_T = makeLit(BG_T, TWIN);
 }
 function goTown() { LOC = 'town'; if (!BG_T) makeTown(); S.px = 22; S.py = 8 * 16 + 13; S.dir = 'right'; S.time += 10; fadeT = .35; snd('sel'); toast('Innenstadt'); }
+// Farmhaus betreten und verlassen
+function goHome() { LOC = 'home'; if (!BG_H) makeHome(); S.px = 12 * 16; S.py = 10 * 16 + 10; S.dir = 'up'; fadeT = .35; snd('sel'); }
+function leaveHome() { LOC = 'farm'; S.px = DOOR[0] * 16 + 8; S.py = (DOOR[1] + 1) * 16 + 12; S.dir = 'down'; fadeT = .35; snd('sel'); }
 function goFarm() { LOC = 'farm'; S.px = GATE[0] * 16 - 2; S.py = GATE[1] * 16 + 13; S.dir = 'left'; S.time += 10; fadeT = .35; snd('sel'); toast('Sonnenhof'); }
 // Beerenstrauch ausgewachsen (16×16): mit Beeren / ohne Beeren
 const BUSH_RIPE = ["................", "......aaaaa.....", "....aabbbbbaa...", "..aabccdcccbea..", ".aebccccccccba..", ".aebcccccdeccea.", "aebcdcecccbccbea", ".abccedcccbdbbea", "fgbeebbccebbeee.", "fegbbbbbdbbbbef.", "feegbebbbbbdeeef", "fgeedebbebbheggf", ".fgegedbbdeeggf.", ".fgghgeeeehgggf.", "..fhgggggggghf..", "....hhghghhh...."], BUSH_EMPTY = ["................", "......aaaaa.....", "....aabbbbbaa...", "..aabccccccbea..", ".aebccccccccba..", ".aebccccceeccea.", "aebcccecccbccbea", ".abcceccccbebbea", "fgbeebbccebbeee.", "fegbbbbbebbbbef.", "feegbebbbbbbeeef", "fgeeeebbebbheggf", ".fgegegbbheeggf.", ".fgghgeeeehgggf.", "..fhgggggggghf..", "....hhghghhh...."], BUSH_PAL = {"a": "#1f4c2e", "b": "#3d995c", "c": "#6fc377", "d": "#ad3b5f", "e": "#2a6d49", "f": "#15321f", "g": "#20543f", "h": "#174232"};
@@ -1447,6 +1475,177 @@ function drawHive(g, tx, ty) {
 }
 icon('hive', g => sprRows(g, HIVE_ROWS.slice(0, 15).concat([HIVE_ROWS[16]]), HIVE_PAL, 0, 0));
 HONEY.forEach(id => icon(id, g => sprRows(g, JAR_ROWS, JAR_PAL[id], 0, 0)));
+/* ---------- Farmhaus innen: Bett, Kräutertöpfe, Mischtisch ---------- */
+// Raum: Spalten 6–17, Wand Reihen 3–4, Boden 5–10, unten Wand mit Fußmatte (11/12, 11)
+const MAP_H = Array.from({ length: TROWS }, () => Array(COLS).fill('d'));
+for (let x = 6; x <= 17; x++) { MAP_H[3][x] = MAP_H[4][x] = 'w'; for (let y = 5; y <= 10; y++) MAP_H[y][x] = 'f'; MAP_H[11][x] = x === 11 || x === 12 ? 'e' : 'w'; }
+for (const [x, y] of [[6, 5], [7, 5], [6, 6], [7, 6]]) MAP_H[y][x] = 'b';
+for (let x = 9; x <= 14; x++) MAP_H[5][x] = 'q';
+for (const [x, y] of [[16, 5], [17, 5], [16, 6], [17, 6]]) MAP_H[y][x] = 'm';
+MAP_H[10][6] = 'v'; MAP_H[10][17] = 'c';
+const POT_X0 = 9, POT_N = 6;
+let BG_H = null;
+function makeHome() {
+  const [c, g] = mk(W, TH); BG_H = c;
+  R(g, 0, 0, W, TH, '#26121f');
+  // Boden: warme Holzdielen
+  R(g, 96, 80, 192, 112, '#d9a273');
+  for (let y = 80; y < 192; y += 8) { R(g, 96, y, 192, 1, '#c48a5e'); for (let x = 96 + ((y >> 3) % 3) * 21; x < 288; x += 64) R(g, x, y, 1, 8, '#c48a5e'); }
+  for (let i = 0; i < 40; i++) R(g, 98 + Math.floor(hash(i, 1, 90) * 186), 82 + Math.floor(hash(i, 2, 90) * 92), 2, 1, '#e3b083');
+  // Rückwand: rosa Tapete mit Streifen, Holzpaneel, Leiste
+  R(g, 96, 44, 192, 36, '#f6c9d6');
+  for (let x = 98; x < 288; x += 6) R(g, x, 46, 2, 24, '#f0b6c8');
+  for (let x = 101; x < 288; x += 12) for (let y = 52; y < 70; y += 9) R(g, x, y, 1, 1, '#ffffff');
+  R(g, 96, 44, 192, 3, '#8a5a3a'); R(g, 96, 47, 192, 1, '#b07a52');
+  R(g, 96, 68, 192, 12, '#c98a64'); R(g, 96, 68, 192, 2, '#e0a874'); for (let x = 100; x < 288; x += 12) R(g, x, 71, 1, 9, '#a86d48');
+  R(g, 96, 79, 192, 1, '#8a5a3a');
+  // Fenster über den Kräutertöpfen
+  R(g, 162, 48, 60, 20, '#ffffff'); R(g, 164, 50, 56, 16, '#bfe6ff'); R(g, 164, 60, 56, 6, '#d8f1ff'); R(g, 191, 50, 2, 16, '#ffffff'); R(g, 164, 57, 56, 1, '#ffffff');
+  R(g, 170, 52, 8, 2, '#ffffff'); R(g, 200, 53, 10, 2, '#ffffff');
+  for (const x of [156, 220]) { R(g, x, 46, 8, 22, '#ee8fb0'); R(g, x + (x < 200 ? 6 : 0), 46, 2, 22, '#d4688e'); for (let y = 49; y < 68; y += 4) R(g, x + 2, y, 3, 1, '#ffb3cd'); }
+  R(g, 154, 45, 76, 2, '#a86d48');
+  // Bilderrahmen mit Herz und Uhr
+  R(g, 112, 50, 14, 12, '#a86d48'); R(g, 113, 51, 12, 10, '#fff0f5'); heart(g, 117, 54, '#ee6f9b');
+  R(g, 247, 50, 12, 12, '#a86d48'); R(g, 248, 51, 10, 10, '#fff6e8'); R(g, 252, 53, 1, 4, '#5a3a2a'); R(g, 253, 56, 3, 1, '#5a3a2a');
+  // Seitenwände und Wand unten mit Tür
+  R(g, 90, 44, 6, 150, '#8a5a3a'); R(g, 288, 44, 6, 150, '#8a5a3a'); R(g, 95, 44, 1, 150, '#b07a52'); R(g, 288, 44, 1, 150, '#6b4528');
+  R(g, 90, 176, 204, 18, '#c98a64'); R(g, 90, 176, 204, 2, '#e0a874'); R(g, 90, 192, 204, 2, '#8a5a3a');
+  R(g, 176, 176, 32, 18, '#d9a273'); R(g, 174, 174, 2, 20, '#8a5a3a'); R(g, 208, 174, 2, 20, '#8a5a3a');
+  R(g, 179, 179, 26, 11, '#e47fa8'); R(g, 180, 180, 24, 9, '#f7a6c8'); for (let x = 182; x < 203; x += 4) R(g, x, 181, 2, 7, '#ffd0e2');
+  // runder Teppich
+  const rx = 192, ry = 138;
+  for (let y = -18; y <= 18; y++) for (let x = -30; x <= 30; x++) { const d = (x / 30) ** 2 + (y / 18) ** 2; if (d <= 1) R(g, rx + x, ry + y, 1, 1, d > .82 ? '#e47fa8' : d > .6 ? '#ffd0e2' : d > .45 ? '#f7a6c8' : (x + y) % 6 === 0 ? '#ffd0e2' : '#f7a6c8'); }
+  // Bett
+  R(g, 97, 72, 30, 14, '#a86d48'); R(g, 99, 74, 26, 10, '#c08a64'); heart(g, 110, 77, '#ffd0e2');
+  R(g, 97, 85, 30, 26, '#8a5a3a'); R(g, 98, 85, 28, 24, '#fff6f8'); R(g, 102, 87, 20, 7, '#ffffff'); R(g, 102, 93, 20, 1, '#e8d8de');
+  R(g, 98, 96, 28, 14, '#ee8fb0'); R(g, 98, 96, 28, 2, '#ffb3cd'); for (let y = 100; y < 109; y += 4) for (let x = 101 + (y % 8 ? 3 : 0); x < 124; x += 7) heart(g, x, y, '#ffd0e2');
+  R(g, 97, 110, 30, 2, '#6b4528');
+  // Kräuterbank unter dem Fenster
+  R(g, 145, 88, 94, 3, '#e0a874'); R(g, 145, 91, 94, 5, '#b97a4f'); R(g, 147, 96, 3, 10, '#8a5a3a'); R(g, 234, 96, 3, 10, '#8a5a3a'); R(g, 145, 106, 94, 1, 'rgba(60,20,40,.18)');
+  // Mischtisch mit Mörser, Fläschchen und Buch
+  R(g, 256, 86, 32, 4, '#e0a874'); R(g, 256, 90, 32, 12, '#c08a64'); R(g, 258, 102, 3, 9, '#8a5a3a'); R(g, 283, 102, 3, 9, '#8a5a3a'); R(g, 258, 93, 28, 1, '#a86d48');
+  R(g, 257, 111, 30, 1, 'rgba(60,20,40,.18)');
+  R(g, 259, 80, 9, 6, '#a8a0b8'); R(g, 260, 79, 7, 1, '#c8c0d8'); R(g, 261, 80, 5, 2, '#6b6378'); R(g, 266, 75, 2, 6, '#8a5a3a');
+  for (const [x, col] of [[270, '#f07ca4'], [275, '#8fd0a0'], [280, '#e8962e']]) { R(g, x, 79, 4, 7, '#ffffff'); R(g, x, 82, 4, 4, col); R(g, x + 1, 77, 2, 2, '#c99566'); }
+  R(g, 262, 95, 12, 4, '#fff6e8'); R(g, 268, 95, 1, 4, '#c9b8a0'); R(g, 263, 96, 4, 1, '#c9b8a0'); R(g, 270, 97, 3, 1, '#c9b8a0');
+  // Wassereimer (Gießkanne auffüllen) und Zimmerpflanze
+  R(g, 99, 165, 18, 3, 'rgba(60,20,40,.18)'); R(g, 100, 152, 16, 13, '#a86d48'); R(g, 100, 155, 16, 1, '#7a5034'); R(g, 100, 161, 16, 1, '#7a5034'); R(g, 101, 152, 14, 3, '#8fd0ff'); R(g, 103, 152, 4, 1, '#d4f0ff');
+  R(g, 275, 165, 14, 3, 'rgba(60,20,40,.18)'); R(g, 276, 156, 12, 9, '#c8704a'); R(g, 276, 156, 12, 2, '#e08a5e');
+  for (const [x, y, w, h] of [[273, 146, 6, 10], [283, 144, 6, 12], [278, 140, 7, 16], [271, 150, 5, 6], [287, 149, 4, 7]]) { R(g, x, y, w, h, '#5fae4a'); R(g, x + 1, y + 1, Math.max(1, w - 3), 2, '#8fd46a'); }
+}
+// Kräuter im Topf: Stufe 0 Saat, 1 Keimling, 2 jung, 3 reif (12 breit, Unterkante über der Erde)
+const HERB_PAL = {
+  minze: { L: '#8fd46a', M: '#5fae4a', D: '#3f8a3a', S: '#4f8a3a' },
+  kamille: { W: '#ffffff', Y: '#f5c93a', G: '#7fbf5a', g: '#5a9a44' },
+  salbei: { A: '#c3dcae', B: '#8fb07a', C: '#6a8c5c', s: '#5f7f4a' },
+  rosmarin: { N: '#7fae6e', M: '#3f6e4a', s: '#6a5a3a', F: '#8fb8f0' },
+};
+const HERB_ART = {
+  minze: [["..LL....LL..", ".LMML..LMML.", "..MDLSSLDM..", "...LMSSML...", "....DSSD....", ".....SS....."],
+    ["...LL..LL...", "..LMML.MML..", "...MD..DM...", ".LL.S..S.LL.", "LMML.SS.LMML", ".MDD.S.SDDM.", "..LLMS.SML..", "..LMMS.SMML.", "...DMSSSMD..", ".....SS....."]],
+  kamille: [["..G......G..", ".GGG.g..GGG.", "..G.g.g..G..", "....g.g.....", "...g.ggg....", "....ggg....."],
+    ["..W.......W.", ".WYW..W..WYW", "..W..WYW..W.", "..g...W...g.", "...g..g..g..", ".G.g..g..g..", "GGG.g.g.g...", ".G..g.g.g.G.", "....ggggg.GG", ".....ggg...."]],
+  salbei: [["...AB..AB...", "..ABBCABBC..", "...BC.sBC...", "..AB.ss.AB..", "...BCssBC...", ".....ss....."],
+    ["....AB.AB...", "...ABBCABBC.", ".AB.BC.BC...", "ABBC.s.s.AB.", ".BCC.s.s.BBC", "..AB.sss.CC.", ".ABBCs.sAB..", "..BCCs.sBBC.", "....Csss.C..", ".....ss....."]],
+  rosmarin: [["...N....N...", "..NM..N.NM..", "...NM.NNM...", "....NMNM....", "....NssM....", ".....s......"],
+    ["...F....F...", "..NM.F.NM...", "..NM.N.NM.F.", ".F.NMNMNM.N.", "..N.NMN.M.NM", ".NM.NMN.NNM.", "..NMNsNMN...", "...NNsNM....", "....Nss.....", ".....s......"]],
+};
+function drawHerb(g, k, st, x0, by) {   // by: Unterkante der Pflanze
+  if (st === 0) { R(g, x0 + 5, by - 1, 1, 1, '#c9a26a'); R(g, x0 + 8, by - 1, 1, 1, '#c9a26a'); return; }
+  if (st === 1) { R(g, x0 + 6, by - 3, 1, 3, '#4f8a3a'); R(g, x0 + 4, by - 4, 2, 1, '#8fd46a'); R(g, x0 + 7, by - 4, 2, 1, '#8fd46a'); R(g, x0 + 5, by - 3, 1, 1, '#5fae4a'); R(g, x0 + 7, by - 3, 1, 1, '#5fae4a'); return; }
+  const A = HERB_ART[k][st - 2], P = HERB_PAL[k];
+  sprRows(g, A, P, x0, by - A.length);
+}
+const herbStage = p => p.d >= HERBS[p.t].days ? 3 : p.d === 0 ? 0 : p.d * 2 < HERBS[p.t].days ? 1 : 2;
+function drawHomeDyn(t) {
+  for (let i = 0; i < POT_N; i++) {
+    const p = (S.pots || [])[i], x0 = (POT_X0 + i) * 16, y = 80;
+    R(X, x0 + 3, y + 1, 10, 2, '#e08a5e'); R(X, x0 + 4, y + 3, 8, 5, '#c8704a'); R(X, x0 + 4, y + 3, 2, 5, '#d98560'); R(X, x0 + 11, y + 3, 1, 5, '#a85a38');
+    R(X, x0 + 4, y + 1, 8, 1, p && p.w ? '#3e2516' : '#6b4528');
+    if (!p) continue;
+    const st = herbStage(p); drawHerb(X, p.t, st, x0 + 2, y + 1);
+    if (st === 3 && Math.floor(t * 2 + i) % 3 === 0) heart(X, x0 + 11, y - 12 - Math.floor(t * 4 % 2), '#ff5f8f');
+  }
+}
+// Symbole: Kräuterbund, Samentütchen, Medizin
+for (const k in HERBS) {
+  icon(k, g => { sprRows(g, HERB_ART[k][1], HERB_PAL[k], 2, 3); R(g, 5, 10, 6, 2, '#ee6f9b'); R(g, 5, 10, 6, 1, '#ffb3cd'); });
+  icon('hseed_' + k, g => {
+    R(g, 3, 2, 10, 13, '#b98a5a'); R(g, 4, 3, 8, 11, '#f3e2c0'); R(g, 4, 3, 8, 2, '#e6cfa3'); R(g, 3, 4, 10, 1, '#b98a5a');
+    const A = HERB_ART[k][0], P = HERB_PAL[k]; A.forEach((r, y) => [...r].forEach((ch, x) => { if (P[ch] && x % 2 === 0 && y % 1 === 0) R(g, 5 + (x >> 1), 7 + y, 1, 1, P[ch]); }));
+  });
+}
+icon('hustensaft', g => { R(g, 7, 1, 2, 2, '#c99566'); R(g, 6, 3, 4, 3, '#7a4a1e'); R(g, 7, 3, 2, 3, '#f7d9a8'); R(g, 4, 6, 8, 9, '#7a4a1e'); R(g, 5, 6, 6, 8, '#e8962e'); R(g, 5, 7, 1, 4, '#f7c07a'); R(g, 6, 9, 4, 4, '#fffaf0'); R(g, 7, 10, 2, 2, '#5fae4a'); });
+icon('kamillensalbe', g => { R(g, 3, 6, 10, 2, '#7a4a1e'); R(g, 3, 5, 10, 1, '#c99566'); R(g, 4, 4, 8, 2, '#f5d76e'); R(g, 3, 8, 10, 6, '#7a4a1e'); R(g, 4, 8, 8, 5, '#fff6e0'); R(g, 7, 9, 2, 1, '#ffffff'); R(g, 6, 10, 1, 1, '#ffffff'); R(g, 9, 10, 1, 1, '#ffffff'); R(g, 7, 10, 2, 1, '#f5c93a'); R(g, 7, 11, 2, 1, '#ffffff'); R(g, 4, 13, 8, 1, '#e6d6b0'); });
+icon('salbeibonbons', g => { R(g, 4, 2, 8, 2, '#8fb07a'); R(g, 3, 4, 10, 11, '#7a4a1e'); R(g, 4, 4, 8, 10, '#eef8f0'); for (const [x, y, c] of [[5, 6, '#8fd0a0'], [8, 5, '#b7e6c4'], [6, 9, '#6fbf8a'], [9, 8, '#8fd0a0'], [5, 11, '#b7e6c4'], [8, 11, '#6fbf8a'], [10, 11, '#8fd0a0']]) R(g, x, y, 2, 2, c); R(g, 4, 5, 1, 4, '#ffffff'); });
+icon('rosmarinoel', g => { R(g, 7, 0, 2, 2, '#c99566'); R(g, 6, 2, 4, 4, '#3f6e4a'); R(g, 7, 2, 2, 4, '#dff0d0'); R(g, 5, 6, 6, 9, '#3f6e4a'); R(g, 6, 6, 4, 8, '#c9d36a'); R(g, 6, 7, 1, 5, '#eef2a8'); R(g, 6, 10, 4, 3, '#8fb8f0'); R(g, 7, 11, 2, 1, '#ffffff'); });
+icon('elixier', g => { R(g, 7, 1, 2, 2, '#c99566'); R(g, 6, 3, 4, 3, '#7a4a62'); R(g, 7, 3, 2, 3, '#ffe3ee'); disc(g, 8, 10, 5, '#7a4a62'); disc(g, 8, 10, 4, '#f07ca4'); R(g, 5, 7, 6, 2, '#ffe3ee'); R(g, 5, 9, 1, 3, '#ffb3cd'); R(g, 9, 11, 2, 1, '#ffffff'); R(g, 10, 10, 1, 3, '#ffffff'); });
+// Interaktion im Farmhaus
+function honeyCount() { return HONEY.reduce((n, h) => n + cnt(h), 0); }
+const haveFor = k => k === 'honig' ? honeyCount() : cnt(k);
+const needName = k => k === 'honig' ? 'Honig' : ITEM[k].name;
+function canMix(id) { return Object.entries(MEDS[id].need).every(([k, n]) => haveFor(k) >= n); }
+function mixMed(id) {
+  if (!canMix(id)) { snd('err'); return; }
+  for (const [k, n] of Object.entries(MEDS[id].need)) {
+    if (k !== 'honig') { useItem(k, n); continue; }
+    let left = n; for (const h of HONEY.slice().sort((a, b) => ITEM[a].sell - ITEM[b].sell)) { const u = Math.min(left, cnt(h)); if (u) { useItem(h, u); left -= u; } }   // günstigsten Honig zuerst
+  }
+  if (!addItem(id, 1)) { toast('Kein Platz im Rucksack.'); return; }
+  snd('harvest'); toast(`${ITEM[id].name} gemischt!`);
+}
+function mixHTML() {
+  let h = T('elixier', 'Mischtisch') + '<div class="sinfo"><span>Medizin bringt am Verkaufsstand viel mehr als Kräuter.</span></div><div class="ssec">';
+  for (const id in MEDS) {
+    const need = Object.entries(MEDS[id].need).map(([k, n]) => `${n}× ${needName(k)} <b>${Math.min(haveFor(k), n)}/${n}</b>`).join(' · ');
+    h += `<div class="shrow"><img src="${ICONURL[id]}" alt=""><div class="sname"><b>${ITEM[id].name}</b><small>${need}</small></div><span class="price"><span class="p-coin"></span>${ITEM[id].sell}</span><div class="shbtns"><button class="btn" data-act="mix:${id}" ${canMix(id) ? '' : 'disabled'}>Mischen</button></div></div>`;
+  }
+  return h + '</div><div class="foot"><button class="btn" data-act="close">Schließen</button></div>';
+}
+function homeHint(tx, ty, t, kind) {
+  if (t === 'b') return 'Schlafen gehen';
+  if (t === 'm') return 'Medizin mischen';
+  if (t === 'e') return 'Nach draußen';
+  if (t === 'v') return kind === 'can' ? 'Gießkanne füllen' : 'Wassereimer';
+  if (t === 'q') {
+    const p = S.pots[tx - POT_X0];
+    if (!p) return kind === 'hseed' ? 'Pflanzen' : 'Kräutertopf';
+    if (kind === 'shovel') return 'Ausgraben';
+    if (herbStage(p) === 3) return ITEM[p.t].name + ' ernten';
+    return kind === 'can' && !p.w ? 'Gießen' : ITEM[p.t].name + (p.w ? ' (gegossen)' : '');
+  }
+  return '';
+}
+function homeAct(tx, ty, t, id, kind) {
+  if (t === 'b') { openDlg(houseHTML()); $('dlg').dataset.house = 1; return; }
+  if (t === 'm') { openDlg(mixHTML()); return; }
+  if (t === 'e') { leaveHome(); return; }
+  if (t === 'v') {
+    if (kind !== 'can') { toast('Frisches Wasser für die Gießkanne.'); return; }
+    actTool = 'can'; canPour = 0; S.water = S.canCap; snd('water'); burst(tx, ty, ['#8fd0ff', '#d4f0ff'], 8, 60); toast('Gießkanne aufgefüllt'); return;
+  }
+  if (t !== 'q') return;
+  const i = tx - POT_X0, p = S.pots[i];
+  if (!p) {
+    if (kind !== 'hseed') { toast('Ein leerer Kräutertopf – Kräutersamen gibt es im Dorfladen.'); return; }
+    useItem(id); S.pots[i] = { t: ITEM[id].herb, d: 0, w: false }; snd('plant'); burst(tx, ty, ['#6b4528', '#6cc04f'], 4, 20); toast(`${ITEM[ITEM[id].herb].name} gepflanzt – täglich gießen`); return;
+  }
+  if (kind === 'shovel') { S.pots[i] = null; actTool = 'shovel'; snd('till'); toast('Topf geleert'); return; }
+  if (herbStage(p) === 3) {
+    if (!addItem(p.t, 2)) return;
+    toast(`+2 ${ITEM[p.t].name}`); S.pots[i] = null; snd('harvest'); burst(tx, ty, [HERBS[p.t].col, '#8fd46a', '#fff6c0'], 8, 60); hearts(tx, ty, 2); return;
+  }
+  if (kind === 'can') {
+    actTool = 'can';
+    if (p.w) { toast('Heute schon gegossen.'); return; }
+    if (S.water <= 0) { toast('Die Gießkanne ist leer – füll sie am Wassereimer auf.'); snd('err'); return; }
+    if (!needEnergy(1)) return;
+    S.water--; p.w = true; actT = CAN_T; canPour = 1; snd('water'); wear('can'); return;
+  }
+  const left = HERBS[p.t].days - p.d;
+  toast(p.w ? `${ITEM[p.t].name} wächst – noch ${left} ${left === 1 ? 'Tag' : 'Tage'}.` : `${ITEM[p.t].name} braucht Wasser.`);
+}
+
 icon('sap_berry', g => { drawBerryBush(g, 0, 0, { d: 2, ripe: true }); R(g, 3, 13, 10, 3, '#c98a5a'); R(g, 3, 13, 10, 1, '#e0a874'); });
 icon('berry', g => { [[4, 7], [7, 5], [9, 8], [6, 10], [10, 11]].forEach(([a, b]) => { disc(g, a + 1, b + 1, 2, '#e0466e'); R(g, a, b, 1, 1, '#ffb3c6'); }); R(g, 7, 2, 1, 3, '#4f9a3a'); R(g, 8, 2, 3, 1, '#6cc04f'); });
 icon('bag', g => {
@@ -1811,7 +2010,7 @@ function newState() {
   const bar = ['hoe', 'can', 'sickle', 'axe', 'shovel', 'seed-ruebe', 'snack', null];
   return { land: [], cows: [], store: {}, day: 1, time: 360, gold: 150, energy: 100, maxEnergy: 100, water: 20, canCap: 20, rain: false,
     items: { hoe: 1, can: 1, sickle: 1, axe: 1, shovel: 1, 'seed-ruebe': 15, snack: 2 }, dura: {}, bar, bag: Array(BAG_N).fill(null),
-    stand: {}, sold: {}, soldGold: 0, trees: {}, orders: [{ id: 'o1', who: 'Frau Lind', items: { ruebe: 3 }, packed: {}, days: 4, reward: 200 }], soil: {}, sel: 0, px: 72, py: 93, dir: 'down', warned: false, earned: 0 };
+    stand: {}, sold: {}, soldGold: 0, trees: {}, pots: [null, null, null, null, null, null], orders: [{ id: 'o1', who: 'Frau Lind', items: { ruebe: 3 }, packed: {}, days: 4, reward: 200 }], soil: {}, sel: 0, px: 72, py: 93, dir: 'down', warned: false, earned: 0 };
 }
 function migrate(d) {
   if (d.bar) return migrate2(d);
@@ -1878,6 +2077,7 @@ if (LOC !== 'town' && SOLID.has(MAP[Math.floor(S.py / 16)]?.[Math.floor(S.px / 1
 buildFarmBG();
 // Felder nur dort entfernen, wo jetzt ein Gebäude, Weg oder die Kuhweide liegt (erst nach dem Laden des gekauften Landes prüfen)
 for (const k in S.soil) { const [x, y] = k.split(',').map(Number), t = MAP[y] && MAP[y][x]; if (inPast(x * 16 + 8, y * 16 + 8) || 'HSBLPKJ'.includes(t)) delete S.soil[k]; }
+if (!S.pots) S.pots = Array(POT_N).fill(null);
 TREES = S.trees; for (const k in TREES) { const [x, y] = k.split(',').map(Number); if (isEdge(x, y)) delete TREES[k]; } rebuildTrees();
 
 /* ---------- sound ---------- */
@@ -1983,12 +2183,13 @@ function updateHUD() {
   if (!paused) {
     const [tx, ty] = targetTile(), t = tileAt(tx, ty), s = S.soil[tx + ',' + ty], tool = { kind: held() ? ITEM[held()].kind : '' };
     const wf = wildFlowerAt(tx, ty), wfOk = wf >= 0 && !['hoe', 'shovel', 'seed', 'sapling', 'hive'].includes(tool.kind), hv = LOC === 'farm' && TREES[tx + ',' + ty] && TREES[tx + ',' + ty].s === 'hive' ? TREES[tx + ',' + ty] : null;
-    if (hv) h = tool.kind === 'shovel' ? 'Bienenstock abbauen' : hv.ready ? ITEM[hv.ready.k].name + ' ernten' : 'Bienenstock';
+    if (LOC === 'home') h = homeHint(tx, ty, t, tool.kind);
+    else if (hv) h = tool.kind === 'shovel' ? 'Bienenstock abbauen' : hv.ready ? ITEM[hv.ready.k].name + ' ernten' : 'Bienenstock';
     else if (wfOk) h = CROPS[WILD_ITEM[wf]].name + ' pflücken';
     else if (LOC === 'town') h = t === 'S' ? 'Einkaufen' : t === 'N' ? 'Plaudern' : tx <= 0 ? 'Zur Farm' : '';
     else if (cowNear() >= 0) h = S.cows[cowNear()].m ? 'Schon gemolken' : tool.kind === 'bucket' ? 'Melken' : 'Melkeimer wählen';
     else if (s && s.c && s.c.d >= CROPS[s.c.t].days) h = CROPS[s.c.t].flower ? (tool.kind === 'shovel' ? 'Ausgraben' : CROPS[s.c.t].name + ' pflücken') : tool.kind === 'sickle' ? CROPS[s.c.t].name + ' ernten' : 'Sichel wählen zum Ernten';
-    else if (tx === DOOR[0] && ty === DOOR[1]) h = 'Schlafen gehen';
+    else if (tx === DOOR[0] && ty === DOOR[1]) h = 'Ins Haus gehen';
     else if (t === 'S') h = 'Einkaufen';
     else if (tx === GATE[0] && ty === GATE[1]) h = 'Zur Innenstadt';
     else if (t === 'B') h = 'Verkaufsstand';
@@ -2344,12 +2545,12 @@ function drawStandGoods(t) {
     if (!(S.stand[id] > 0) || i > 3) continue;
     const bx = x0 + 3 + i * 7, by = y0 + 11;
     R(X, bx, by + 3, 6, 3, '#a86d48'); R(X, bx, by + 3, 6, 1, '#c48a5e');
-    const col = { ruebe: '#d8402e', kohl: '#793a80', kuerbis: '#e07b24', wood: '#b87a4a', berry: '#e0466e', milk: '#ffffff', ...FLOWER_COL, ...HONEY_COL }[id];
+    const col = { ruebe: '#d8402e', kohl: '#793a80', kuerbis: '#e07b24', wood: '#b87a4a', berry: '#e0466e', milk: '#ffffff', ...FLOWER_COL, ...HONEY_COL, ...HERB_COL }[id];
     R(X, bx + 1, by + 1, 2, 2, col); R(X, bx + 3, by + 1, 2, 2, col); R(X, bx + 2, by, 2, 2, col);
     i++;
   }
   // Bestellzettel am Auftragsbrett
-  const IC = { ruebe: '#d8402e', kohl: '#793a80', kuerbis: '#e07b24', wood: '#b87a4a', berry: '#e0466e', milk: '#ffffff', ...FLOWER_COL, ...HONEY_COL };
+  const IC = { ruebe: '#d8402e', kohl: '#793a80', kuerbis: '#e07b24', wood: '#b87a4a', berry: '#e0466e', milk: '#ffffff', ...FLOWER_COL, ...HONEY_COL, ...HERB_COL };
   S.orders.forEach((o, k) => {
     if (k > 2) return;
     const nx = BDX + 4 + k * 9, ny = BDY + 5 + (k % 2) * 2, ready = orderReady(o);
@@ -2372,6 +2573,8 @@ function shopHTML() {
   for (const t in CROPS) { const c = CROPS[t]; if (!c.flower) h += shopRow(ICONURL['seed_' + t], c.seed, `${c.days} Tage · bringt ${c.sell}`, c.buy, 'seed-' + t); }
   h += '</div><div class="ssec"><div class="ssech"><span>Blumensamen</span></div>';
   for (const t in CROPS) { const c = CROPS[t]; if (c.flower) h += shopRow(ICONURL['seed_' + t], c.seed, `${c.days} Tage · bringt ${c.sell}`, c.buy, 'seed-' + t); }
+  h += '</div><div class="ssec"><div class="ssech"><span>Kräutersamen</span></div>';
+  for (const k in HERBS) h += shopRow(ICONURL['hseed_' + k], ITEM['hseed-' + k].name, `${HERBS[k].days} Tage · 2 Bund à ${ITEM[k].sell}`, HERBS[k].buy, 'hseed-' + k);
   h += '</div><div class="ssec"><div class="ssech"><span>Werkzeuge</span></div>';
   for (const id of TOOLS) {
     const own = cnt(id) > 0;
@@ -2408,7 +2611,7 @@ function buy(id, n) {
     if (!addItem(t, 1)) return;
     S.gold -= pr; if (!S.dura) S.dura = {}; if (!had) S.dura[t] = ITEM[t].dura; snd('coin'); $('dlg').innerHTML = shopHTML(); return;
   }
-  price = id.startsWith('seed-') ? CROPS[id.slice(5)].buy : { snack: 30, can: 400, cow: COW_PRICE, bucket: 120, 'sap-green': 40, 'sap-cherry': 60, 'sap-berry': 50, hive: HIVE_PRICE }[id];
+  price = id.startsWith('seed-') ? CROPS[id.slice(5)].buy : { snack: 30, can: 400, cow: COW_PRICE, bucket: 120, 'sap-green': 40, 'sap-cherry': 60, 'sap-berry': 50, hive: HIVE_PRICE, 'hseed-minze': 20, 'hseed-kamille': 30, 'hseed-salbei': 35, 'hseed-rosmarin': 45 }[id];
   if (S.gold < price * n) { snd('err'); return; }
   if (id === 'cow') { if (S.cows.length >= COW_MAX) return; S.cows.push({ m: false }); toast('Deine neue Kuh wartet auf der Weide!'); }
   else if (id === 'bucket') { if (slotOf('bucket') || !addItem('bucket', 1)) return; toast('Melkeimer gekauft!'); }
@@ -2423,6 +2626,7 @@ $('dlg').addEventListener('click', e => {
   const a = b.dataset.act;
   if (a === 'close') closeDlg();
   else if (a === 'sleep') { closeDlg(); endDay(false); }
+  else if (a.startsWith('mix:')) { mixMed(a.slice(4)); const sc = $('dlg').scrollTop; $('dlg').innerHTML = mixHTML(); $('dlg').scrollTop = sc; }
   else if (a.startsWith('buy:')) { const [, id, n] = a.split(':'); buy(id, +n); }
   else if (a.startsWith('slot:')) { const [, c, i] = a.split(':'); invClick(c, i); }
   else if (a === 'mv') invMove();
@@ -2504,6 +2708,7 @@ function act(tx, ty) {
   if (paused || actT > .08) return;
   const k = tx + ',' + ty, s = S.soil[k], t = tileAt(tx, ty), id = held(), kind = id ? ITEM[id].kind : '';
   actT = .25; actTool = null; actTile = [tx, ty]; canPour = 0;
+  if (LOC === 'home') { homeAct(tx, ty, t, id, kind); return; }
   if (LOC === 'town') {
     if (wildFlowerAt(tx, ty) >= 0 && !['hoe', 'shovel', 'seed', 'sapling', 'hive'].includes(kind)) { pickWild(tx, ty); return; }
     if (t === 'S') openDlg(shopHTML());
@@ -2541,10 +2746,7 @@ function act(tx, ty) {
     return;
   }
   if (ripe && kind !== 'sickle') { toast('Zum Ernten die Sichel nehmen'); return; }
-  if (tx === DOOR[0] && ty === DOOR[1]) {
-    openDlg(houseHTML()); $('dlg').dataset.house = 1;
-    return;
-  }
+  if (tx === DOOR[0] && ty === DOOR[1]) { goHome(); return; }
   if (t === 'H') { toast('Die Haustür ist in der Mitte.'); return; }
   if (t === 'S') { openDlg(shopHTML()); return; }
   if (t === 'B') { shipQ = {}; standTab = 'put'; openDlg(standHTML()); return; }
@@ -2692,6 +2894,7 @@ function endDay(passedOut) {
       else if (st.s === 'bush') { st.d++; if (!st.ripe) { st.c = (st.c || 0) + 1; if (st.d === 3 || (st.d > 3 && st.c >= 2)) { st.ripe = true; st.c = 0; } } }
     }
     rebuildTrees();
+    for (const p of S.pots || []) if (p) { if (p.w && p.d < HERBS[p.t].days) p.d++; p.w = false; }   // Kräutertöpfe
     let lost = 0;
     if (passedOut) { lost = Math.min(Math.floor(S.gold * .1), 500); S.gold -= lost; }
     let grown = 0;
@@ -2709,7 +2912,7 @@ function endDay(passedOut) {
     S.benMin = 0; ben.lastT = null;
     S.benLog = { har: {}, wat: 0, milk: 0 };
     S.energy = passedOut ? Math.round(S.maxEnergy * .6) : S.maxEnergy;
-    LOC = 'farm'; S.time = 360; S.warned = false; S.px = 72; S.py = 93; S.dir = 'down';
+    LOC = 'home'; if (!BG_H) makeHome(); S.time = 360; S.warned = false; S.px = 8 * 16 + 8; S.py = 6 * 16 + 12; S.dir = 'left';   // man wacht im Farmhaus neben dem Bett auf
     save();
     const ready = Object.values(S.soil).filter(s => s.c && s.c.d >= CROPS[s.c.t].days).length;
     const sd = (S.day - 1) % 28 + 1, season = SEASONS[Math.floor((S.day - 1) / 28) % 4];
@@ -3122,7 +3325,7 @@ function update(dt) {
     p.x += p.vx * dt; p.y += p.vy * dt;
     if (p.life <= 0) parts.splice(i, 1);
   }
-  for (const [tx, ty] of (LOC === 'farm' ? CHERRY : TOWN_TREES.filter((_, i) => i % 2 === 0))) if (Math.random() < dt * .18 && parts.length < 160)
+  if (LOC !== 'home') for (const [tx, ty] of (LOC === 'farm' ? CHERRY : TOWN_TREES.filter((_, i) => i % 2 === 0))) if (Math.random() < dt * .18 && parts.length < 160)
     parts.push({ x: tx * 16 + 3 + Math.random() * 10, y: ty * 16 + 6 + Math.random() * 6, vx: -5 - Math.random() * 6, vy: 7 + Math.random() * 5,
       life: 2.5 + Math.random() * 2, col: Math.random() < .5 ? '#ffc2dc' : '#ffe3ee', pt: 1, s: Math.random() * 6 });
   if (LOC === 'farm') { updateCritters(dt); updatePond(dt); updateCows(dt); updateBees(dt); }
@@ -3160,6 +3363,7 @@ function update(dt) {
   S.time += dt * 2;
   if (!paused && LOC === 'farm' && S.px > GATE[0] * 16 + 8) goTown();
   else if (!paused && LOC === 'town' && S.px < 8) goFarm();
+  else if (!paused && LOC === 'home' && S.py > 11 * 16 + 6) leaveHome();   // über die Fußmatte nach draußen
   if (S.time >= 1440 && !S.warned) { S.warned = true; toast('Mitternacht! Du solltest ins Bett gehen.'); }
   if (S.time >= 1560) { toast('Dir fallen die Augen zu …'); endDay(true); }
 }
@@ -3219,8 +3423,9 @@ function render(t) {
   camY = Math.max(-HUDT, Math.min(curH() - VH + HUDB, Math.round(S.py) - 8 - HUDT - ((VH - HUDB - HUDT) >> 1)));
   X.fillStyle = '#26121f'; X.fillRect(0, 0, VW, VH);
   X.save(); X.translate(-camX, -camY);
-  const farm = LOC === 'farm';
-  if (!farm) {
+  const farm = LOC === 'farm', home = LOC === 'home';
+  if (home) { X.drawImage(BG_H, 0, 0); drawHomeDyn(t); }
+  else if (!farm) {
     X.drawImage(BG_T, 0, 0);
     for (const [px, py, o] of [[170, 226, 0], [214, 172, 1.7], [226, 222, 3.1]]) { const peck = Math.sin(t * 3 + o) > .6 ? 1 : 0;
       R(X, px - 3, py + 2, 7, 1, 'rgba(0,0,0,.18)'); R(X, px - 3, py - 2, 6, 4, '#a8a0b8'); R(X, px - 2, py - 3, 4, 1, '#c8c0d8'); R(X, px + 2, py - 4 + peck * 2, 3, 3, '#8a8098'); R(X, px + 4, py - 3 + peck * 2, 1, 1, '#3a2030'); R(X, px + 5, py - 2 + peck * 2, 1, 1, '#ff9a3a'); R(X, px - 1, py - 1, 2, 1, '#9ee0d0'); }
@@ -3233,7 +3438,7 @@ function render(t) {
   }
   // Waldrand unten weiterführen, wenn die Kamera über den Kartenrand hinaus schaut
   // Waldrand außerhalb der Karte: gemischte Bäume im Raster
-  if (camY < 0 || camY + VH > curH()) { if (!EDGE_TOP) buildEdge(); if (camY < 0) X.drawImage(LOC === 'town' ? EDGE_TOP_T : EDGE_TOP, 0, -EDGE_H); if (camY + VH > curH()) X.drawImage(LOC === 'town' ? EDGE_BOT_T : EDGE_BOT, 0, curH()); }
+  if (!home && (camY < 0 || camY + VH > curH())) { if (!EDGE_TOP) buildEdge(); if (camY < 0) X.drawImage(LOC === 'town' ? EDGE_TOP_T : EDGE_TOP, 0, -EDGE_H); if (camY + VH > curH()) X.drawImage(LOC === 'town' ? EDGE_BOT_T : EDGE_BOT, 0, curH()); }
   if (farm) for (const k in S.soil) if (S.soil[k].w && Math.floor(t * 1.5 + hash(...k.split(',').map(Number), 12) * 4) % 4 === 0) {
     const [tx, ty] = k.split(',').map(Number); R(X, tx * 16 + 3 + Math.floor(hash(tx, ty, 13) * 9), ty * 16 + 5 + Math.floor(hash(tx, ty, 14) * 7), 1, 1, '#b8dcf0');
   }
@@ -3287,15 +3492,16 @@ function render(t) {
   let dark = 0;
   if (tm > 1080) dark = Math.min(.55, (tm - 1080) / 240 * .55);
   if (tm > 1000 && tm < 1200) { X.fillStyle = `rgba(255,140,40,${.12 * Math.sin((tm - 1000) / 200 * Math.PI)})`; X.fillRect(0, 0, VW, VH); }
-  if (S.rain) {
+  if (LOC === 'home') dark *= .45;   // drinnen brennt Licht
+  if (S.rain && LOC !== 'home') {
     X.fillStyle = 'rgba(40,60,90,.22)'; X.fillRect(0, 0, VW, VH);
     X.fillStyle = 'rgba(190,215,255,.55)';
     for (const d of rain) { X.fillRect(Math.round(d.x), Math.round(d.y), 1, 4); }
   }
   if (dark > 0) {
     X.fillStyle = `rgba(48,22,86,${dark})`; X.fillRect(0, 0, VW, VH);
-    if (!farm) for (const [lx, ly] of TOWN_LAMPS) { X.fillStyle = `rgba(255,210,120,${dark * .5})`; X.fillRect(lx * 16 + 2 - camX, ly * 16 - 8 - camY, 12, 12); X.fillStyle = `rgba(255,230,160,${Math.min(1, dark * 2)})`; X.fillRect(lx * 16 + 6 - camX, ly * 16 - 2 - camY, 4, 4); }
-    for (const [wx, wy, w, h] of (farm ? WINDOWS : TWIN)) {
+    if (LOC === 'town') for (const [lx, ly] of TOWN_LAMPS) { X.fillStyle = `rgba(255,210,120,${dark * .5})`; X.fillRect(lx * 16 + 2 - camX, ly * 16 - 8 - camY, 12, 12); X.fillStyle = `rgba(255,230,160,${Math.min(1, dark * 2)})`; X.fillRect(lx * 16 + 6 - camX, ly * 16 - 2 - camY, 4, 4); }
+    for (const [wx, wy, w, h] of (farm ? WINDOWS : LOC === 'town' ? TWIN : [])) {
       const x = wx - camX, y = wy - camY;
       X.globalAlpha = Math.min(1, dark * 2.2); X.drawImage(farm ? LIT : LIT_T, wx, wy, w, h, x, y, w, h); X.globalAlpha = 1;
       if (h === 10) { X.fillStyle = `rgba(255,190,80,${dark * .35})`; X.fillRect(x - 3, y + h, w + 6, 6); }
@@ -3383,7 +3589,7 @@ function pollPad() {
   gp.buttons.forEach((x, i) => padPrev[i] = x.pressed);
 }
 function loop(now) {
-  if (!locInit) { locInit = true; if (S.loc === 'town') { LOC = 'town'; if (!BG_T) makeTown(); } }
+  if (!locInit) { locInit = true; if (S.loc === 'town') { LOC = 'town'; if (!BG_T) makeTown(); } else if (S.loc === 'home') { LOC = 'home'; if (!BG_H) makeHome(); } }
   pollPad();
   if (padScroll && paused) $('dlg').scrollTop += padScroll * 9;
   const dt = Math.min(.05, (now - last) / 1000); last = now;
