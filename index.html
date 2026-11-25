@@ -2199,6 +2199,7 @@ function updateHUD() {
     else if (t === 'X' && tool.kind === 'axe') h = 'Stumpf entfernen';
     else if (t === 'Y' && tool.kind === 'shovel') h = 'Setzling ausgraben';
     else if (t === 'G' && !s && tool.kind === 'sapling') h = 'Pflanzen';
+    else if (s && !s.c && (tool.kind === 'seed' || (held() && CROPS[held()] && CROPS[held()].flower))) h = 'Pflanzen';
     else if (t === 'G' && !s && tool.kind === 'hive' && wf < 0) h = 'Bienenstock aufstellen';
     else if (TREES[tx + ',' + ty] && TREES[tx + ',' + ty].s === 'bush' && TREES[tx + ',' + ty].ripe) h = 'Beeren pflücken';
     else if (s && tool.kind === 'shovel') h = s.c ? 'Pflanze ausgraben' : 'Feld entfernen';
@@ -2848,7 +2849,12 @@ function act(tx, ty) {
     if (!s) { toast('Erst den Boden mit der Hacke auflockern.'); snd('err'); return; }
     if (s.c) { toast('Hier wächst schon etwas.'); return; }
     useItem(id); s.c = { t: crop, d: 0 }; snd('plant'); burst(tx, ty, ['#3e2613', '#6cc04f'], 4, 20);
+  } else if (kind === 'crop' && CROPS[id] && CROPS[id].flower) {   // gepflückte Blumen lassen sich wie Samen auf ein Feld pflanzen
+    if (!s) { toast('Blumen pflanzt du auf ein Feld – erst mit der Hacke auflockern.'); snd('err'); return; }
+    if (s.c) { toast('Hier wächst schon etwas.'); return; }
+    useItem(id); s.c = { t: id, d: 0 }; snd('plant'); burst(tx, ty, ['#3e2613', CROPS[id].col], 4, 20); toast(`${CROPS[id].name} gepflanzt`);
   } else if (kind === 'food' || kind === 'crop') {
+    if (!ITEM[id].eat) { toast('Das kann man nicht essen.'); return; }
     if (S.energy >= S.maxEnergy) { toast('Du bist gerade nicht hungrig.'); return; }
     const e = ITEM[id].eat; useItem(id); S.energy = Math.min(S.maxEnergy, S.energy + e); snd('eat'); toast(`Lecker! +${e} Energie`);
   }
