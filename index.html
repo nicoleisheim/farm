@@ -698,16 +698,12 @@ function pickWild(tx, ty) {
   g.clearRect(tx * 16, ty * 16, 16, 16); g.drawImage(N, tx * 16, ty * 16, 16, 16, tx * 16, ty * 16, 16, 16);
   burst(tx, ty, [CROPS[id].col, '#fff6c0', '#7bbf55'], 8, 60); hearts(tx, ty, 1); snd('harvest'); toast(`+1 ${CROPS[id].name}`);
 }
+// Wiese: nahtlose 32×32-Textur
+const GRASS_ROWS = ["abcdabedfggbbbbhbbabidjjegkdbbba", "dblbamnndlobnbohfbpbonjjockdbbpm", "idbmdajmmdodbicblnddfldjbpdnlljp", "mdedbbaebifbnbndpdpbeaejdbbbdddj", "mebibggojcbppampaejmadodbjimmmea", "mjmncoggggffpjmmlolpjpfbcddbemee", "pbmfciooffbbbjbmbccpcnighgenjddj", "ldffbdbdfedendidggcbobiccgdjfnbd", "nldjaodjadepeinioccmninffcdjcfgn", "biiepdpmpebgmmndmnniinbplmbipgdd", "ngibjppaoilcgeaemdbilaebeaebadpb", "ocggipflfiliccmabipndmaemiiiiefb", "dgogildlagobinaiipbeipcgenmllalp", "bnlcilffjjdjnmpfdffbiggggfbibinm", "lnfbnbnhfnabmmadofliclggcflbloab", "gfmjmmccgbbibiielpjilmooiiiigcgc", "cbmamifhdkgicfiimbaneidbnbiilill", "ipldffifgffkkcidiibiampjamenpnbn", "nlnfbbimbgobcnibbgiiienmbednjpnp", "ppaaiinnfbdnijlbkgklnjnolbgbjpgp", "ajlkgioinnaadlfooffdpodbihcgbioe", "ddlkkgclnnaeaddcbefmfobblcchfibd", "dcgoccocdjdddddamelionliicgblldd", "bglgibkkenlioocbdbnlmdebbconllbb", "lnddlblnficchhhcnpnnjgpnpnceejib", "lbaljbeidggkghbkfbiakkkoabjjcbdb", "ibbbeflmgglkkbbbfidgkkkooccncddn", "njgbpldpgdllidepnnbgfidkkccdjend", "dchglpnfobflpjmfediinnaocpnjjbib", "nclhbmopfddddmbcdbilnapnndbodico", "fchlmbjepidlddbmcdlddaiblpboiccf", "lcfolpjenillbdebecmlbnlibfnjagnl"], GRASS_PAL = {"a": "#078e3a", "b": "#49ca33", "c": "#93e130", "d": "#3dc132", "e": "#0d9b36", "f": "#6bd72e", "g": "#abe939", "h": "#e6ca3a", "i": "#4ed232", "j": "#16a733", "k": "#bceb42", "l": "#59d332", "m": "#1faa33", "n": "#2db52f", "o": "#7edb2e", "p": "#26ae32"};
+const GRASS_TEX = (() => { const c = document.createElement('canvas'); c.width = c.height = 32; const g = c.getContext('2d'); GRASS_ROWS.forEach((r, y) => [...r].forEach((ch, x) => { g.fillStyle = GRASS_PAL[ch]; g.fillRect(x, y, 1, 1); })); return c; })();
 function drawGrass(g, tx, ty) {
   const x0 = tx * 16, y0 = ty * 16;
-  R(g, x0, y0, 16, 16, '#8ccf63');
-  for (let i = 0; i < 14; i++) {
-    const a = hash(tx, ty, i), b = hash(tx, ty, i + 50), c = hash(tx, ty, i + 100);
-    const px = x0 + Math.floor(a * 16), py = y0 + Math.floor(b * 16);
-    if (c < .45) R(g, px, py, 1, 1, '#7bbf55');
-    else if (c < .75) R(g, px, py, 1, 1, '#a6de80');
-    else { R(g, px, py, 1, 2, '#6aae4a'); R(g, px + 1, py - 1, 1, 2, '#7bbf55'); }
-  }
+  g.fillStyle = g.createPattern(GRASS_TEX, 'repeat'); g.fillRect(x0, y0, 16, 16);   // nahtlose Grastextur, an der Karte ausgerichtet
   if ((LOC === 'town' ? MAP_T : MAP)[ty][tx] !== 'G') return;
   const f = hash(tx, ty, 999);
   const px = x0 + 4 + Math.floor(hash(tx, ty, 7) * 8), py = y0 + 4 + Math.floor(hash(tx, ty, 8) * 8);
