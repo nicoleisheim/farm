@@ -678,6 +678,8 @@ function flowerKind(tx, ty) {
   return FLOWER_KIND[key][tx + ',' + ty] || 0;
 }
 // wilde Blumen pflücken: Sorte je Feld, gepflückte Blumen wachsen nach 3 Tagen nach
+// Für flüssiges Pflücken gibt es jeden Hintergrund zusätzlich ohne wilde Blumen; beim Pflücken wird nur das eine Feld von dort kopiert
+let NO_WILD = false, BG_NF = null, BG_T_NF = null;
 const WILD_ITEM = ['blume_sonne', 'blume_orange', 'blume_rosa', 'blume_lav'];   // gleiche Reihenfolge wie FLOWERS
 const wildKey = (tx, ty) => (LOC === 'town' ? 't' : 'f') + tx + ',' + ty;
 function wildPicked(tx, ty) { try { return !!(S.picked && S.picked[wildKey(tx, ty)]); } catch (e) { return false; } }
@@ -692,7 +694,8 @@ function pickWild(tx, ty) {
   if (!addItem(id, 1)) return;
   if (!S.picked) S.picked = {};
   S.picked[wildKey(tx, ty)] = S.day;
-  if (LOC === 'town') makeTown(); else buildFarmBG();
+  const C = LOC === 'town' ? BG_T : BG, N = LOC === 'town' ? BG_T_NF : BG_NF, g = C.getContext('2d');
+  g.clearRect(tx * 16, ty * 16, 16, 16); g.drawImage(N, tx * 16, ty * 16, 16, 16, tx * 16, ty * 16, 16, 16);
   burst(tx, ty, [CROPS[id].col, '#fff6c0', '#7bbf55'], 8, 60); hearts(tx, ty, 1); snd('harvest'); toast(`+1 ${CROPS[id].name}`);
 }
 function drawGrass(g, tx, ty) {
@@ -708,7 +711,7 @@ function drawGrass(g, tx, ty) {
   if ((LOC === 'town' ? MAP_T : MAP)[ty][tx] !== 'G') return;
   const f = hash(tx, ty, 999);
   const px = x0 + 4 + Math.floor(hash(tx, ty, 7) * 8), py = y0 + 4 + Math.floor(hash(tx, ty, 8) * 8);
-  if (f < .2 && !wildPicked(tx, ty)) {   // Blumen (eigene Designs): Sonnenblume, Blümchen orange/rosa, Lavendel; Stielende bei py + 3, ganz im Feld
+  if (f < .2 && !NO_WILD && !wildPicked(tx, ty)) {   // Blumen (eigene Designs): Sonnenblume, Blümchen orange/rosa, Lavendel; Stielende bei py + 3, ganz im Feld
     const [A, C] = FLOWERS[flowerKind(tx, ty)], h = A.length, w = A[0].length;
     const oy = Math.max(y0, py + 4 - h), ox = px - (w >> 1);
     A.forEach((r, y) => [...r].forEach((ch, x) => { if (C[ch]) R(g, ox + x, oy + y, 1, 1, C[ch]); }));
@@ -1169,7 +1172,8 @@ function cherryTree(g, tx, ty) {
 }
 const BK_ROWS = ["...........................................................aaaaaaaaaa...............", "...........................................................bbbbbbbbbb...............", "............................................................ccaccccc................", "............................................................ddaddddd................", "............................................................aaaaaaaa................", "............eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeccccaccceeee............", "............efffffffffffffffffffffffffffffffffffffffffffffffddddadddfffe............", "...........eghggggghggggghggggghggggghggggghggggghggggghggggaaaaaaaagggge...........", "..........eghggggghggggghggggghggggghggggghggggghggggghgggggccaccccagggghe..........", ".........eiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiddaddddaiiiiiie.........", "........efffffffffffffffffffffffffffffffffffffffffffffffffffaaaaaaaafffffffe........", ".......egggghggggghggggghggggghggggghggggghggggghggggghgggggccccacccgggghggge.......", "......egggghggggghggggghggggghggggghggggghggggghggggghggggghddddadddggghggggge......", ".....eiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiie.....", "....effffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe....", "...eghggggghggggghggggghggggghggggghggggghggggghggggghggggghggggghggggghggggghgge...", "..eghggggghggggghggggghggggghggggghggggghggggghggggghggggghggggghggggghggggghgggge..", ".eiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiie.", "effffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe", "egggghggggghggggghggggghggggghggggghggggghggggghggggghggggghggggghggggghggggghggggge", "egggghggggghggggghggggghggggghggggghggggghggggghggggghggggghggggghggggghggggghggggge", "eiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiie", "effffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe", "eghggggghggggghggggghggggghggggghggggghggggghggggghggggghggggghggggghggggghggggghgge", "eghggggghggggghggggghggggghggggghggggghggggghggggghggggghggggghggggghggggghggggghgge", "eiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiie", "effffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe", "egggghggggghggggghggggghggggghggggghggggghggggghggggghggggghggggghggggghggggghggggge", "egggghggggghggggghggggghggggghggggghggggghggggghggggghggggghggggghggggghggggghggggge", "eiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiie", "effffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe", "eghggggghggggghggggghggggghggggghggggghggggghggggghggggghggggghggggghggggghggggghgge", "eghggggghggggghggggghggggghggggghggggghggggghggggghggggghggggghggggghggggghggggghgge", "eiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiie", "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", "...eeeieeffeeffeeffeeffeeffeeeieeffeeffeeffeeffeeffeeieeeffeeffeeffeeffeeffeeieee...", ".....eiigggggggggggggggggggggeiiggggggggggggggggggggiiegggggggggggggggggggggiie.....", ".....eiihhhhhhhhhhhhhhhhhhhhheiihhhhhhhhhhhhhhhhhhhhiiehhhhhhhhhhhhhhhhhhhhhiie.....", ".....eiifffffffffffffffffffffeiiffffffffffffffffffffiiefffffffffffffffffffffiie.....", ".....eiigggggggggggggggggggggeiiggggggggggggggggggggiiegggggggggggggggggggggiie.....", ".....eiigggggggggggggggggggggeiiggggggggggggggggggggiiegggggggggggggggggggggiie.....", ".....eiihhhhhhhhhhhhhhhhhhhhheiihhiiiiiiiiiiiiiiiihhiiehhhhhhhhhhhhhhhhhhhhhiie.....", ".....eiifffiiiiiiiiiiiiiiffffeiiffihhhhhhhhhhhhhhiffiieffffiiiiiiiiiiiiiifffiie.....", ".....eiigggijjjjjiijjjjjiggggeiiggihgggggggggggghiggiieggggijjjjjiijjjjjigggiie.....", ".....eiigggijkkjjiijjjjjiggggeiiggihgggggggggggghiggiieggggijkkjjiijjjjjigggiie.....", ".....eiihhhijkjjjiijjjjjihhhheiihhihggiiiiiiiigghihhiiehhhhijkjjjiijjjjjihhhiie.....", ".....eiifffijjjjjiijjjjjiffffeiiffihggijjijjjigghiffiieffffijjjjjiijjjjjifffiie.....", ".....eiigggijjjjjiijjjjjiggggeiiggihggijjijjjigghiggiieggggijjjjjiijjjjjigggiie.....", ".....eiigggiiiiiiiiiiiiiiggggeiiggihggiiiiiiiigghiggiieggggiiiiiiiiiiiiiigggiie.....", ".....eiihhhijjjjjiijjjjjihhhheiihhihggijjijjjigghihhiiehhhhijjjjjiijjjjjihhhiie.....", ".....eiifffijjjjjiijjjjjiffffeiiffihggijjijjjigghiffiieffffijjjjjiijjjjjifffiie.....", ".....eiigggijjjjjiijjjjjiggggeiiggihggiiiiiiiigghiggiieggggijjjjjiijjjjjigggiie.....", ".....eiigggijjjjjiijjjjjiggggeiiggihggggggggggglhiggiieggggijjjjjiijjjjjigggiie.....", ".....eiihhhijjjjjiijjjjjihhhheiihhihggggggggggglhihhiiehhhhijjjjjiijjjjjihhhiie.....", ".....eiifffiiiiiiiiiiiiiiffffeiiffihggiiiiiiiigghiffiieffffiiiiiiiiiiiiiifffiie.....", ".....eiigghhhhhhhhhhhhhhhhgggeiiggihgggggggggggghiggiieggghhhhhhhhhhhhhhhhggiie.....", ".....eiiggiiiiiiiiiiiiiiiigggeiiggihgggggggggggghiggiiegggiiiiiiiiiiiiiiiiggiie.....", ".....eiihhiiiiiiiiiiiiiiiihhheiihhihgggggggggggghihhiiehhhiiiiiiiiiiiiiiiihhiie.....", ".....eiifffffffffffffffffffffeiiffihggiiiiiiiigghiffiiefffffffffffffffffffffiie.....", ".....eiigggggggggggggggggggggeiiggihgggggggggggghiggiiegggggggggggggggggggggiie.....", ".....eiigggggggggggggggggggggeiiggihgggggggggggghiggiiegggggggggggggggggggggiie.....", ".....eiihhhhhhhhhhhhhhhhhhhhheiihhihgggggggggggghihhiiehhhhhhhhhhhhhhhhhhhhhiie.....", "....aaaaaaaaaaaaaaaaaaaaaaaaaaaaaihhhhhhhhhhhhhhhhiaaaaaaaaaaaaaaaaaaaaaaaaaaaaa....", "....acccccacccccacccccacccccacccciiiiiiiiiiiiiiiiiicacccccacccccacccccacccccaccc....", "....adddddadddddadddddadddddadddiiiiiiiiiiiiiiiiiiiiadddddadddddadddddadddddaddd....", "....aaaaaaaaaaaaaaaaaaaaaaaaaaaaihhhhhhhhhhhhhhhhhhiaaaaaaaaaaaaaaaaaaaaaaaaaaaa....", "....dddadddddadddddadddddadddddaiiiiiiiiiiiiiiiiiiiidddadddddadddddadddddaddddda....", "....aaaaaaaaaaaaaaaaaaaaaaaaaaaaiiiiiiiiiiiiiiiiiiiiaaaaaaaaaaaaaaaaaaaaaaaaaaaa...."];
 const BK_PAL = {"a": "#c4afad", "b": "#ab8888", "c": "#a4553a", "d": "#853a2b", "e": "#6d3e30", "f": "#ccc0a7", "g": "#bba280", "h": "#ab7e57", "i": "#8a5a40", "j": "#c4ecff", "k": "#ffffff", "l": "#ffd84a"};
-function makeTown() {
+function makeTown() { NO_WILD = true; makeTown0(); BG_T_NF = BG_T; NO_WILD = false; makeTown0(); }
+function makeTown0() {
   const [c, g] = mk(W, TH); BG_T = c;
   const prev = LOC; LOC = 'town';
   for (let y = 0; y < TROWS; y++) for (let x = 0; x < COLS; x++) drawGrass(g, x, y);
@@ -1552,13 +1556,19 @@ function rebuildTrees() {
 }
 const [BG, bg] = mk(W, H);
 let LIT = null, EDGE_TOP = null, EDGE_BOT = null, EDGE_BOT_T = null;
+function farmScene(g) {
+  g.clearRect(0, 0, W, H);
+  for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) drawGrass(g, x, y);
+  drawPaths(g);
+  drawFarmHouse(g); drawStand(g); drawCrate(g); drawSign(g); drawFence(g); drawStore(g);
+  for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) if (MAP[y][x] === 'U') drawBush(g, x, y);
+  drawPond(g);
+}
 function buildFarmBG() {
-  const prev = LOC; LOC = 'farm'; bg.clearRect(0, 0, W, H);
-  for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) drawGrass(bg, x, y);
-  drawPaths(bg);
-  drawFarmHouse(bg); drawStand(bg); drawCrate(bg); drawSign(bg); drawFence(bg); drawStore(bg);
-  for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) if (MAP[y][x] === 'U') drawBush(bg, x, y);
-  drawPond(bg);
+  const prev = LOC; LOC = 'farm';
+  farmScene(bg);
+  if (!BG_NF) BG_NF = mk(W, H)[0];
+  NO_WILD = true; farmScene(BG_NF.getContext('2d')); NO_WILD = false;
   LIT = makeLit(BG, WINDOWS); EDGE_TOP = EDGE_BOT = null; LOC = prev;
 }
 applyLand([]); buildFarmBG();
