@@ -554,6 +554,11 @@ const ITEM = {
   'sap-cherry': { name: 'Kirschbaum-Setzling', kind: 'sapling', k: 'cherry', desc: 'Auf freier Wiese pflanzen. Wird in 4 Tagen zu einem jungen Kirschbaum, 3 Tage später ist er groß.' },
   snack: { name: 'Gartensalat', kind: 'food', eat: 40, desc: 'Ein knackiger Salat aus dem Dorfladen.' },
   milk: { name: 'Milch', kind: 'mat', sell: 45, desc: 'Frische Milch von deinen Kühen. Bringt 45 Taler am Verkaufsstand.' },
+  hive: { name: 'Bienenstock', kind: 'hive', desc: 'Auf freie Wiese stellen. Alle 3 Tage gibt es Honig – ab 8 blühenden Blumen in der Nähe 2 Gläser. Die häufigste Blume bestimmt die Sorte.' },
+  honig_sonne: { name: 'Sonnenblumenhonig', kind: 'crop', eat: 30, sell: 90, desc: 'Goldgelber Honig von Bienen bei den Sonnenblumen. Bringt 90 Taler am Verkaufsstand.' },
+  honig_lav: { name: 'Lavendelhonig', kind: 'crop', eat: 30, sell: 120, desc: 'Feiner Honig von Bienen beim Lavendel. Bringt 120 Taler am Verkaufsstand.' },
+  honig_rosa: { name: 'Rosenblütenhonig', kind: 'crop', eat: 30, sell: 80, desc: 'Zarter Honig von Bienen bei den rosa Blümchen. Bringt 80 Taler am Verkaufsstand.' },
+  honig_wiese: { name: 'Wiesenhonig', kind: 'crop', eat: 30, sell: 60, desc: 'Kräftiger Honig von einer bunten Blumenwiese. Bringt 60 Taler am Verkaufsstand.' },
 };
 for (const t in CROPS) {
   const c = CROPS[t];
@@ -573,7 +578,9 @@ const duraCol = f => f > .5 ? '#7cc85a' : f > .2 ? '#ffb84d' : '#e0503a';
 function duraBar(id, cls) { const f = duraOf(id) / ITEM[id].dura; return `<span class="${cls}"><i style="width:${Math.max(4, f * 100)}%;background:${duraCol(f)}"></i></span>`; }
 const duraOf = id => (S.dura && S.dura[id] !== undefined) ? S.dura[id] : ITEM[id].dura;
 const iconOf = id => id.replace('-', '_');
-const SELLABLE = [...Object.keys(CROPS), 'berry', 'wood', 'milk'];
+const HONEY = ['honig_sonne', 'honig_lav', 'honig_rosa', 'honig_wiese'];
+const HONEY_COL = { honig_sonne: '#f5b52e', honig_lav: '#f7d47a', honig_rosa: '#f3a46a', honig_wiese: '#e09a3a' };
+const SELLABLE = [...Object.keys(CROPS), 'berry', 'wood', 'milk', ...HONEY];
 const sellOf = id => ITEM[id].sell || 0;
 const priceOf = id => (S.prices && S.prices[id]) || sellOf(id);
 const prStep = id => Math.max(1, Math.round(sellOf(id) / 10));
@@ -581,7 +588,7 @@ const appeal = id => Math.pow(sellOf(id) / priceOf(id), 2);
 const priceTag = id => { const r = priceOf(id) / sellOf(id); return r <= .75 ? 'sehr schnell' : r < .95 ? 'schnell' : r <= 1.05 ? 'normal' : r <= 1.3 ? 'langsam' : 'sehr langsam'; };
 const SEASONS = ['Frühling', 'Sommer', 'Herbst', 'Winter'];
 const WDAYS = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
-const SOLID = new Set(['J', 'Q', 'Z', 'T', 'H', 'S', 'B', 'U', 'W', 'L', 'X', 'Y', 'F', 'O', 'N', 'K']);
+const SOLID = new Set(['I', 'J', 'Q', 'Z', 'T', 'H', 'S', 'B', 'U', 'W', 'L', 'X', 'Y', 'F', 'O', 'N', 'K']);
 let LOC = 'farm', fadeT = 0;
 const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
 const DOOR = [4, 4];
@@ -682,7 +689,7 @@ const tileAt = (x, y) => {
   if (LOC === 'town') return MAP_T[y][x];
   const t = MAP[y][x];
   const st = TREES[x + ',' + y];
-  if (st) return st.s === 'tree' ? 'T' : st.s === 'stump' ? 'X' : st.s === 'sap' ? 'Y' : st.s === 'bush' ? 'U' : 'G';
+  if (st) return st.s === 'tree' ? 'T' : st.s === 'stump' ? 'X' : st.s === 'sap' ? 'Y' : st.s === 'bush' ? 'U' : st.s === 'hive' ? 'I' : 'G';
   return t;
 };
 
@@ -1427,6 +1434,19 @@ const WOOD_ICON = ["................", "..aaaaaaaaaaaa..", ".abbbacccccccca.", "
 icon('wood', g => WOOD_ICON.forEach((r, y) => [...r].forEach((ch, x) => { if (WOOD_PAL[ch]) R(g, x, y, 1, 1, WOOD_PAL[ch]); })));
 icon('sap_green', g => { drawSapling(g, 0, 0, false, false); R(g, 4, 13, 8, 3, '#c98a5a'); R(g, 4, 13, 8, 1, '#e0a874'); });
 icon('sap_cherry', g => { drawSapling(g, 0, 0, false, true); R(g, 4, 13, 8, 3, '#c98a5a'); R(g, 4, 13, 8, 1, '#e0a874'); });
+/* ---------- Bienenstock, Biene, Honiggläser ---------- */
+const HIVE_ROWS = ["......oooo......","......olyo......","....oyYYYYdo....","...oddddddddo...","..ollyyyyyYYYo..","..oyyYYYYYdddo..",".oddddddddddddo.",".olllyyyyyyYYYo.",".oyyyYYYYYYdddo.",".oddddddddddddo.","olllyyyyyyyYYYYo","oyyyYYYhhYYddddo","odddddhhhhdddddo","olllyyhhhhyYYYYo","oyyyYYhhhhYddddo","oooooooooooooooo","WwwwwwwwwwwwwwwW","WWWWWWWWWWWWWWWW","..wW........wW..","..wW........wW.."], HIVE_PAL = {"o":"#7a4a1e","y":"#f4cf6a","Y":"#e0a93f","d":"#b97a2a","l":"#fff1b0","h":"#4a2a14","w":"#c08a64","W":"#8a5a3a"};
+const BEE_ROWS = ["..ww.ww..","..wwwww..",".oyyoyyo.","oyyoyyoyk",".oyyoyyo.","..o..o..."], BEE_PAL = {"w":"#e8f6ff","o":"#3a2a1a","y":"#ffd24a","k":"#3a2a1a"};
+const JAR_ROWS = ["................","....cccccccc....","...cCCcCCcCCc...","..cCCCCCCCCCCc..","..crrrrrrrrrrc..","....oggggggo....","...ogggggggggo..","..ogsHHHHHHHHgo.","..ogsHLLLLLLHgo.","..ogHHLLfLLLHHo.","..ogHHLfFfLLHHo.","..ogHHLLfLLLHHo.","..ogHHLLLLLLHDo.","..ogHHHHHHHHHDo.","...oDDDDDDDDDo..","....oooooooo...."];
+const JAR_PAL = {"honig_sonne":{"o":"#7a4a1e","g":"#fff6e8","s":"#ffffff","L":"#fffaf0","r":"#c46a8a","H":"#f5b52e","D":"#d48a16","c":"#d9a21c","C":"#ffd95a","f":"#f5a623","F":"#7a4a1e"},"honig_lav":{"o":"#7a4a1e","g":"#fff6e8","s":"#ffffff","L":"#fffaf0","r":"#c46a8a","H":"#f7d47a","D":"#e0ad45","c":"#8a6cc4","C":"#c3a8ef","f":"#9b7fd6","F":"#f4e9ff"},"honig_rosa":{"o":"#7a4a1e","g":"#fff6e8","s":"#ffffff","L":"#fffaf0","r":"#c46a8a","H":"#f3a46a","D":"#d77d45","c":"#d4688e","C":"#ffb3cd","f":"#f07ca4","F":"#fff0f5"},"honig_wiese":{"o":"#7a4a1e","g":"#fff6e8","s":"#ffffff","L":"#fffaf0","r":"#c46a8a","H":"#e09a3a","D":"#b87322","c":"#6fae4a","C":"#a8dc84","f":"#ff8fb8","F":"#fff6c0"}};
+const sprRows = (g, A, P, x0, y0) => A.forEach((r, y) => [...r].forEach((ch, x) => { if (P[ch]) R(g, x0 + x, y0 + y, 1, 1, P[ch]); }));
+function drawHive(g, tx, ty) {
+  const x0 = tx * 16, y0 = ty * 16;
+  R(g, x0 + 1, y0 + 14, 14, 2, 'rgba(60,20,40,.18)');
+  sprRows(g, HIVE_ROWS, HIVE_PAL, x0, y0 - 4);   // 16×20, Beine stehen unten im Feld
+}
+icon('hive', g => sprRows(g, HIVE_ROWS.slice(0, 15).concat([HIVE_ROWS[16]]), HIVE_PAL, 0, 0));
+HONEY.forEach(id => icon(id, g => sprRows(g, JAR_ROWS, JAR_PAL[id], 0, 0)));
 icon('sap_berry', g => { drawBerryBush(g, 0, 0, { d: 2, ripe: true }); R(g, 3, 13, 10, 3, '#c98a5a'); R(g, 3, 13, 10, 1, '#e0a874'); });
 icon('berry', g => { [[4, 7], [7, 5], [9, 8], [6, 10], [10, 11]].forEach(([a, b]) => { disc(g, a + 1, b + 1, 2, '#e0466e'); R(g, a, b, 1, 1, '#ffb3c6'); }); R(g, 7, 2, 1, 3, '#4f9a3a'); R(g, 8, 2, 3, 1, '#6cc04f'); });
 icon('bag', g => {
@@ -1582,6 +1602,7 @@ function rebuildTrees() {
     const st = TREES[x + ',' + y];
     if (!st) { if (MAP[y][x] === 'T') drawTree(tl, x, y); continue; }
     if (st.s === 'bush') drawBerryBush(tl, x, y, st);
+    else if (st.s === 'hive') drawHive(tl, x, y);
     else if (st.s === 'tree') drawTree(tl, x, y);
     else if (st.s === 'stump') drawStump(tl, x, y);
     else if (st.s === 'sap') drawSapling(tl, x, y, st.d >= 2, st.k === 'cherry');
@@ -1961,8 +1982,9 @@ function updateHUD() {
   let h = '';
   if (!paused) {
     const [tx, ty] = targetTile(), t = tileAt(tx, ty), s = S.soil[tx + ',' + ty], tool = { kind: held() ? ITEM[held()].kind : '' };
-    const wf = wildFlowerAt(tx, ty), wfOk = wf >= 0 && !['hoe', 'shovel', 'seed', 'sapling'].includes(tool.kind);
-    if (wfOk) h = CROPS[WILD_ITEM[wf]].name + ' pflücken';
+    const wf = wildFlowerAt(tx, ty), wfOk = wf >= 0 && !['hoe', 'shovel', 'seed', 'sapling', 'hive'].includes(tool.kind), hv = LOC === 'farm' && TREES[tx + ',' + ty] && TREES[tx + ',' + ty].s === 'hive' ? TREES[tx + ',' + ty] : null;
+    if (hv) h = tool.kind === 'shovel' ? 'Bienenstock abbauen' : hv.ready ? ITEM[hv.ready.k].name + ' ernten' : 'Bienenstock';
+    else if (wfOk) h = CROPS[WILD_ITEM[wf]].name + ' pflücken';
     else if (LOC === 'town') h = t === 'S' ? 'Einkaufen' : t === 'N' ? 'Plaudern' : tx <= 0 ? 'Zur Farm' : '';
     else if (cowNear() >= 0) h = S.cows[cowNear()].m ? 'Schon gemolken' : tool.kind === 'bucket' ? 'Melken' : 'Melkeimer wählen';
     else if (s && s.c && s.c.d >= CROPS[s.c.t].days) h = CROPS[s.c.t].flower ? (tool.kind === 'shovel' ? 'Ausgraben' : CROPS[s.c.t].name + ' pflücken') : tool.kind === 'sickle' ? CROPS[s.c.t].name + ' ernten' : 'Sichel wählen zum Ernten';
@@ -1976,6 +1998,7 @@ function updateHUD() {
     else if (t === 'X' && tool.kind === 'axe') h = 'Stumpf entfernen';
     else if (t === 'Y' && tool.kind === 'shovel') h = 'Setzling ausgraben';
     else if (t === 'G' && !s && tool.kind === 'sapling') h = 'Pflanzen';
+    else if (t === 'G' && !s && tool.kind === 'hive' && wf < 0) h = 'Bienenstock aufstellen';
     else if (TREES[tx + ',' + ty] && TREES[tx + ',' + ty].s === 'bush' && TREES[tx + ',' + ty].ripe) h = 'Beeren pflücken';
     else if (s && tool.kind === 'shovel') h = s.c ? 'Pflanze ausgraben' : 'Feld entfernen';
     else if (isWater(tx, ty) && tool.kind === 'can') h = 'Gießkanne füllen';
@@ -2128,9 +2151,9 @@ function rerenderShip() { const sc = $('dlg').scrollTop; $('dlg').innerHTML = $(
 
 /* ---------- Lieferungen ---------- */
 const WHO = ['Frau Lind', 'Opa Karl', 'Café Kirschblüte', 'Bäckerei Mehlstaub', 'Mia vom Hügel', 'Herr Brombeer', 'Oma Rosi', 'Gasthaus Zum Häschen'];
-const QR = { ruebe: [3, 6], kohl: [2, 4], kuerbis: [1, 3], wood: [5, 12], berry: [3, 6], milk: [2, 4] };
+const QR = { ruebe: [3, 6], kohl: [2, 4], kuerbis: [1, 3], wood: [5, 12], berry: [3, 6], milk: [2, 4], honig_sonne: [1, 2], honig_lav: [1, 2], honig_rosa: [1, 2], honig_wiese: [1, 3] };
 function genOrder() {
-  const pool = ['ruebe', 'wood']; if (S.day >= 3) pool.push('berry'); if (S.day >= 2) pool.push('kohl'); if (S.day >= 4) pool.push('kuerbis'); if (S.cows && S.cows.length) pool.push('milk');
+  const pool = ['ruebe', 'wood']; if (S.day >= 3) pool.push('berry'); if (S.day >= 2) pool.push('kohl'); if (S.day >= 4) pool.push('kuerbis'); if (S.cows && S.cows.length) pool.push('milk'); for (const h of S.honeySeen || []) pool.push(h);   // Honig nur in Sorten, die man schon einmal geerntet hat
   const sh = pool.slice().sort(() => Math.random() - .5), kinds = Math.random() < .35 ? 2 : 1, items = {};
   for (let i = 0; i < kinds; i++) { const t = sh[i], [a, b] = QR[t]; items[t] = a + Math.floor(Math.random() * (b - a + 1)); }
   let val = 0; for (const t in items) val += items[t] * sellOf(t);
@@ -2321,12 +2344,12 @@ function drawStandGoods(t) {
     if (!(S.stand[id] > 0) || i > 3) continue;
     const bx = x0 + 3 + i * 7, by = y0 + 11;
     R(X, bx, by + 3, 6, 3, '#a86d48'); R(X, bx, by + 3, 6, 1, '#c48a5e');
-    const col = { ruebe: '#d8402e', kohl: '#793a80', kuerbis: '#e07b24', wood: '#b87a4a', berry: '#e0466e', milk: '#ffffff', ...FLOWER_COL }[id];
+    const col = { ruebe: '#d8402e', kohl: '#793a80', kuerbis: '#e07b24', wood: '#b87a4a', berry: '#e0466e', milk: '#ffffff', ...FLOWER_COL, ...HONEY_COL }[id];
     R(X, bx + 1, by + 1, 2, 2, col); R(X, bx + 3, by + 1, 2, 2, col); R(X, bx + 2, by, 2, 2, col);
     i++;
   }
   // Bestellzettel am Auftragsbrett
-  const IC = { ruebe: '#d8402e', kohl: '#793a80', kuerbis: '#e07b24', wood: '#b87a4a', berry: '#e0466e', milk: '#ffffff', ...FLOWER_COL };
+  const IC = { ruebe: '#d8402e', kohl: '#793a80', kuerbis: '#e07b24', wood: '#b87a4a', berry: '#e0466e', milk: '#ffffff', ...FLOWER_COL, ...HONEY_COL };
   S.orders.forEach((o, k) => {
     if (k > 2) return;
     const nx = BDX + 4 + k * 9, ny = BDY + 5 + (k % 2) * 2, ready = orderReady(o);
@@ -2359,6 +2382,7 @@ function shopHTML() {
   h += shopRow(ICONURL.sap_cherry, 'Kirschbaum-Setzling', '4 Tage bis zum Kirschbaum', 60, 'sap-cherry');
   h += shopRow(ICONURL.sap_berry, 'Beerenstrauch', 'Beeren alle 2 Tage', 50, 'sap-berry');
   h += '</div><div class="ssec"><div class="ssech"><span>Tiere</span></div>';
+  h += hiveCount() < HIVE_MAX ? shopRow(ICONURL.hive, 'Bienenstock', `${hiveCount()}/${HIVE_MAX} · Honig alle 3 Tage`, HIVE_PRICE, 'hive', true) : `<div class="lrow"><img src="${ICONURL.hive}" alt=""><div class="ln"><b>Bienenstock</b><small>${HIVE_MAX}/${HIVE_MAX} – mehr passen nicht auf die Farm</small></div></div>`;
   h += slotOf('bucket') ? '' : shopRow(ICONURL.bucket, 'Melkeimer', 'Zum Melken deiner Kühe', 120, 'bucket', true);
   h += S.cows.length < COW_MAX ? shopRow(ICONURL.cow, 'Kuh', `${S.cows.length}/${COW_MAX} auf der Weide · täglich 1 Milch`, COW_PRICE, 'cow', true) : `<div class="lrow"><img src="${ICONURL.cow}" alt=""><div class="ln"><b>Kuh</b><small>Die Weide ist voll (${COW_MAX}/${COW_MAX}).</small></div></div>`;
   h += '</div><div class="ssec"><div class="ssech"><span>Land</span></div>';
@@ -2384,11 +2408,12 @@ function buy(id, n) {
     if (!addItem(t, 1)) return;
     S.gold -= pr; if (!S.dura) S.dura = {}; if (!had) S.dura[t] = ITEM[t].dura; snd('coin'); $('dlg').innerHTML = shopHTML(); return;
   }
-  price = id.startsWith('seed-') ? CROPS[id.slice(5)].buy : { snack: 30, can: 400, cow: COW_PRICE, bucket: 120, 'sap-green': 40, 'sap-cherry': 60, 'sap-berry': 50 }[id];
+  price = id.startsWith('seed-') ? CROPS[id.slice(5)].buy : { snack: 30, can: 400, cow: COW_PRICE, bucket: 120, 'sap-green': 40, 'sap-cherry': 60, 'sap-berry': 50, hive: HIVE_PRICE }[id];
   if (S.gold < price * n) { snd('err'); return; }
   if (id === 'cow') { if (S.cows.length >= COW_MAX) return; S.cows.push({ m: false }); toast('Deine neue Kuh wartet auf der Weide!'); }
   else if (id === 'bucket') { if (slotOf('bucket') || !addItem('bucket', 1)) return; toast('Melkeimer gekauft!'); }
   else if (id === 'can') { S.canCap = 40; S.water = 40; }
+  else if (id === 'hive') { if (hiveCount() >= HIVE_MAX || !addItem('hive', 1)) return; toast('Bienenstock gekauft! Stell ihn auf eine Wiese bei deinen Blumen.'); }
   else if (!addItem(id, n)) return;
   S.gold -= price * n;
   snd('coin'); $('dlg').innerHTML = shopHTML();
@@ -2480,7 +2505,7 @@ function act(tx, ty) {
   const k = tx + ',' + ty, s = S.soil[k], t = tileAt(tx, ty), id = held(), kind = id ? ITEM[id].kind : '';
   actT = .25; actTool = null; actTile = [tx, ty]; canPour = 0;
   if (LOC === 'town') {
-    if (wildFlowerAt(tx, ty) >= 0 && !['hoe', 'shovel', 'seed', 'sapling'].includes(kind)) { pickWild(tx, ty); return; }
+    if (wildFlowerAt(tx, ty) >= 0 && !['hoe', 'shovel', 'seed', 'sapling', 'hive'].includes(kind)) { pickWild(tx, ty); return; }
     if (t === 'S') openDlg(shopHTML());
     else if (t === 'N') { const n = TOWN_NPC.find(n => n.x === tx && n.y === ty); hearts(tx, ty, 1); snd('sel'); toast(n.say[Math.floor(Math.random() * n.say.length)]); }
     else if (id && ITEM[id].kind && ITEM[id].kind !== 'snack') toast('Das geht nur auf deiner Farm.');
@@ -2488,8 +2513,21 @@ function act(tx, ty) {
   }
   const ci = cowNear();
   if (ci >= 0) { if (kind === 'bucket' || S.cows[ci].m) milkCow(ci); else { toast(slotOf('bucket') ? 'Wähle den Melkeimer, um zu melken.' : 'Zum Melken brauchst du einen Melkeimer aus dem Dorfladen.'); snd('err'); } return; }
-  if (inPast(tx * 16 + 8, ty * 16 + 8) && ['hoe', 'seed', 'sapling'].includes(kind)) { toast('Das ist die Kuhweide.'); snd('err'); return; }
-  if (wildFlowerAt(tx, ty) >= 0 && !['hoe', 'shovel', 'seed', 'sapling'].includes(kind)) { pickWild(tx, ty); return; }
+  if (inPast(tx * 16 + 8, ty * 16 + 8) && ['hoe', 'seed', 'sapling', 'hive'].includes(kind)) { toast('Das ist die Kuhweide.'); snd('err'); return; }
+  const hv = TREES[k];
+  if (hv && hv.s === 'hive') {   // Bienenstock: Honig ernten oder mit der Schaufel abbauen
+    if (kind === 'shovel') {
+      if (hv.ready && !addItem(hv.ready.k, hv.ready.n)) return;
+      if (!addItem('hive', 1)) return;
+      delete TREES[k]; rebuildTrees(); snd('till'); burst(tx, ty, ['#f4cf6a', '#b97a2a'], 6); toast('Bienenstock abgebaut'); return;
+    }
+    if (!hv.ready) { const n = Math.max(1, 3 - (hv.d || 0)); toast(`Die Bienen sammeln noch Nektar – noch ${n} ${n === 1 ? 'Tag' : 'Tage'}.`); return; }
+    const { k: hk, n } = hv.ready;
+    if (!addItem(hk, n)) return;
+    hv.ready = null; hv.d = 0; if (!S.honeySeen) S.honeySeen = []; if (!S.honeySeen.includes(hk)) S.honeySeen.push(hk);
+    burst(tx, ty, ['#f5b52e', '#ffe58a', '#fff6c0'], 10, 60); hearts(tx, ty, 2); snd('harvest'); toast(`+${n} ${ITEM[hk].name}`); return;
+  }
+  if (wildFlowerAt(tx, ty) >= 0 && !['hoe', 'shovel', 'seed', 'sapling', 'hive'].includes(kind)) { pickWild(tx, ty); return; }
   const bush = TREES[k];
   if (bush && bush.s === 'bush' && bush.ripe && kind !== 'shovel') {
     const n = 2 + Math.floor(Math.random() * 3);
@@ -2592,6 +2630,12 @@ function act(tx, ty) {
     if (S.water <= 0) { toast('Die Gießkanne ist leer – füll sie am Teich auf.'); snd('err'); return; }
     if (!needEnergy(1)) return;
     S.water--; s.w = true; actT = CAN_T; canPour = 1; snd('water'); wear('can');
+  } else if (kind === 'hive') {
+    const [px, py] = playerTile();
+    if (t !== 'G' || s || wetCount(tx, ty, 2) > 0 || (tx === px && ty === py) || isEdge(tx, ty)) { toast('Hier kann der Bienenstock nicht stehen.'); snd('err'); return; }
+    if (wildFlowerAt(tx, ty) >= 0) { toast('Hier blüht eine Blume – stell den Stock daneben.'); snd('err'); return; }
+    useItem(id); TREES[k] = { s: 'hive', d: 0 }; rebuildTrees();
+    snd('plant'); burst(tx, ty, ['#f4cf6a', '#ffe58a'], 6, 30); toast('Bienenstock aufgestellt – in 3 Tagen gibt es Honig');
   } else if (kind === 'sapling') {
     const [px, py] = playerTile();
     if (t !== 'G' || s || wetCount(tx, ty, 2) > 0 || (tx === px && ty === py)) { toast('Hier kann kein Baum wachsen.'); snd('err'); return; }
@@ -2644,6 +2688,7 @@ function endDay(passedOut) {
       if (st.s === 'tree') { if (st.k) delete st.hp; else delete TREES[k]; }
       else if (st.s === 'stump') delete st.d;
       else if (st.s === 'sap' && ++st.d >= 4) { st.s = 'tree'; delete st.d; st.born = S.day + 1; regrow = true; }
+      else if (st.s === 'hive') { if (!st.ready && ++st.d >= 3) { const [x, y] = k.split(',').map(Number); st.ready = honeyFrom(x, y); } }
       else if (st.s === 'bush') { st.d++; if (!st.ripe) { st.c = (st.c || 0) + 1; if (st.d === 3 || (st.d > 3 && st.c >= 2)) { st.ripe = true; st.c = 0; } } }
     }
     rebuildTrees();
@@ -2888,6 +2933,65 @@ function updateSoilLayer() {
   }
 }
 
+/* ---------- Bienen ---------- */
+const HIVE_MAX = 3, HIVE_PRICE = 400;
+const hiveCount = () => Object.values(TREES).filter(t => t.s === 'hive').length + cnt('hive');
+// blühende Blumen im Umkreis von 3 Feldern: wilde Blumen und reife Blumen auf den Feldern; Rückgabe [x, y, Sorte 0–3]
+function flowersNear(hx, hy) {
+  const out = [];
+  for (let y = hy - 3; y <= hy + 3; y++) for (let x = hx - 3; x <= hx + 3; x++) {
+    if (x < 0 || y < 0 || x >= COLS || y >= ROWS) continue;
+    const k = x + ',' + y, so = S.soil[k];
+    if (so) { if (so.c && CROPS[so.c.t].flower && so.c.d >= CROPS[so.c.t].days) out.push([x, y, WILD_ITEM.indexOf(so.c.t)]); continue; }
+    if (FLOWER_AT[k] !== undefined && MAP[y][x] === 'G' && !TREES[k] && !(S.picked && S.picked['f' + k])) out.push([x, y, FLOWER_AT[k]]);
+  }
+  return out;
+}
+// Sorte: die häufigste Blume, wenn sie mehr als die Hälfte ausmacht; orange, gemischt oder gar keine Blumen ergeben Wiesenhonig
+function honeyFrom(hx, hy) {
+  const f = flowersNear(hx, hy), c = [0, 0, 0, 0]; f.forEach(([, , k]) => c[k]++);
+  const best = c.indexOf(Math.max(...c)), sort = f.length && c[best] * 2 > f.length ? ['honig_sonne', 'honig_wiese', 'honig_rosa', 'honig_lav'][best] : 'honig_wiese';
+  return { k: sort, n: f.length >= 8 ? 2 : 1 };
+}
+// Bienen fliegen zwischen Stock und Blumen hin und her
+const BEES = {};
+function updateBees(dt) {
+  for (const k in BEES) if (!TREES[k] || TREES[k].s !== 'hive') delete BEES[k];
+  for (const k in TREES) {
+    if (TREES[k].s !== 'hive') continue;
+    const [hx, hy] = k.split(',').map(Number), home = [hx * 16 + 8, hy * 16 + 6];
+    if (!BEES[k]) BEES[k] = [0, 1, 2].map(i => ({ x: home[0], y: home[1], gx: home[0], gy: home[1], wait: i * .8, t: Math.random() * 9, dir: 1 }));
+    for (const b of BEES[k]) {
+      b.t += dt;
+      if (b.wait > 0) { b.wait -= dt; if (b.wait <= 0) {
+        const f = flowersNear(hx, hy), atHome = Math.hypot(b.x - home[0], b.y - home[1]) < 4;
+        if (atHome && f.length) { const [fx, fy] = f[Math.floor(Math.random() * f.length)]; b.gx = fx * 16 + 5 + Math.random() * 6; b.gy = fy * 16 + 3 + Math.random() * 6; }
+        else if (atHome) { b.gx = home[0] + (Math.random() - .5) * 28; b.gy = home[1] + (Math.random() - .5) * 18; }
+        else { b.gx = home[0]; b.gy = home[1]; }
+      } continue; }
+      const dx = b.gx - b.x, dy = b.gy - b.y, d = Math.hypot(dx, dy);
+      if (d < 1.5) { b.wait = .6 + Math.random() * 1.6; continue; }
+      const sp = 22 * dt; b.x += dx / d * Math.min(sp, d); b.y += dy / d * Math.min(sp, d) + Math.sin(b.t * 9) * 6 * dt; b.dir = dx >= 0 ? 1 : -1;
+    }
+  }
+}
+function drawBees(fly) {
+  if (fly) for (const k in BEES) for (const b of BEES[k]) {   // kleine Biene im Spiel: 4×3 mit flatternden Flügeln
+    const x = Math.round(b.x) - 2, y = Math.round(b.y) - 1, up = Math.sin(b.t * 30) > 0, h = b.dir > 0 ? 3 : 0;
+    R(X, x, y + 1, 4, 2, '#ffd24a'); R(X, x + 1, y + 1, 1, 2, '#3a2a1a'); R(X, x + (b.dir > 0 ? 3 : 0), y + 1, 1, 1, '#3a2a1a');
+    R(X, x + 1, y + (up ? -1 : 0), 2, 1, '#e8f6ff');
+  }
+  // fertiger Honig: kleines Glas schwebt über dem Stock
+  const t = performance.now() / 1000;
+  for (const k in TREES) {
+    const st = TREES[k]; if (st.s !== 'hive' || !st.ready) continue;
+    const [hx, hy] = k.split(',').map(Number), x = hx * 16 + 4, y = hy * 16 - 15 + Math.round(Math.sin(t * 3 + hx));
+    const P = JAR_PAL[st.ready.k];
+    X.fillStyle = 'rgba(255,246,170,.35)'; X.fillRect(x - 1, y - 1, 10, 11);
+    R(X, x + 1, y, 6, 2, P.c); R(X, x + 2, y, 1, 1, P.C); R(X, x + 1, y + 2, 6, 1, '#7a4a1e');
+    R(X, x, y + 3, 8, 6, '#7a4a1e'); R(X, x + 1, y + 3, 6, 5, P.H); R(X, x + 1, y + 7, 6, 1, P.D); R(X, x + 1, y + 4, 1, 2, '#fff6e8');
+  }
+}
 /* ---------- Tierchen ---------- */
 const critters = [];
 ['#ff8fb8', '#ffffff', '#d9b8ff', '#ffe066'].forEach((col, i) => critters.push({ k: 'fly', x: 60 + i * 70, y: 130 + (i % 2) * 50, gx: 0, gy: 0, t: Math.random() * 9, col }));
@@ -3021,7 +3125,7 @@ function update(dt) {
   for (const [tx, ty] of (LOC === 'farm' ? CHERRY : TOWN_TREES.filter((_, i) => i % 2 === 0))) if (Math.random() < dt * .18 && parts.length < 160)
     parts.push({ x: tx * 16 + 3 + Math.random() * 10, y: ty * 16 + 6 + Math.random() * 6, vx: -5 - Math.random() * 6, vy: 7 + Math.random() * 5,
       life: 2.5 + Math.random() * 2, col: Math.random() < .5 ? '#ffc2dc' : '#ffe3ee', pt: 1, s: Math.random() * 6 });
-  if (LOC === 'farm') { updateCritters(dt); updatePond(dt); updateCows(dt); }
+  if (LOC === 'farm') { updateCritters(dt); updatePond(dt); updateCows(dt); updateBees(dt); }
   if (!paused) { syncCows(); updateBen(dt); }
   if (!paused) updateCustomers(dt);
   if (S.rain) for (const d of rain) { d.y += d.s * dt; d.x -= d.s * .25 * dt; if (d.y > VH) { d.y = -4; d.x = Math.random() * (VW + 60); } }
@@ -3176,6 +3280,7 @@ function render(t) {
     else R(X, Math.round(p.x), Math.round(p.y), p.pt ? (p.s > 3 ? 2 : 1) : 2, p.pt ? 1 : 2, p.col);
   }
   if (farm && !night && !S.rain) for (const c of critters) if (c.k === 'fly') drawFly(c, false);
+  if (farm) drawBees(!night && !S.rain);   // nachts und bei Regen bleiben die Bienen im Stock, das Honigglas sieht man trotzdem
   X.restore();
   // light
   const tm = S.time;
