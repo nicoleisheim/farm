@@ -581,11 +581,27 @@ const appeal = id => Math.pow(sellOf(id) / priceOf(id), 2);
 const priceTag = id => { const r = priceOf(id) / sellOf(id); return r <= .75 ? 'sehr schnell' : r < .95 ? 'schnell' : r <= 1.05 ? 'normal' : r <= 1.3 ? 'langsam' : 'sehr langsam'; };
 const SEASONS = ['Frühling', 'Sommer', 'Herbst', 'Winter'];
 const WDAYS = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
-const SOLID = new Set(['Q', 'Z', 'T', 'H', 'S', 'B', 'U', 'W', 'L', 'X', 'Y', 'F', 'O', 'N', 'K']);
+const SOLID = new Set(['J', 'Q', 'Z', 'T', 'H', 'S', 'B', 'U', 'W', 'L', 'X', 'Y', 'F', 'O', 'N', 'K']);
 let LOC = 'farm', fadeT = 0;
 const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
 const DOOR = [4, 4];
 
+/* ---------- Farmplan (aus dem Farm-Planer): Boden, Objekte, Wasser, Weide ---------- */
+// Reihen: 7 hinter dem Zaun oben (Spielreihen -7 bis -1), 24 Farm (0 bis 23), 7 unten (24 bis 30)
+const PLAN = {"g":["gggggggggggggggpgggggggg","gggggggggggggggpgggggggg","gggggggggggggggpgggggggg","gggggggggggggggpgggggggg","gggggggggggggggpgggggggg","pppppppppppppppppppppppp","gggggggggggggggggggggggg","gggggggggggggggggggggggg","gggggggggggggggggggggggg","gggggggggggggggggggggggg","gggggggggggggggggggggggg","gggggggggggggggggggggggg","ggggpgggppgggpgggggppggg","ggggpppppppppppppppppppp","gggggggpgggggggggggggggg","gggggggggggggggggggggggg","gggggggggggggggggggggggg","gggggggggggggggggggggggg","gggggggggggggggggggggggg","gggggggggggggggggggggggg","gggggggggggggggggggggggg","gggggggggggggggggggggggg","gggggggggggggggggggggggg","gggggggggggggggggggggggg","gggggggggggggggggggggggg","gggggggggggggggggggggggg","gggggggggggggggggggggggg","gggggggggggggggggggggggg","gggggggggggggggggggggggg","gggggggggggggggggggggggg","gggggggggggggggggggggggg","gggggggggggggggggggggggg","pppppppppppppppppppppppp","gggggggpgggggggggggggggg","gggggggpgggggggggggggggg","gggggggpgggggggggggggggg","gggggggpgggggggggggggggg","gggggggpgggggggggggggggg"],"o":["....4ac.......c.........",".....A....c.A....Ca.aC..","..C.c..c1...4a....a..A3.",".C.2...AC.CA.A..a...aC..","C3....C.c.a.aAC.44AA...A","........................","........................","SSSSSSSSSSSSSSSSSSSSSSSS","S........c...1......A..S","S.......a..C...........S","S......c...............S","S.................C....S","S....A....c.4.C........S","S.......................","S...VVV.VVV...3........S","S..cV.....V............S","S...V.....V............S","S.CaV.....V......4....3S","S1.2VVVVVVV.c3.........S","SC.....c...2....C......S","S.............a..C.....S","S......................S","S.ccA.1......4..a..C.A.S","S..ca.c..c..1..C..C.c.cS","S...A4...c.cc..c......2S","S.A....2.c...A..A.1....S","S.A..a.A...aC..aac...a.S","SA..c....CAa.a.1..A....S","S3C...A...4c..c.AaC...4S","S..a..C..2cC....C.C..A4S","SSSSSSSSSSSSSSSSSSSSSSSS","........................","........................",".........A...4.C....A..a",".a..cC.........a...C...A","C.Aa1....aCAC..2ccAaAa..","..1a.a...4.c.aA......c..","C..A.C.....2A...a4..a..1"],"w":["000000000000000000000000000000000000000000000000","000000000000000000000000000000000000000000000000","000000000000000000000000000000000000000000000000","000000000000000000000000000000000000000000000000","000000000000000000000000000000000000000000000000","000000000000000000000000000000000000000000000000","000000000000000000000000000000000000000000000000","000000000000000000000000000000000000000000000000","000000000000000000000000000000000000000000000000","000000000000000000000000000000000000000000000000","000000000000000000000000000000000000000000000000","000000000000000000000000000000000000000000000000","000000000000000000000000000000000000000000000000","000000000000000000000000000000000000000000000000","000000000000000000000000000000000000000000000000","000000000000000000000000000000000000000000000000","000000000000000000000000000000000000000000000000","000000000000000000000000000000000000000000000000","000000000000000000000000000000000000000011000000","000000000000000000000000000000000000011111100000","000000000000000000000000000000000000111111100000","000000000000000000000000000000000000111111110000","000000000000000000000000000000000001111111110000","000000000000000000000000000000000011111111110000","000000000000000000000000000000000011111111100000","000000000000000000000000000000000001111111100000","000000000000000000000000000000000000011111000000","000000000000000000000000000000000000000110000000","000000000000000000000000000000000000000000000000","000000000000000000000000000000000000000000000000","000000000000000000000000000000000000000000000000","000000000000000000000000000000000000000000000000","000000000000000000000000000000000000000000000000","000000000000000000000000000000000000000000000000","000000000000000000000000000000000000000000000000","000000000000000000000000000000000000000000000000","000000000000000000000000000000000000000000000000","000000000000000000000000000000000000000000000000","000000000000000000000000000000000000000000000000","000000000000000000000000000000000000000000000000","000000000000000000000000000000000000000000000000","000000000000000000000000000000000000000000000000","000000000000000000000000000000000000000000000000","000000000000000000000000000000000000000000000000","000000000000000000000000000000000000000000000000","000000000000000000000000000000000000000000000000","000000000000000000000000000000000000000000000000","000000000000000000000000000000000000000000000000"],"p":["000000000000000000000000","000000000000000000000000","000000000000000000000000","000000000000000000000000","000000000000000000000000","000000000000000000000000","000000000000000000000000","000000000000000000000000","000001111100000000000000","000001111100000000000000","000001111100000000000000","000000000000000000000000","000000000000000000000000","000000000000000000000000","000000000000000000000000","000000000000000000000000","000000000000000000000000","000000000000000000000000","000000000000000000000000","000000000000000000000000","000000000000000000000000","000000000000000000000000","000000000000000000000000","000000000000000000000000"]};
+const PLAN_OFF = 7;
+const planG = (x, y) => { const r = PLAN.g[y + PLAN_OFF]; return r && x >= 0 && x < 24 ? r[x] : null; };
+const planO = (x, y) => { const r = PLAN.o[y + PLAN_OFF]; return r && x >= 0 && x < 24 ? r[x] : null; };
+const FENCE_TYPES = 'VFWRSME';
+const TREE_KIND = {}, FLOWER_AT = {}, FENCE_T = {};
+for (let y = -PLAN_OFF; y < 24 + PLAN_OFF; y++) for (let x = 0; x < 24; x++) {
+  const o = planO(x, y), k = x + ',' + y;
+  if ('AaCc'.includes(o)) TREE_KIND[k] = o;
+  else if ('1234'.includes(o)) FLOWER_AT[k] = +o - 1;   // wie FLOWERS: Sonnenblume, orange, rosa, Lavendel
+  else if (FENCE_TYPES.includes(o)) FENCE_T[k] = o;
+}
+const PAST_T = []; PLAN.p.forEach((r, y) => [...r].forEach((c, x) => { if (c === '1') PAST_T.push([x, y]); }));
+const PAST_SET = new Set(PAST_T.map(([x, y]) => x + ',' + y));
 /* ---------- map ---------- */
 const MAP = [];
 for (let y = 0; y < ROWS; y++) MAP.push(new Array(COLS).fill('G'));
@@ -605,6 +621,12 @@ for (let x = 4; x <= 23; x++) set(x, 6, 'P');
 // Lagerhaus neben dem Auftragsbrett (Kacheln 12–15 / 2–4), Weg zur Tür
 for (let x = 12; x <= 15; x++) for (let y = 2; y <= 4; y++) set(x, y, 'K');
 set(13, 5, 'P');
+// Farmplan übernehmen: alles außer Gebäuden kommt aus dem Plan
+for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
+  if ('HKLB'.includes(MAP[y][x])) continue;
+  const o = planO(x, y), k = x + ',' + y;
+  MAP[y][x] = FENCE_T[k] ? 'J' : TREE_KIND[k] ? 'T' : o === 'U' ? 'U' : planG(x, y) === 'p' ? 'P' : 'G';
+}
 const STO = { x0: 184, y0: 32 };
 const HELPER = 'Ben', BEN_MIN = 4, BEN_MAX = 16; // Hofhelfer: gießt, erntet und melkt tagsüber (6–18 Uhr), Stundenlohn
 const benWage = () => S.benWage || 8, benPace = w => w < 6 ? 'gemütlich' : w < 10 ? 'normal' : w < 14 ? 'flink' : 'sehr flink';
@@ -619,20 +641,17 @@ function applyLand(owned) {
   LANDOWN = owned || [];
   for (const L of LAND) for (let y = LAND_Y0; y <= LAND_Y1; y++) for (let x = L.x0; x <= L.x1; x++) {
     let wet = false; for (let py = 0; py < 16 && !wet; py += 2) for (let px = 0; px < 16 && !wet; px += 2) if (WET[(y * 16 + py) * W + x * 16 + px]) wet = true;
-    MAP[y][x] = (y === LAND_Y0 && wet) ? 'T' : !LANDOWN.includes(L.id) ? (hash(x, y, 41) < .12 ? 'T' : 'Z') : 'G';   // ungekauft: Wiese hinter dem Zaun mit vereinzelten Bäumen
+    const k = x + ',' + y, base = FENCE_T[k] ? 'J' : TREE_KIND[k] ? 'T' : planG(x, y) === 'p' ? 'P' : 'G';
+    MAP[y][x] = (y === LAND_Y0 && wet) ? 'T' : !LANDOWN.includes(L.id) && base !== 'T' && base !== 'J' ? 'Z' : base;   // ungekauft: Wiese, Bäume aus dem Plan bleiben   // ungekauft: Wiese hinter dem Zaun mit vereinzelten Bäumen
   }
 }
 const STX = 304, STY = 48; // Verkaufsstand (Kacheln 19–20 / 3–4)
 const BDX = 128, BDY = 48; // Auftragsbrett (Kacheln 8–9 / 3–4)
 // Kuhweide direkt unter dem Hauptweg, Tor oben zum Weg
 const PAST = { x0: 156, y0: 124, x1: 252, y1: 156, g0: 196, g1: 212 }, COW_MAX = 4, COW_PRICE = 500;
-const inPast = (x, y) => x > PAST.x0 && x < PAST.x1 && y > PAST.y0 && y < PAST.y1;
-function fenceAt(x, y) {
-  const P = PAST, inX = x >= P.x0 - 3 && x <= P.x1 + 3, inY = y >= P.y0 - 2 && y <= P.y1 + 2;
-  if (inX && Math.abs(y - P.y0) <= 2 && !(x > P.g0 && x < P.g1)) return true;
-  if (inX && Math.abs(y - P.y1) <= 2) return true;
-  return inY && (Math.abs(x - P.x0) <= 3 || Math.abs(x - P.x1) <= 3);
-}
+const inPast = (x, y) => PAST_SET.has(Math.floor(x / 16) + ',' + Math.floor(y / 16));   // Kuhweide-Felder aus dem Farmplan
+const pastSpot = () => { const [tx, ty] = PAST_T[Math.floor(Math.random() * PAST_T.length)] || [7, 9]; return [tx * 16 + 4 + Math.random() * 8, ty * 16 + 8 + Math.random() * 6]; };
+function fenceAt() { return false; }   // Weidezaun steht jetzt als Zaunfelder im Plan
 const isEdge = (x, y) => x <= 0 || y <= 0 || x >= COLS - 1 || y >= ROWS - 1 || lockedAt(x, y);
 // Innenstadt: eigene Karte
 const MAP_T = [];
@@ -686,12 +705,14 @@ const wildKey = (tx, ty) => (LOC === 'town' ? 't' : 'f') + tx + ',' + ty;
 function wildPicked(tx, ty) { try { return !!(S.picked && S.picked[wildKey(tx, ty)]); } catch (e) { return false; } }
 function wildFlowerAt(tx, ty) {
   const M = LOC === 'town' ? MAP_T : MAP;
-  if (!M[ty] || M[ty][tx] !== 'G' || hash(tx, ty, 999) >= .2 || wildPicked(tx, ty)) return -1;
+  if (!M[ty] || M[ty][tx] !== 'G' || wildPicked(tx, ty)) return -1;
+  if (LOC !== 'town') return S.soil[tx + ',' + ty] ? -1 : FLOWER_AT[tx + ',' + ty] ?? -1;
+  if (hash(tx, ty, 999) >= .2) return -1;
   if (LOC !== 'town' && S.soil[tx + ',' + ty]) return -1;
   return flowerKind(tx, ty);
 }
 function pickWild(tx, ty) {
-  const id = WILD_ITEM[flowerKind(tx, ty)];
+  const id = WILD_ITEM[wildFlowerAt(tx, ty)];
   if (!addItem(id, 1)) return;
   if (!S.picked) S.picked = {};
   S.picked[wildKey(tx, ty)] = S.day;
@@ -709,14 +730,16 @@ function drawGrass(g, tx, ty) {
   if (tt !== 'G' && tt !== 'Z') return;
   const f = hash(tx, ty, 999);
   const px = x0 + 4 + Math.floor(hash(tx, ty, 7) * 8), py = y0 + 4 + Math.floor(hash(tx, ty, 8) * 8);
-  if (f < .2 && !NO_WILD && !wildPicked(tx, ty)) {   // Blumen (eigene Designs): Sonnenblume, Blümchen orange/rosa, Lavendel; Stielende bei py + 3, ganz im Feld
-    const [A, C] = FLOWERS[tt === 'Z' ? Math.floor(hash(tx, ty, 9) * FLOWERS.length) : flowerKind(tx, ty)], h = A.length, w = A[0].length;
+  const fk = LOC === 'town' ? (f < .2 ? flowerKind(tx, ty) : -1) : FLOWER_AT[tx + ',' + ty] ?? -1;
+  if (fk >= 0 && !NO_WILD && !wildPicked(tx, ty)) {   // Blumen (eigene Designs): Sonnenblume, Blümchen orange/rosa, Lavendel; Stielende bei py + 3, ganz im Feld
+    const [A, C] = FLOWERS[fk], h = A.length, w = A[0].length;
     const oy = Math.max(y0, py + 4 - h), ox = px - (w >> 1);
     A.forEach((r, y) => [...r].forEach((ch, x) => { if (C[ch]) R(g, ox + x, oy + y, 1, 1, C[ch]); }));
   }
 }
-const isPT = (a, b) => { const t = tileAt(a, b); return t === 'P' || t === 'Q'; };
-const connT = (a, b) => { const t = tileAt(a, b); return t === 'P' || t === 'Q' || t === 'H' || t === 'S' || t === 'B' || t === 'L' || t === 'F' || t === 'K'; };
+const pathTile = (a, b) => (LOC !== 'town' || EDGE_PLAN) && (b < 0 || b >= ROWS) ? (planG(a, b) === 'p' ? 'P' : 'G') : tileAt(a, b);
+const isPT = (a, b) => { const t = pathTile(a, b); return t === 'P' || t === 'Q'; };
+const connT = (a, b) => { const t = pathTile(a, b); return t === 'P' || t === 'Q' || t === 'H' || t === 'S' || t === 'B' || t === 'L' || t === 'F' || t === 'K'; };
 function pathPix(x, y) {
   const tx = Math.floor(x / 16), ty = Math.floor(y / 16), lx = x - tx * 16, ly = y - ty * 16;
   const hx = lx < 8 ? -1 : 1, hy = ly < 8 ? -1 : 1, cx = lx < 8 ? lx : 15 - lx, cy = ly < 8 ? ly : 15 - ly;
@@ -729,7 +752,7 @@ function pathPix(x, y) {
   if (isPT(tx, ty)) return !(!connT(tx + hx, ty) && !connT(tx, ty + hy) && cy < 4 && cx < [4, 2, 1, 1][cy]);
   return isPT(tx + hx, ty) && isPT(tx, ty + hy) && isPT(tx + hx, ty + hy) && cy < 4 && cx < [4, 2, 1, 1][cy];
 }
-function drawPaths(g) {
+function drawPaths(g, ya = 0, yb = H) {   // ya/yb: Pixelreihen, auch außerhalb der Karte (Randstreifen)
   const bld = (x, y) => { const t = tileAt(Math.floor(x / 16), Math.floor(y / 16)); return t === 'H' || t === 'S' || t === 'B' || t === 'F' || t === 'K'; };
   const edge = (x, y) => [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => !pathPix(x + dx, y + dy) && !bld(x + dx, y + dy));
 
@@ -737,44 +760,46 @@ function drawPaths(g) {
   const EDGE='#d49a9a';
   const fill=(x,y,near)=>{const p=hash(x,y,5),b=hash(x>>1,y>>1,3);let c=near?'#e9bdb6':'#f1cfc8';if(!near&&b<.15)c='#f6ddd7';if(p<.06)c='#dba79f';else if(p>.97)c='#fff3ef';return c};
   const PEB=['#ffffff','#d69a92'];
-  const P = new Uint8Array(W * H);
-  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (pathPix(x, y)) P[y * W + x] = edge(x, y) ? 2 : 1;
-  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
-    const v = P[y * W + x];
+  const P = new Uint8Array(W * (yb - ya)), PA = (x, y) => x >= 0 && x < W && y >= ya && y < yb ? P[(y - ya) * W + x] : 0;
+  for (let y = ya; y < yb; y++) for (let x = 0; x < W; x++) if (pathPix(x, y)) P[(y - ya) * W + x] = edge(x, y) ? 2 : 1;
+  for (let y = ya; y < yb; y++) for (let x = 0; x < W; x++) {
+    const v = PA(x, y);
     if (v === 2) R(g, x, y, 1, 1, EDGE);
-    else if (v === 1) { const near = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => P[(y + dy) * W + x + dx] === 2); R(g, x, y, 1, 1, fill(x, y, near)); }
+    else if (v === 1) { const near = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => PA(x + dx, y + dy) === 2); R(g, x, y, 1, 1, fill(x, y, near)); }
   }
   // Kleine Kiesel
-  for (let ty = 0; ty < ROWS; ty++) for (let tx = 0; tx < COLS; tx++) {
+  for (let ty = Math.floor(ya / 16); ty < Math.ceil(yb / 16); ty++) for (let tx = 0; tx < COLS; tx++) {
     if (!isPT(tx, ty)) continue;
     for (let k = 0; k < 2; k++) {
       const x = tx * 16 + 3 + Math.floor(hash(tx, ty, k + 20) * 10), y = ty * 16 + 3 + Math.floor(hash(tx, ty, k + 30) * 10);
-      if (P[y * W + x] !== 1 || P[y * W + x + 1] !== 1 || hash(tx, ty, k + 40) < .4) continue;
+      if (PA(x, y) !== 1 || PA(x + 1, y) !== 1 || hash(tx, ty, k + 40) < .4) continue;
       if (!PEB) continue; R(g, x, y, 2, 1, PEB[0]); R(g, x, y + 1, 2, 1, PEB[1]);
     }
   }
   // Gras wächst über den Rand
-  for (let y = 1; y < H - 1; y++) for (let x = 1; x < W - 1; x++) {
-    if (P[y * W + x] !== 2 || hash(x, y, 8) > .16) continue;
-    if (!P[(y - 1) * W + x]) R(g, x, y, 1, 2, '#7dc35a');
-    else if (!P[(y + 1) * W + x]) R(g, x, y - 1, 1, 2, '#87ca60');
-    else if (!P[y * W + x - 1]) R(g, x, y, 2, 1, '#7dc35a');
-    else if (!P[y * W + x + 1]) R(g, x - 1, y, 2, 1, '#7dc35a');
+  for (let y = ya + 1; y < yb - 1; y++) for (let x = 1; x < W - 1; x++) {
+    if (PA(x, y) !== 2 || hash(x, y, 8) > .16) continue;
+    if (!PA(x, y - 1)) R(g, x, y, 1, 2, '#7dc35a');
+    else if (!PA(x, y + 1)) R(g, x, y - 1, 1, 2, '#87ca60');
+    else if (!PA(x - 1, y)) R(g, x, y, 2, 1, '#7dc35a');
+    else if (!PA(x + 1, y)) R(g, x - 1, y, 2, 1, '#7dc35a');
   }
 }
 // Baumart aus einem vorab optimierten 24×24-Muster (wiederholt sich), damit sich die vier Bäume gut mischen:
 // A = Kirschbaum hoch, B = Kirschbaum klein, C = grün hoch, D = grün klein (je 3/4 hoch, 40 % Kirschbäume)
 const TREE_MIX = 'ACBCCBACCDACCBCADCADCACDBCADACCABCCBACACACBCABCACADCCADCCADCCADCBACADCACACCADCCACBCADCCACCACCACDCDACCACDACABCACDABCDADCACACDACACBCDCADACCCACCCADACBACCDACACABCCADACBDACCCDACDACBCBCDCABCACDACCDACACACBACDCACADCACDACDACBDCBCACDCACDCBCACBACBACACACADCACBCACACDCACCACCADCCDCACBCACDADCACDABCADCCACABCDCACBACCACBCCADCACADACACACBCACDACDCABCABCABCCDCACACDCACBACADCACCADCACACBCCBACBACDACCACDACCADACDCADACACDACCDACBCCABCCCBACCACBCACCBACBCCADCADADACADCCADCBACDACADCABCACACBCCADCACCCACBACCACCACBCDCABCACCBADCACCDACDACDADACDCDCADCCACBCACCACCBACACACACBCCADCACDCADCBACCBCDCADACDACCADCABCACACDAC';
 const treeMix = (tx, ty) => TREE_MIX[(((ty % 24) + 24) % 24) * 24 + (((tx % 24) + 24) % 24)];
-const isCherry = (tx, ty) => { const st = TREES[tx + ',' + ty]; return st && st.k ? st.k === 'cherry' : 'AB'.includes(treeMix(tx, ty)); };
+const isCherry = (tx, ty) => { const fm = LOC !== 'town' || EDGE_PLAN, st = fm ? TREES[tx + ',' + ty] : null; if (st && st.k) return st.k === 'cherry'; const pk = fm ? TREE_KIND[tx + ',' + ty] : null; return pk ? pk === 'C' || pk === 'c' : 'AB'.includes(treeMix(tx, ty)); };
 const isTall = (tx, ty) => 'AC'.includes(treeMix(tx, ty));
 // Kleine Bäume sind die Vorstufe der großen: wilde kleine Bäume werden je nach Baum nach 2–9 Spieltagen groß,
 // aus Setzlingen gewachsene Bäume 3 Tage nachdem sie zum Baum geworden sind. Kleine Bäume geben beim Fällen weniger Holz.
 function treeBig(tx, ty) {
-  if (LOC === 'town') return isTall(tx, ty);
+  if (LOC === 'town' && !EDGE_PLAN) return isTall(tx, ty);
   let day = 1, st = null;
   try { day = S.day; st = TREES[tx + ',' + ty]; } catch (e) {}
   if (st && st.born !== undefined) return day - st.born >= 3;
+  const pk = TREE_KIND[tx + ',' + ty];   // Baum aus dem Farmplan: groß oder klein; kleine auf der Farm wachsen heran, hinter dem Zaun bleiben sie
+  if (pk) return pk === 'A' || pk === 'C' || (ty >= 1 && ty < ROWS - 1 && day >= 2 + Math.floor(hash(tx, ty, 77) * 8));
   return isTall(tx, ty) || day >= 2 + Math.floor(hash(tx, ty, 77) * 8);
 }
 function drawSapling(g, tx, ty, big, cherry) {
@@ -798,8 +823,8 @@ const TREE_PAL = {"a": "#32470e", "b": "#4f6512", "c": "#678928", "d": "#412109"
 const CHERRY_ROWS = ["......aaaa.......", "....aaaaabbb.....", "...aacbccbccb....", "...accccccccb....", "..adcebccccbba...", "..acdcbcceccba...", "..abcdccccdbdba..", ".acccbeccbbdbba..", ".acebbbebbdbfba..", ".aacebbdbdbbbaa..", "..aacebddaaaaa...", "......eeda.......", ".......ed........", ".......ed........", ".......ed........", "......eedd......."];
 const CHERRY_PAL = {"a": "#c9628f", "b": "#e47fa8", "c": "#f7a6c8", "d": "#412109", "e": "#603813", "f": "#ce6894"};
 // hohe Bäume (16×20) nur, wo über dem Feld Platz für die Krone ist: nicht in der obersten Kartenreihe und nicht in der ersten Reihe eines unteren Randstreifens
-let EDGE_ROW0 = null;
-const tallOk = ty => ty > 0 && ty !== EDGE_ROW0;
+let EDGE_ROW0 = null; var EDGE_PLAN = false;   // EDGE_PLAN: Randstreifen der Farm wird gerade aus dem Farmplan gezeichnet
+const tallOk = ty => ty !== EDGE_ROW0 && (ty > 0 || EDGE_PLAN);
 const TREE2_ROWS = [".......aaa......", "....abbbbaa.....", "...abccccbcda...", "..abccccccbcda..", ".abcccbbbbcbba..", ".acbcbbbcccbbaa.", ".abbbbbbbbbbbda.", "acbbbbbbbbbbbda.", "acbbbbbbbbbbbcda", "acbdbbbbbbbbbbda", "acdddbbbbbdbdbaa", "addddbddbddbdda.", ".aaddddddddbdaa.", "...addaaaaaaa...", ".....aaeeef.....", "......ggef......", "......ggef......", "......egef......", ".....feeeef.....", "....feeeffff...."];
 const TREE2_PAL = {"a": "#32470e", "b": "#719646", "c": "#9dc56b", "d": "#48661e", "e": "#764c24", "f": "#41210b", "g": "#8c6338"};
 const CHERRY2_ROWS = [".......aaa......", "....abbbbaa.....", "...abccccbcda...", "..abccccccbcda..", ".abcccbbbbcbba..", ".acbcbbbcccbbaa.", ".abbbbbbbbbbbda.", "acbbbbbbbbbbbda.", "acbbbbbbbbbbbcda", "acbdbbbbbbbbbbda", "acdddbbbbbdbdbaa", "addddbddbddbdda.", ".aaddddddddbdaa.", "...addaaaaaaa...", ".....aaeeef.....", "......ggef......", "......ggef......", "......egef......", ".....feeeef.....", "....feeeffff...."];
@@ -827,12 +852,11 @@ function drawBush(g, tx, ty) {
   [[10, 7], [4, 10], [9, 11], [6, 6], [12, 10]].forEach(([a, b]) => { R(g, x0 + a, y0 + b, 2, 2, '#ff8fb8'); R(g, x0 + a, y0 + b, 1, 1, '#fff'); });
 }
 /* ---------- Teich: organische Pixel-Form aus 8px-Blöcken ---------- */
-const PCX = 310, PCY = 190, PRX = 44, PRY = 33;
+// Teich aus dem Farmplan (8-px-Blöcke); Mittelpunkt und Ausdehnung daraus berechnet
 const PB8 = new Uint8Array(48 * 32);
-for (let by = 0; by < 32; by++) for (let bx = 0; bx < 48; bx++) {
-  const dx = (bx * 8 + 4 - PCX) / PRX, dy = (by * 8 + 4 - PCY) / PRY, a = Math.atan2(dy, dx);
-  PB8[by * 48 + bx] = Math.hypot(dx, dy) < 1 + .07 * Math.sin(3 * a + 1) + .05 * Math.cos(2 * a - .5) ? 1 : 0;
-}
+for (let by = 0; by < 32; by++) for (let bx = 0; bx < 48; bx++) PB8[by * 48 + bx] = PLAN.w[by][bx] === '1' ? 1 : 0;
+const PBOX = (() => { let n = 0, sx = 0, sy = 0, x0 = 999, y0 = 999, x1 = -1, y1 = -1; for (let by = 0; by < 32; by++) for (let bx = 0; bx < 48; bx++) if (PB8[by * 48 + bx]) { n++; sx += bx * 8 + 4; sy += by * 8 + 4; x0 = Math.min(x0, bx * 8); y0 = Math.min(y0, by * 8); x1 = Math.max(x1, bx * 8 + 8); y1 = Math.max(y1, by * 8 + 8); } return n ? { cx: Math.round(sx / n), cy: Math.round(sy / n), x0, y0, x1, y1 } : { cx: -99, cy: -99, x0: 0, y0: 0, x1: 1, y1: 1 }; })();
+const PCX = PBOX.cx, PCY = PBOX.cy;
 const pb = (bx, by) => bx >= 0 && by >= 0 && bx < 48 && by < 32 && PB8[by * 48 + bx] === 1;
 const STEP8 = [3, 1, 1];
 function wetPix(x, y) {
@@ -844,9 +868,9 @@ function wetPix(x, y) {
 }
 const WET = new Uint8Array(W * H), PD = new Uint8Array(W * H);
 (() => {
-  for (let y = 120; y < H; y++) for (let x = 230; x < W; x++) if (wetPix(x, y)) WET[y * W + x] = 1;
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (wetPix(x, y)) WET[y * W + x] = 1;
   const q = [];
-  for (let y = 120; y < H - 1; y++) for (let x = 230; x < W - 1; x++) {
+  for (let y = 1; y < H - 1; y++) for (let x = 1; x < W - 1; x++) {
     const i = y * W + x; if (!WET[i]) continue;
     if (!WET[i - 1] || !WET[i + 1] || !WET[i - W] || !WET[i + W]) { PD[i] = 1; q.push(i); }
   }
@@ -861,10 +885,10 @@ function shorePoint(a, out) {
   let r = 0; while (wetAt(PCX + Math.cos(a) * r, PCY + Math.sin(a) * r) && r < 80) r++;
   return [Math.round(PCX + Math.cos(a) * (r + out)), Math.round(PCY + Math.sin(a) * (r + out))];
 }
-const PADS = [[292, 182], [330, 178], [302, 205], [334, 202]].filter(([x, y]) => depthAt(x, y) >= 4);
+const PADS = [[-18, -2], [20, -6], [-8, 21], [24, 18]].map(([a, b]) => [PCX + a, PCY + b]).filter(([x, y]) => depthAt(x, y) >= 4);
 function drawPond(g) {
   const COLS = ['#a2dcf6', '#80c8ef', '#62b2e4', '#4c9bd6'], EDGE = [3, 7, 12];
-  for (let y = 130; y < H; y++) for (let x = 240; x < W; x++) {
+  for (let y = Math.max(0, PBOX.y0 - 4); y < Math.min(H, PBOX.y1 + 4); y++) for (let x = Math.max(0, PBOX.x0 - 4); x < Math.min(W, PBOX.x1 + 4); x++) {
     const i = y * W + x;
     if (WET[i]) {
       let c;
@@ -912,13 +936,13 @@ function drawPond(g) {
 /* Leben im Teich */
 const ripples = [];
 function addRipple(x, y, big) { ripples.push({ x, y, t: 0, m: big ? 9 : 5 }); }
-const ducks = [{ x: 300, y: 192, gx: 300, gy: 192, dir: 1, t: 0 }];
-const duckling = { x: 292, y: 194, dir: 1 };
+const ducks = [{ x: PCX - 10, y: PCY + 2, gx: PCX - 10, gy: PCY + 2, dir: 1, t: 0 }];
+const duckling = { x: PCX - 18, y: PCY + 4, dir: 1 };
 const frog = { pad: 0, x: 0, y: 0, hop: 0, fx: 0, fy: 0, tx: 0, ty: 0, croak: 0, next: 4 };
 if (PADS.length) { frog.x = PADS[0][0]; frog.y = PADS[0][1]; }
 const fish = { t: -1, wait: 3, x: 0, y: 0, dir: 1 };
 function randDeep(min) {
-  for (let k = 0; k < 40; k++) { const x = 272 + Math.random() * 76, y = 162 + Math.random() * 56; if (depthAt(x, y) >= min) return [x, y]; }
+  for (let k = 0; k < 40; k++) { const x = PBOX.x0 + Math.random() * (PBOX.x1 - PBOX.x0), y = PBOX.y0 + Math.random() * (PBOX.y1 - PBOX.y0); if (depthAt(x, y) >= min) return [x, y]; }
   return [PCX, PCY];
 }
 function updatePond(dt) {
@@ -1566,7 +1590,7 @@ function rebuildTrees() {
 const [BG, bg] = mk(W, H);
 let LIT = null, EDGE_TOP = null, EDGE_BOT = null, EDGE_BOT_T = null, EDGE_TOP_T = null;
 // Zaun um die Farm: an jeder Grenze zwischen Farm und Außenbereich (Randpfad, ungekauftes Land), Tor nach Osten bleibt offen
-const outsideFarm = (x, y) => (x <= 0 || y <= 0 || x >= COLS - 1 || y >= ROWS - 1 || lockedAt(x, y)) && !(x === GATE[0] && y === GATE[1]);
+const outsideFarm = (x, y) => lockedAt(x, y);   // Farmzaun steht als Zaunfelder im Plan; hier nur die Grenze zum ungekauften Land
 function drawFarmFence(g) {
   // Bretterzaun: dunkle Holzpfosten mit zwei Brettern (wie im Farm-Planer)
   const L = '#c99566', M = '#a4714a', D = '#7a5034', T = '#ddb185', SH = 'rgba(60,20,40,.22)', SH2 = 'rgba(60,20,40,.1)';
@@ -1584,7 +1608,7 @@ function drawFarmFence(g) {
     const n = Math.max(1, Math.round((b - a) / 16)); for (let k = 0; k <= n; k++) post(x, a + Math.round(k * (b - a) / n));
   };
   const runs = (test, len) => { const out = []; let st = -1; for (let i = 0; i <= len; i++) { const on = i < len && test(i); if (on && st < 0) st = i; if (!on && st >= 0) { out.push([st, i - 1]); st = -1; } } return out; };
-  const ins = (x, y) => x >= 0 && y >= 0 && x < COLS && y < ROWS && !outsideFarm(x, y);
+  const ins = (x, y) => x >= 0 && y >= 0 && x < COLS && y < ROWS && !outsideFarm(x, y) && MAP[y][x] !== 'J';
   const out = (x, y) => x >= 0 && y >= 0 && x < COLS && y < ROWS && outsideFarm(x, y);
   for (let r = 1; r < ROWS; r++) {
     for (const [a, b] of runs(x => out(x, r - 1) && ins(x, r), COLS)) segH(a * 16, b * 16 + 13, r * 16 - 1);   // außen oben
@@ -1595,11 +1619,70 @@ function drawFarmFence(g) {
     for (const [a, b] of runs(y => ins(c - 1, y) && out(c, y), ROWS)) segV(c * 16 + 1, a * 16 + 9, b * 16 + 16);   // außen rechts
   }
 }
+/* Zäune als Felder (wie im Farm-Planer): Pfosten je Feld, Verbindung nach rechts von vorn, nach unten von oben gesehen */
+const FC = {
+  F: { L: '#e0a874', M: '#c08a64', D: '#a86d48', T: '#f6cf9c' },
+  V: { L: '#e0a874', M: '#c08a64', D: '#a86d48', T: '#f6cf9c' },
+  S: { L: '#c99566', M: '#a4714a', D: '#7a5034', T: '#ddb185' },
+  W: { L: '#ffffff', M: '#ece4ea', D: '#b9a7b4', T: '#ffffff' },
+  R: { L: '#ffe1ec', M: '#f6b8cd', D: '#cf7d9e', T: '#fff0f5' },
+  M: { L: '#efe3e6', M: '#d6c5cb', D: '#a8949c', T: '#fbf5f6' },
+  E: { L: '#a6df84', M: '#72bd58', D: '#4f9645', T: '#c9efa6' },
+};
+const FSH = 'rgba(60,20,40,.22)', FSH2 = 'rgba(60,20,40,.1)';
+function fencePost(g, t, px, by) {   // Pfosten von vorn, Fuß bei by
+  const c = FC[t];
+  if (t === 'W' || t === 'R') { R(g, px, by - 11, 3, 12, c.M); R(g, px, by - 11, 1, 12, c.L); R(g, px + 2, by - 11, 1, 12, c.D); R(g, px + 1, by - 12, 1, 1, c.L); return; }
+  if (t === 'M') { R(g, px - 1, by - 7, 5, 8, c.M); R(g, px - 1, by - 7, 5, 1, c.T); R(g, px + 3, by - 6, 1, 7, c.D); R(g, px - 1, by, 5, 1, c.D); return; }
+  if (t === 'E') { R(g, px - 2, by - 9, 7, 10, c.M); R(g, px - 1, by - 10, 5, 1, c.M); R(g, px - 1, by - 9, 3, 2, c.T); R(g, px + 3, by - 7, 2, 7, c.D); R(g, px - 2, by, 7, 1, c.D); return; }
+  R(g, px, by - 11, 3, 12, c.M); R(g, px, by - 11, 1, 12, c.L); R(g, px + 2, by - 11, 1, 12, c.D); R(g, px, by - 12, 3, 1, c.T);
+}
+function fenceRun(g, t, a, b, by) {   // waagrechtes Stück von a bis b (Pfostenmitten), von vorn
+  const c = FC[t], w = b - a;
+  R(g, a + 1, by + 1, w, 2, FSH); R(g, a + 2, by + 3, w - 1, 1, FSH2);
+  if (t === 'F' || t === 'V') {
+    R(g, a, by - 10, w, 1, c.L); R(g, a, by - 9, w, 1, c.M); R(g, a, by - 1, w, 1, c.L); R(g, a, by, w, 1, c.M);
+    const xa = a + 3, ww = w - 3; for (let i = 0; i < 7; i++) { const d0 = Math.round(i * ww / 7), d1 = Math.max(d0 + 1, Math.round((i + 1) * ww / 7)); R(g, xa + ww - d1, by - 8 + i, d1 - d0, 1, c.D); R(g, xa + d0, by - 8 + i, d1 - d0, 1, c.M); }
+    if (t === 'V') { for (let x = a; x < b; x++) { const o = Math.round(Math.sin(x / 2.2) * 1.2); R(g, x, by - 10 + o, 1, 1, '#5aa040'); if (x % 5 === 0) R(g, x, by - 11 + o, 1, 1, '#8fd16a'); } for (let x = a + 4; x < b - 2; x += 9) { R(g, x - 1, by - 12, 3, 3, '#ee8fb0'); R(g, x, by - 11, 1, 1, '#cf6890'); R(g, x - 1, by - 12, 1, 1, '#ffd6e5'); } }
+  } else if (t === 'S') {
+    for (const y of [by - 9, by - 4]) { R(g, a, y, w, 2, c.M); R(g, a, y, w, 1, c.L); R(g, a, y + 2, w, 1, c.D); }
+  } else if (t === 'W' || t === 'R') {
+    R(g, a, by - 7, w, 1, c.D); R(g, a, by - 3, w, 1, c.D);
+    for (let x = a + 4; x < b - 1; x += 3) { R(g, x, by - 9, 2, 10, c.L); R(g, x + 1, by - 9, 1, 10, c.M); R(g, x, by - 10, 1, 1, c.L); R(g, x, by, 2, 1, c.D); }
+  } else if (t === 'M') {
+    R(g, a, by - 7, w, 8, c.M); R(g, a, by - 7, w, 1, c.T); R(g, a, by, w, 1, c.D);
+    for (let r = 0; r < 2; r++) for (let x = a + (r ? 2 : 5); x < b; x += 6) R(g, x, by - 5 + r * 3, 1, 2, c.D);
+    R(g, a, by - 3, w, 1, c.D);
+  } else if (t === 'E') {
+    R(g, a, by - 9, w, 10, c.M); R(g, a, by - 10, w, 1, c.M);
+    for (let x = a; x < b; x++) { const h = hash(x, by, 61); if (h < .35) R(g, x, by - 10 - (h < .12 ? 1 : 0), 1, 1, c.L); if (h > .7) R(g, x, by - 6 + Math.floor(h * 5), 1, 1, c.D); if (h > .45 && h < .55) R(g, x, by - 8, 1, 1, c.T); }
+    R(g, a, by, w, 1, c.D);
+  }
+}
+function fenceSide(g, t, cx, ya, yb) {   // senkrechtes Stück von oben gesehen, Oberkante von ya bis yb
+  const c = FC[t], h = yb - ya;
+  if (t === 'M') { R(g, cx + 4, ya + 3, 1, h, FSH); R(g, cx - 1, ya, 5, h, c.M); R(g, cx - 1, ya, 1, h, c.T); R(g, cx + 3, ya, 1, h, c.D); for (let y = ya + 3; y < yb; y += 5) R(g, cx, y, 3, 1, c.D); return; }
+  if (t === 'E') { R(g, cx + 5, ya + 3, 1, h, FSH); R(g, cx - 2, ya, 7, h, c.M); for (let y = ya; y < yb; y++) { const k = hash(cx, y, 62); R(g, cx - 2 + Math.floor(k * 7), y, 1, 1, k < .5 ? c.L : c.D); } R(g, cx + 4, ya, 1, h, c.D); return; }
+  R(g, cx + 3, ya + 3, 1, h, FSH); R(g, cx + 4, ya + 3, 1, h, FSH2);
+  R(g, cx, ya, 3, h, c.M); R(g, cx, ya, 1, h, c.L); R(g, cx + 2, ya, 1, h, c.D);
+  if (t === 'W' || t === 'R') for (let y = ya + 1; y < yb; y += 3) R(g, cx + 1, y, 1, 1, c.T);
+  if (t === 'V') for (let y = ya + 2; y < yb; y += 5) { R(g, cx - 1, y, 2, 2, '#ee8fb0'); R(g, cx + 2, y + 2, 1, 1, '#5aa040'); }
+  if (t === 'S') for (let y = ya + 2; y < yb; y += 4) R(g, cx, y, 3, 1, c.D);
+}
+const fenceTypeAt = (x, y) => x >= 0 && x < COLS && y >= 0 && y < ROWS && MAP[y][x] === 'J' ? FENCE_T[x + ',' + y] : null;
+function drawFenceTile(g, x, y) {
+  const t = fenceTypeAt(x, y); if (!t) return;
+  const x0 = x * 16, y0 = y * 16, cx = x0 + 6, by = y0 + 12;
+  if (fenceTypeAt(x, y + 1)) { fenceSide(g, t, cx, by - 11, by + 16 - 11); fencePost(g, t, cx, by + 8); }   // nach unten, dazwischen ein Pfosten
+  if (fenceTypeAt(x + 1, y)) fenceRun(g, t, cx + 3, cx + 16, by);
+  fencePost(g, t, cx, by);
+}
+function drawTileFences(g) { for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) drawFenceTile(g, x, y); }
 function farmScene(g) {
   g.clearRect(0, 0, W, H);
   for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) drawGrass(g, x, y);
-  drawPaths(g); drawFarmFence(g);
-  drawFarmHouse(g); drawStand(g); drawCrate(g); drawSign(g); drawFence(g); drawStore(g);
+  drawPaths(g); drawFarmFence(g); drawTileFences(g);
+  drawFarmHouse(g); drawStand(g); drawCrate(g); drawSign(g); drawStore(g);
   for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) if (MAP[y][x] === 'U') drawBush(g, x, y);
   drawPond(g);
 }
@@ -1757,9 +1840,23 @@ let S = load();
 const firstRun = !S;
 if (!S) S = newState();
 for (const k of ['19,3', '20,3', '19,4', '20,4', '19,5', '20,5', '8,3', '9,3', '8,4', '9,4', '8,5', '9,5']) { delete S.soil[k]; delete S.trees[k]; }
-applyLand(S.land); buildFarmBG();
+applyLand(S.land);
+// Farmplan einmalig übernehmen: alte Baumzustände (Stümpfe, gefällte Bäume) gehören zur alten Karte; selbst gepflanzte Setzlinge, Bäume und Sträucher bleiben
+if (!S.planV) {
+  for (const k in S.trees) { const st = S.trees[k]; if (st.s === 'stump' || st.s === 'gone' || (st.s === 'tree' && st.born === undefined)) delete S.trees[k]; }
+  S.planV = 1;
+}
+// Felder haben Vorrang: steht im Plan auf einem Feld ein Baum, Strauch oder eine Blume, bleibt das Feld und das Objekt entfällt
+for (const k in S.soil) {
+  const [x, y] = k.split(',').map(Number); if (!MAP[y]) continue;
+  if (MAP[y][x] === 'T' || MAP[y][x] === 'U') MAP[y][x] = 'G';
+  delete TREE_KIND[k]; delete FLOWER_AT[k];
+}
+for (const k in S.trees) { const [x, y] = k.split(',').map(Number); if (!MAP[y] || 'JPHKLBS'.includes(MAP[y][x])) delete S.trees[k]; }
+if (LOC !== 'town' && SOLID.has(MAP[Math.floor(S.py / 16)]?.[Math.floor(S.px / 16)] || 'G')) { S.px = 72; S.py = 93; }   // nicht in einem Zaun oder Baum starten
+buildFarmBG();
 // Felder nur dort entfernen, wo jetzt ein Gebäude, Weg oder die Kuhweide liegt (erst nach dem Laden des gekauften Landes prüfen)
-for (const k in S.soil) { const [x, y] = k.split(',').map(Number), t = MAP[y] && MAP[y][x]; if (inPast(x * 16 + 8, y * 16 + 8) || 'HSBLPK'.includes(t)) delete S.soil[k]; }
+for (const k in S.soil) { const [x, y] = k.split(',').map(Number), t = MAP[y] && MAP[y][x]; if (inPast(x * 16 + 8, y * 16 + 8) || 'HSBLPKJ'.includes(t)) delete S.soil[k]; }
 TREES = S.trees; for (const k in TREES) { const [x, y] = k.split(',').map(Number); if (isEdge(x, y)) delete TREES[k]; } rebuildTrees();
 
 /* ---------- sound ---------- */
@@ -2826,13 +2923,13 @@ function drawBunny(c) {
 /* ---------- Kühe ---------- */
 const cows = [];
 function syncCows() {
-  while (cows.length < S.cows.length) { const x = PAST.x0 + 14 + Math.random() * (PAST.x1 - PAST.x0 - 28), y = PAST.y0 + 16 + Math.random() * (PAST.y1 - PAST.y0 - 30); cows.push({ x, y, gx: x, gy: y, wait: Math.random() * 3, dir: Math.random() < .5 ? 1 : -1, walk: 0 }); }
+  while (cows.length < S.cows.length) { const [x, y] = pastSpot(); cows.push({ x, y, gx: x, gy: y, wait: Math.random() * 3, dir: Math.random() < .5 ? 1 : -1, walk: 0 }); }
   cows.length = S.cows.length;
 }
 function updateCows(dt) {
   syncCows();
   cows.forEach((c, i) => {
-    if (c.wait > 0) { c.wait -= dt; if (c.wait <= 0) { c.gx = PAST.x0 + 14 + Math.random() * (PAST.x1 - PAST.x0 - 28); c.gy = PAST.y0 + 18 + Math.random() * (PAST.y1 - PAST.y0 - 32); } return; }
+    if (c.wait > 0) { c.wait -= dt; if (c.wait <= 0) { [c.gx, c.gy] = pastSpot(); } return; }
     const dx = c.gx - c.x, dy = c.gy - c.y, d = Math.hypot(dx, dy);
     if (d < 1) { c.wait = 2 + Math.random() * 5; c.walk = 0; return; }
     const sp = 9 * dt; c.x += dx / d * Math.min(sp, d); c.y += dy / d * Math.min(sp, d); if (Math.abs(dx) > .5) c.dir = dx > 0 ? 1 : -1; c.walk += dt;
@@ -2983,18 +3080,21 @@ function buildEdge() {
     }
     for (let y = 0; y < EDGE_H; y += 16) for (let x = 0; x < W; x += 16) { const [sx, sy] = GT[Math.floor(hash(x, y + oy, 77) * GT.length)]; g.drawImage(BG, sx * 16, sy * 16, 16, 16, x, y, 16, 16); }
     EDGE_ROW0 = ty0;   // die erste Reihe eines unteren Randstreifens hat oben keinen Platz für hohe Kronen
-    if (!forest) {   // Farm: nahtlose Wiese, vereinzelt Bäume und Blumen hinter dem Zaun
+    if (!forest) {   // Farm: Wiese, Wege, Blumen und Bäume hinter dem Zaun genau wie im Farmplan
+      EDGE_PLAN = true; EDGE_ROW0 = ty0 < 0 ? ty0 + 1 : ty0;   // oben ist die Reihe −7 nicht zu sehen, −6 ist die erste sichtbare
       g.save(); g.translate(0, oy); g.fillStyle = g.createPattern(GRASS_TEX, 'repeat'); g.fillRect(0, -oy, W, EDGE_H);
+      drawPaths(g, ty0 * 16, (ty1 + 1) * 16);
       for (let ty = ty0; ty <= ty1; ty++) for (let tx = 0; tx < COLS; tx++) {
-        const h = hash(tx, ty, 43);
-        if (h < .07) {
-          const [A, C] = FLOWERS[Math.floor(hash(tx, ty, 9) * FLOWERS.length)], fh = A.length, fw = A[0].length;
-          const ox = tx * 16 + 8 - (fw >> 1) + Math.floor(hash(tx, ty, 7) * 5) - 2, oy2 = ty * 16 + 15 - fh;
-          A.forEach((r, y) => [...r].forEach((ch, x) => { if (C[ch]) R(g, ox + x, oy2 + y, 1, 1, C[ch]); }));
-        }
+        const fk = FLOWER_AT[tx + ',' + ty]; if (fk === undefined) continue;
+        const [A, C] = FLOWERS[fk], fh = A.length, fw = A[0].length, x0 = tx * 16, y0 = ty * 16;
+        const px = x0 + 4 + Math.floor(hash(tx, ty, 7) * 8), py = y0 + 4 + Math.floor(hash(tx, ty, 8) * 8), ox = px - (fw >> 1), oy2 = Math.max(y0, py + 4 - fh);
+        A.forEach((r, y) => [...r].forEach((ch, x) => { if (C[ch]) R(g, ox + x, oy2 + y, 1, 1, C[ch]); }));
       }
-      for (let ty = ty0; ty <= ty1; ty++) for (let tx = 0; tx < COLS; tx++) if (hash(tx, ty, 43) > .82) drawTree(g, tx, ty);
-      g.restore();
+      for (let ty = ty0; ty <= ty1; ty++) for (let tx = 0; tx < COLS; tx++) {
+        if (TREE_KIND[tx + ',' + ty]) drawTree(g, tx, ty);
+        else if (planO(tx, ty) === 'U') drawBush(g, tx, ty);
+      }
+      g.restore(); EDGE_PLAN = false;
     } else for (let ty = ty0; ty <= ty1; ty++) for (let tx = 0; tx < COLS; tx++) {
       g.save(); g.translate(0, oy); drawTree(g, tx, ty); g.restore();
     }
