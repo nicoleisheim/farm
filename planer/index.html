@@ -147,30 +147,66 @@ function drawPond(g) {
     }
   }
 }
-/* Zaun als Feld: verbindet sich mit Zaunfeldern daneben (waagrecht von vorn, senkrecht von oben) */
-function drawFenceTile(g, x, y, F = (a, b) => a >= 0 && b >= 0 && a < COLS && b < ROWS && st.obj[b][a] === 'F') {
-  const L = '#e0a874', M = '#c08a64', D = '#a86d48', SH = 'rgba(60,20,40,.22)', SH2 = 'rgba(60,20,40,.1)';
-  const x0 = x * 16, y0 = y * 16, l = F(x - 1, y), r = F(x + 1, y), u = F(x, y - 1), d = F(x, y + 1);
-  const post = (px, py) => { R(g, px, py - 11, 3, 12, M); R(g, px, py - 11, 1, 12, L); R(g, px + 2, py - 11, 1, 12, D); R(g, px, py - 12, 3, 1, '#f6cf9c'); };
-  const base = y0 + 12, cx = x0 + 6;
-  if (u || d) {   // senkrecht: Latte von oben gesehen
-    const a = u ? y0 : y0 + 1, b = d ? y0 + 16 : base;
-    R(g, cx + 3, a + 3, 1, b - a, SH); R(g, cx + 4, a + 3, 1, b - a, SH2);
-    R(g, cx, a, 3, b - a, M); R(g, cx, a, 1, b - a, L); R(g, cx + 2, a, 1, b - a, D);
+/* Zäune als Felder: jedes Zaunfeld hat einen Pfosten in der Mitte und verbindet sich mit Zaunfeldern rechts und unten.
+   Waagrecht sieht man den Zaun von vorn, senkrecht von oben (wie die Seiten der Kuhweide). */
+const FENCES = { F: 'Holzzaun', W: 'Lattenzaun weiß', R: 'Lattenzaun rosa', S: 'Bretterzaun', M: 'Steinmauer', E: 'Hecke' };
+const isFence = o => !!FENCES[o];
+const FC = {
+  F: { L: '#e0a874', M: '#c08a64', D: '#a86d48', T: '#f6cf9c' },
+  S: { L: '#c99566', M: '#a4714a', D: '#7a5034', T: '#ddb185' },
+  W: { L: '#ffffff', M: '#ece4ea', D: '#b9a7b4', T: '#ffffff' },
+  R: { L: '#ffe1ec', M: '#f6b8cd', D: '#cf7d9e', T: '#fff0f5' },
+  M: { L: '#efe3e6', M: '#d6c5cb', D: '#a8949c', T: '#fbf5f6' },
+  E: { L: '#a6df84', M: '#72bd58', D: '#4f9645', T: '#c9efa6' },
+};
+const SH = 'rgba(60,20,40,.22)', SH2 = 'rgba(60,20,40,.1)';
+function fencePost(g, t, px, by) {   // Pfosten von vorn, Fuß bei by
+  const c = FC[t];
+  if (t === 'W' || t === 'R') { R(g, px, by - 11, 3, 12, c.M); R(g, px, by - 11, 1, 12, c.L); R(g, px + 2, by - 11, 1, 12, c.D); R(g, px + 1, by - 12, 1, 1, c.L); return; }
+  if (t === 'M') { R(g, px - 1, by - 7, 5, 8, c.M); R(g, px - 1, by - 7, 5, 1, c.T); R(g, px + 3, by - 6, 1, 7, c.D); R(g, px - 1, by, 5, 1, c.D); return; }
+  if (t === 'E') { R(g, px - 2, by - 9, 7, 10, c.M); R(g, px - 1, by - 10, 5, 1, c.M); R(g, px - 1, by - 9, 3, 2, c.T); R(g, px + 3, by - 7, 2, 7, c.D); R(g, px - 2, by, 7, 1, c.D); return; }
+  R(g, px, by - 11, 3, 12, c.M); R(g, px, by - 11, 1, 12, c.L); R(g, px + 2, by - 11, 1, 12, c.D); R(g, px, by - 12, 3, 1, c.T);
+}
+function fenceRun(g, t, a, b, by) {   // waagrechtes Stück von a bis b (Pfostenmitten), von vorn
+  const c = FC[t], w = b - a;
+  R(g, a + 1, by + 1, w, 2, SH); R(g, a + 2, by + 3, w - 1, 1, SH2);
+  if (t === 'F') {
+    R(g, a, by - 10, w, 1, c.L); R(g, a, by - 9, w, 1, c.M); R(g, a, by - 1, w, 1, c.L); R(g, a, by, w, 1, c.M);
+    const xa = a + 3, ww = w - 3; for (let i = 0; i < 7; i++) { const d0 = Math.round(i * ww / 7), d1 = Math.max(d0 + 1, Math.round((i + 1) * ww / 7)); R(g, xa + ww - d1, by - 8 + i, d1 - d0, 1, c.D); R(g, xa + d0, by - 8 + i, d1 - d0, 1, c.M); }
+  } else if (t === 'S') {
+    for (const y of [by - 9, by - 4]) { R(g, a, y, w, 2, c.M); R(g, a, y, w, 1, c.L); R(g, a, y + 2, w, 1, c.D); }
+  } else if (t === 'W' || t === 'R') {
+    R(g, a, by - 7, w, 1, c.D); R(g, a, by - 3, w, 1, c.D);
+    for (let x = a + 4; x < b - 1; x += 3) { R(g, x, by - 9, 2, 10, c.L); R(g, x + 1, by - 9, 1, 10, c.M); R(g, x, by - 10, 1, 1, c.L); R(g, x, by, 2, 1, c.D); }
+  } else if (t === 'M') {
+    R(g, a, by - 7, w, 8, c.M); R(g, a, by - 7, w, 1, c.T); R(g, a, by, w, 1, c.D);
+    for (let r = 0; r < 2; r++) for (let x = a + (r ? 2 : 5); x < b; x += 6) R(g, x, by - 5 + r * 3, 1, 2, c.D);
+    R(g, a, by - 3, w, 1, c.D);
+  } else if (t === 'E') {
+    R(g, a, by - 9, w, 10, c.M); R(g, a, by - 10, w, 1, c.M);
+    for (let x = a; x < b; x++) { const h = hash(x, by, 61); if (h < .35) R(g, x, by - 10 - (h < .12 ? 1 : 0), 1, 1, c.L); if (h > .7) R(g, x, by - 6 + Math.floor(h * 5), 1, 1, c.D); if (h > .45 && h < .55) R(g, x, by - 8, 1, 1, c.T); }
+    R(g, a, by, w, 1, c.D);
   }
-  if (l || r || (!u && !d)) {   // waagrecht: zwei Latten mit Kreuzstrebe
-    const a = l ? x0 : cx, b = r ? x0 + 16 : cx + 3;
-    R(g, a + 1, base + 1, b - a, 2, SH); R(g, a + 2, base + 3, b - a - 1, 1, SH2);
-    R(g, a, base - 10, b - a, 1, L); R(g, a, base - 9, b - a, 1, M); R(g, a, base - 1, b - a, 1, L); R(g, a, base, b - a, 1, M);
-    for (const [xa, xb] of [[a, cx], [cx + 3, b]]) { const w = xb - xa; if (w < 3) continue; for (let i = 0; i < 7; i++) { const d0 = Math.round(i * w / 7), d1 = Math.max(d0 + 1, Math.round((i + 1) * w / 7)); R(g, xa + w - d1, base - 8 + i, d1 - d0, 1, D); R(g, xa + d0, base - 8 + i, d1 - d0, 1, M); } }
-    if (l) post(x0, base);
-  }
-  post(cx, base);
+}
+function fenceSide(g, t, cx, ya, yb) {   // senkrechtes Stück von oben gesehen, Oberkante von ya bis yb
+  const c = FC[t], h = yb - ya;
+  if (t === 'M') { R(g, cx + 4, ya + 3, 1, h, SH); R(g, cx - 1, ya, 5, h, c.M); R(g, cx - 1, ya, 1, h, c.T); R(g, cx + 3, ya, 1, h, c.D); for (let y = ya + 3; y < yb; y += 5) R(g, cx, y, 3, 1, c.D); return; }
+  if (t === 'E') { R(g, cx + 5, ya + 3, 1, h, SH); R(g, cx - 2, ya, 7, h, c.M); for (let y = ya; y < yb; y++) { const k = hash(cx, y, 62); R(g, cx - 2 + Math.floor(k * 7), y, 1, 1, k < .5 ? c.L : c.D); } R(g, cx + 4, ya, 1, h, c.D); return; }
+  R(g, cx + 3, ya + 3, 1, h, SH); R(g, cx + 4, ya + 3, 1, h, SH2);
+  R(g, cx, ya, 3, h, c.M); R(g, cx, ya, 1, h, c.L); R(g, cx + 2, ya, 1, h, c.D);
+  if (t === 'W' || t === 'R') for (let y = ya + 1; y < yb; y += 3) R(g, cx + 1, y, 1, 1, c.T);
+  if (t === 'S') for (let y = ya + 2; y < yb; y += 4) R(g, cx, y, 3, 1, c.D);
+}
+function drawFenceTile(g, x, y, isF = (a, b) => a >= 0 && b >= 0 && a < COLS && b < ROWS && isFence(st.obj[b][a]), t = st.obj[y][x]) {
+  const x0 = x * 16, y0 = y * 16, cx = x0 + 6, by = y0 + 12;
+  if (isF(x, y + 1)) { fenceSide(g, t, cx, by - 11, by + 16 - 11); fencePost(g, t, cx, by + 8); }   // nach unten, dazwischen ein Pfosten
+  if (isF(x + 1, y)) fenceRun(g, t, cx + 3, cx + 16, by);
+  fencePost(g, t, cx, by);
 }
 function drawObj(g, x, y) {
   const o = st.obj[y][x], x0 = x * 16, y0 = y * 16;
   if (o === '.' || BT[y][x] !== '.') return;
-  if (o === 'F') return drawFenceTile(g, x, y);
+  if (isFence(o)) return drawFenceTile(g, x, y);
   if (o === 'U') { R(g, x0 + 2, y0 + 13, 12, 2, 'rgba(60,20,40,.18)'); return spr(g, SPR.U, x0, y0); }
   if ('1234'.includes(o)) {
     const [A] = SPR[o], h = A.length, w = A[0].length;
@@ -194,7 +230,7 @@ function draw() {
   // Blumen liegen wie im Spiel unter den Gebäuden, Zäune, Sträucher und Bäume davor
   for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) if ('1234'.includes(st.obj[y][x])) drawObj(X, x, y);
   if (BLD.complete) X.drawImage(BLD, 0, OFF * 16);
-  for (let y = 0; y < ROWS; y++) { for (let x = 0; x < COLS; x++) if (st.obj[y][x] === 'F') drawObj(X, x, y); for (let x = 0; x < COLS; x++) if ('AaCcU'.includes(st.obj[y][x])) drawObj(X, x, y); }
+  for (let y = 0; y < ROWS; y++) { for (let x = 0; x < COLS; x++) if (isFence(st.obj[y][x])) drawObj(X, x, y); for (let x = 0; x < COLS; x++) if ('AaCcU'.includes(st.obj[y][x])) drawObj(X, x, y); }
   if (showLand) { X.setLineDash([3, 2]); X.lineWidth = 1; X.strokeStyle = 'rgba(255,255,255,.9)';
     for (const L of DATA.land) X.strokeRect(L.x0 * 16 + .5, (DATA.landY[0] + OFF) * 16 + .5, (L.x1 - L.x0 + 1) * 16 - 1, (DATA.landY[1] - DATA.landY[0] + 1) * 16 - 1);
     X.setLineDash([]); X.fillStyle = 'rgba(255,255,255,.9)'; X.font = '7px sans-serif';
@@ -211,7 +247,8 @@ const TOOLS = [
   ['Boden', [['g', 'Gras'], ['p', 'Weg'], ['w', 'Wasser'], ['wf', 'Wasser fein']]],
   ['Bäume', [['A', 'Baum groß'], ['a', 'Baum klein'], ['C', 'Kirschbaum groß'], ['c', 'Kirschbaum klein'], ['U', 'Beeren-strauch']]],
   ['Blumen', [['1', 'Sonnen-blume'], ['2', 'Blümchen orange'], ['3', 'Blümchen rosa'], ['4', 'Lavendel']]],
-  ['Sonstiges', [['F', 'Zaun'], ['x', 'Entfernen']]],
+  ['Zäune', [['F', 'Holzzaun'], ['W', 'Latten-zaun weiß'], ['R', 'Latten-zaun rosa'], ['S', 'Bretter-zaun'], ['M', 'Stein-mauer'], ['E', 'Hecke']]],
+  ['Sonstiges', [['x', 'Entfernen']]],
 ];
 let tool = 'A';
 const tbar = document.getElementById('tools');
@@ -221,7 +258,7 @@ function icon(id) {
   else if (id === 'p') { R(g, 0, 2, 16, 16, '#d49a9a'); R(g, 1, 3, 14, 14, '#f1cfc8'); for (let i = 0; i < 9; i++) R(g, 2 + Math.floor(hash(i, 1, 2) * 12), 4 + Math.floor(hash(i, 2, 2) * 12), 1, 1, i % 2 ? '#fff3ef' : '#dba79f'); }
   else if (id === 'w' || id === 'wf') { R(g, 0, 2, 16, 16, '#f5e1c8'); R(g, 1, 3, 14, 14, '#3f86c2'); R(g, 1, 5, 14, 12, '#80c8ef'); R(g, 4, 8, 8, 6, '#62b2e4'); if (id === 'wf') { R(g, 0, 2, 8, 8, 'rgba(255,255,255,.35)'); } }
   else if (id === 'x') { g.strokeStyle = '#c9628f'; g.lineWidth = 2.5; g.beginPath(); g.moveTo(3, 5); g.lineTo(13, 15); g.moveTo(13, 5); g.lineTo(3, 15); g.stroke(); }
-  else if (id === 'F') { g.translate(-16, 4); drawFenceTile(g, 1, 0, (a, b) => b === 0 && a >= 0 && a <= 2); }
+  else if (isFence(id)) { g.translate(-22, 5); drawFenceTile(g, 1, 0, (a, b) => b === 0 && a >= 1 && a <= 2, id); drawFenceTile(g, 2, 0, (a, b) => b === 0 && a >= 1 && a <= 2, id); }
   else { const A = SPR[id][0], w = A[0].length, h = A.length; spr(g, SPR[id], 8 - (w >> 1), 20 - h); }
   return c;
 }
@@ -254,12 +291,12 @@ function apply(px, py) {   // px,py in Spielpixeln
   if (tool === 'g' || tool === 'p') {
     let ch = false; if (my >= 0 && my < 24) for (let dy = 0; dy < 2; dy++) for (let dx = 0; dx < 2; dx++) if (st.water[my * 2 + dy][tx * 2 + dx]) { st.water[my * 2 + dy][tx * 2 + dx] = 0; ch = true; }
     if (st.ground[ty][tx] !== tool) { st.ground[ty][tx] = tool; ch = true; }
-    if (tool === 'p' && st.obj[ty][tx] !== '.' && st.obj[ty][tx] !== 'F') { st.obj[ty][tx] = '.'; ch = true; }
+    if (tool === 'p' && st.obj[ty][tx] !== '.' && !isFence(st.obj[ty][tx])) { st.obj[ty][tx] = '.'; ch = true; }
     return ch && 'b';
   }
   if (tool === 'x') { if (st.obj[ty][tx] === '.') return false; st.obj[ty][tx] = '.'; return 'o'; }
   if (waterIn(tx, ty)) return warn('Im Wasser kann nichts stehen.');
-  if (tool !== 'F' && st.ground[ty][tx] === 'p') return warn('Auf dem Weg kann nur ein Zaun stehen.');
+  if (!isFence(tool) && st.ground[ty][tx] === 'p') return warn('Auf dem Weg kann nur ein Zaun stehen.');
   if (st.obj[ty][tx] === tool) return false;
   st.obj[ty][tx] = tool; return 'o';
 }
@@ -327,7 +364,7 @@ document.getElementById('reset').onclick = () => { if (confirm('Den Plan auf die
 const dlg = document.getElementById('dlg'), ta = document.getElementById('ta');
 function exportText() {
   return 'Farmplan 24x38 v2 (7 Reihen hinter dem Zaun oben, 24 Reihen Farm, 7 Reihen unten)\nBoden (g = Gras, p = Weg):\n' + st.ground.map(r => r.join('')).join('\n') +
-    '\nObjekte (A/a Baum groß/klein, C/c Kirschbaum groß/klein, U Beerenstrauch, 1 Sonnenblume, 2 Blümchen orange, 3 Blümchen rosa, 4 Lavendel, F Zaun, . leer):\n' + st.obj.map(r => r.join('')).join('\n') +
+    '\nObjekte (A/a Baum groß/klein, C/c Kirschbaum groß/klein, U Beerenstrauch, 1 Sonnenblume, 2 Blümchen orange, 3 Blümchen rosa, 4 Lavendel, F Holzzaun, W Lattenzaun weiß, R Lattenzaun rosa, S Bretterzaun, M Steinmauer, E Hecke, . leer):\n' + st.obj.map(r => r.join('')).join('\n') +
     '\nWasser (48x48, je 8 Pixel):\n' + st.water.map(r => r.join('')).join('\n');
 }
 let dlgOk = null;
