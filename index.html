@@ -711,9 +711,6 @@ function drawGrass(g, tx, ty) {
     const [A, C] = FLOWERS[flowerKind(tx, ty)], h = A.length, w = A[0].length;
     const oy = Math.max(y0, py + 4 - h), ox = px - (w >> 1);
     A.forEach((r, y) => [...r].forEach((ch, x) => { if (C[ch]) R(g, ox + x, oy + y, 1, 1, C[ch]); }));
-  } else if (f < .24) {   // Pilz
-    R(g, px + 1, py + 2, 2, 2, '#fff4e6'); R(g, px, py, 4, 2, '#ff6f9a'); R(g, px + 1, py - 1, 2, 1, '#ff6f9a');
-    R(g, px + 1, py, 1, 1, '#fff'); R(g, px + 3, py + 1, 1, 1, '#fff');
   }
 }
 const isPT = (a, b) => tileAt(a, b) === 'P';
