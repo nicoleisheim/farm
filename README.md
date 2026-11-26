@@ -58,6 +58,10 @@ Im Hochformat liegen Steuerung und Werkzeugleiste unter dem Spielfeld, und die K
 - Spielstand im `localStorage` des Browsers
 - Schrift: [VT323](https://fonts.google.com/specimen/VT323) über Google Fonts
 
+## Spielstand
+
+Das Spiel speichert automatisch alle 30 Sekunden, beim Schlafengehen und wenn die App in den Hintergrund geht. In der Hilfe (Start-Taste oder ?) gibt es zusätzlich den Knopf **Speichern**.
+
 ## Auf dem Retroid Pocket / Android spielen
 
 **Steuerung mit Tasten:** Steuerkreuz oder linker Stick laufen · untere Taste benutzen · rechte Taste Fenster schließen · linke/obere Taste Rucksack · Schultertasten Gegenstand wechseln · Start Hilfe · rechter Stick scrollt in Fenstern.

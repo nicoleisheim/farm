@@ -30,6 +30,17 @@ jobs:
           A=android/app/src/main
           mkdir -p $A/assets $A/java/de/sonnenhof/spiel $A/res/mipmap-xxhdpi
           cp index.html $A/assets/index.html
+          # Pixel-Schrift VT323 fest einbauen, damit sie auch ohne Internet erscheint
+          curl -fsSL -o vt.ttf https://raw.githubusercontent.com/google/fonts/main/ofl/vt323/VT323-Regular.ttf
+          python3 - <<'P'
+          import base64
+          p = 'android/app/src/main/assets/index.html'
+          s = open(p, encoding='utf-8').read()
+          f = base64.b64encode(open('vt.ttf', 'rb').read()).decode()
+          css = "<style>@font-face{font-family:'VT323';src:url(data:font/ttf;base64,%s) format('truetype');font-display:block}</style>" % f
+          s = s.replace('</head>', css + '</head>', 1)
+          open(p, 'w', encoding='utf-8').write(s)
+          P
           echo "iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAIAAADdvvtQAAACUUlEQVR4Xu3cu23DQBBAQctQjW5FNbgVF6QOVIcMpY7WeqcvZ3IeQeBhk8Vxdz6ePuBan9c+CBcCIhEQiYBIBEQiIBIBkQiIREAkAiIREImASAREIiASAZEIiERAJAIiERCJgEgERCIgEgGRCIhEQCQCIhEQiYBIBEQiIBIBkQiIREAkAiIREImASAREIiASAZEIiERAJAIiERDJPj19O98/K88+fK08begNPmHABCIREImASAREIiASAZEIiERAJAIiERCJgEgERLI7H0/pgP8arhiH68/haUMPeelaw09YxwQiERCJgEgERCIgEgGRCIhEQCQCIhEQiYBIBESyjZupQ2tXs9tgApEIiERAJAIiERCJgEgERCIgEgGRCIhEQCQCIhEQiYBIBEQiIBIBkQiIREAkAiIREImASAREIiASAZHc/Te/Qy6J/nH3//cOmUAkAiIREImASAREIiASAZEIiERAJAIiERCJgEiedZk69AY712fdkg6ZQCQCIhEQiYBIBEQiIBIBkQiIREAkAiIREImASF58mTr0kJ3ri29Jh0wgEgGRCIhEQCQCIhEQiYBIBEQiIBIBkQiIREAk21imDg13rtvYkg6ZQCQCIhEQiYBIBEQiIBIBkQiIREAkAiIREImASCxTSUwgEgGRCIhEQCQCIhEQiYBIBEQiIBIBkQiIREAkAiIREImASAREIiASAZEIiERAJAIiERCJgEgERCIgEgGRCIhEQCQCIhEQiYBIBEQiIBIBkQiIREAkAiIREImASAREIiASAZEIiOQXkUAo+pDQjUoAAAAASUVORK5CYII=" | base64 -d > $A/res/mipmap-xxhdpi/ic_launcher.png
           echo "MIIKCgIBAzCCCbQGCSqGSIb3DQEHAaCCCaUEggmhMIIJnTCCBbQGCSqGSIb3DQEHAaCCBaUEggWhMIIFnTCCBZkGCyqGSIb3DQEMCgECoIIFQDCCBTwwZgYJKoZIhvcNAQUNMFkwOAYJKoZIhvcNAQUMMCsEFP1QBC8/gw84d6S4KTrsydi37IQCAgInEAIBIDAMBggqhkiG9w0CCQUAMB0GCWCGSAFlAwQBKgQQXCEZ7XeViXhXQAmY/8VoTASCBNASubap225K+UfIEOdoDiAtzZ6VGWvW1kQBAVL098CH2TAnoZDkhpe94hiK5qGZVPECpL8WuBlijIwQsj/DlD4CdsisrHy5VB0qYDN59Or5oSWMlGwQ7XakCOaTs37/qItxG2jgSZfbprGrtbk4tcHRSi588N+gpy+qvmfqSXlxFLsBkS5hI7I/r2m/+nZ+Zf1xWqXUakp5PqheuLXSfVodiR+XSFkpHaA9aAQsJ6l02UoDVM/yTCs1t9k6H+9K7t9v6PqHHEbpbPiBO4MlmAPjr0PZ+IGCxXxOK9jYo2CpOGQzgSBVeb8LLeX2MOtDwrv3d2enBcgXAA7VL0IPq/tmXCCojh2Qhu5McpNXz7gh9Jzp6tV6dZi4+LCRoSwF282YEWjLBCHngTKsXDOhFfZUXEXAYog25fnFM2zGV3vyOHtMjRkSr+NS9/w94EwhHLFcV8oPuPiRd+2vIAxnWQSoG3Y27H6e99K6n88l/DEkf6eKt6VnQ53M/3XogtXli1rQtXHSA2sN6eMo6U1syoaDCLt4Nq1PPR7ftdZv9zCcek+pCBFLWUzvYQTgNJ0SP7Clq7sHRFuro64Tzhytvt0AUCw78LO9Obi88TGgisSwRINnATRo4Mpbi3XtF2X61+/vp+H9CupiEAUIlMgEjOieiVZKP8OoIX7LChuKdzSZZx+9u4xOkc7JrMHocTkY0SuJKqB77xUYAeocg1/zWiATadJTyGd2goZeLYiRiVUBKMWtv4VtrGZYY4KqN7/uOc/lnAYajPVZYumYfEGVqrn4MIrYlYoJVdS9jb86n91ZOVi/94j7LEHPypHuJvdfWi3MDJ2Q+iCpyaMl1QPG0wgzBD/Qbhidx+BMxmBRmE8GVZ6f7GMDZvFA8Ak08lRIQBI2Cae216bwDrCzXnp/TWp5XSshgdRYULjC4n3GmdUm32DQiRSUneppO9w/ZRvdQo/Xcgcg897Ie0ZETWEjuWo1Xe5KbUBA4Qsqvdas2iX9RHVMEn4zCe+D3lY4KaDYswAzoxKAGpYHVLdA4ca3PmVEq+QOb5G9gNpv/KnmP3HUrivQh74ZzvUlplVLolw8+0u5BAAtE/q/vqLbnqk359a0wlKl1vWinUTIk4r5OiuDD6zBZFu/oZkVwHfFHbhL0XPnfFQXs2341Ghk/Wm8si/t9eYK0dqMNf64Wga1p/gBNCF+ZLi4AsZZIS1cU6Gg14XQwWg+QOSSFKiZrYHlFMMg4itp1125RXo1HwEqlmEdm7V4f4gUr2+pV/iRMwadiYZPK9FF7U0147qMZKnLTgdxDCZ1bWtIQZMzeZlpcrrcRZVY/Sj+gXH8LcrFzMMtVx+J1EL36ggTvDL6DWWdZOWGwFLJfYL6smsXZPDcp5G/G01psL1bUsJJDQM4s2MOC23z80y4VVfcEFXJ7ylxc1OAiEnruo8R3ZSbY7dUewwRjr6INBcTcjaLTK7I44RcnnhTG9HNa26h7Kxd9k028mPUgP7czpeO7BlBEgB2zhkHhH8EUKjMmqEckBk1VspxMRdZ7iazrFyE3bwvjA567wmkiDbX9NAQs0ubqoUODpMHcoeu3RaFS5qwBOr9QFImbXxs9DFyMiKt7UEUkXmSE4kkxXRornrztsEUSo6BI1PD6DFGMCEGCSqGSIb3DQEJFDEUHhIAcwBvAG4AbgBlAG4AaABvAGYwIQYJKoZIhvcNAQkVMRQEElRpbWUgMTc5NTM0ODI0NDk0ODCCA+EGCSqGSIb3DQEHBqCCA9IwggPOAgEAMIIDxwYJKoZIhvcNAQcBMGYGCSqGSIb3DQEFDTBZMDgGCSqGSIb3DQEFDDArBBR/3xsnX5I6Ov/aEXYijmSUpH8vUAICJxACASAwDAYIKoZIhvcNAgkFADAdBglghkgBZQMEASoEEF0220xoPq3/fO7oV2nKaGSAggNQfz8pK1QeC9DTg7ZiIKXEv9wNBqQOZ8FXNKVLbgunSLxI8IEHkH5IYOyG+LfwR87UH4tvcJn5g0gxmvTHPeiWfJ6cu3LiKUO9dbaw9zsxpfmC+eeaHekTc3+Ne65qW+1UxVkQAT1brqlo7MddtrRi7bZhFzU8HuRyMEQyaO+6RrBt/VmoQACh0+nu1ByI6wdy7Ml0786SU30XAqedKQozBNC9Xol/CBK5TNZ+QUZraBBxW3x7M8VmYvtFd9n1uexKbe4UNjXRjZ5vhUCjDRQ7td8GCX9oXTxJTZeITKfPYCG/zswYHGyXs0v7G/RZ2zePUtuVlZkI9qUfulfla/sZpCETeAUbvdHm3C+8WVvgP/LEnXoHzqTU0TdgzE/bLSa/R1H6JePvXhireGuANHQceCQHgH/+PDYP8XLZeeMSA09+QhnxmxKoVKG/4U8WZyCK6rjLeyKa2a5ImF12WxSlDdBAXI8MVCikvN8rSJfRXC/7d9Wny7kJmC483Y/3Wu1TScY/iqcdFWDqKrFx4BOpgUaXLn9kSplJM4Oh/U/fp+poAe+5XfZz7/aNmbOJXPWYp8tky0ITD9TUTtsLnEuu8yxpMfaFJVo0olOqbhpi6Vsby2uvg9dFOGVNrKN7mkrxTdy/54f0Jwpj/33wchsB+S6BcgMwU9tJofx1NRgcOC3TMuxh9CM2oZ3PPxnoZ3Hf662anP3CDJFY7fIFhWMyJicAO9t0vl1NOCOoxU9W6JT5YJUhLp2hY3T/9CTfth5uppeprZAwPVyHkg1dBtx3dUIgNSNHx4gxcg1Z12xtVd84eUUpIi7hMuUU/Tq28jvAEcnrDnNuKWh31ImFfA/veWgyR6i28wOawiCpIOwQe9nQcwrJqzCVMI45Io1VgrNJA1YI20JlOYty7Y9Yuv4zT7z2TV+DODxHkqcHdc54rYLb/Arlbrruk/azu/W2vtiQonP9kxCdiC+xq17F+Md8VZr9IQpnxTzatBV4u+B8QXaHeCHO8QZVMdxVF4y95xkMvfoZYUX10IJQho4zTCwRk5jfLeaqbQGLciwUEhL/5QEko3F3fIv8wM6O6QZ5VLV855iwurHVdL/dTVorISIyPzRr7/yvFN0HnVC+CHAQ0cMwTTAxMA0GCWCGSAFlAwQCAQUABCB8JLnwqSWp4Rl55c77iofxgFILOzU0MaO05vaoqEaS/gQUG6IUiVlejh0dxSKdHAAIzdDPjtQCAicQ" | base64 -d > android/sonnenhof.jks
 
@@ -104,7 +115,8 @@ jobs:
 
           public class MainActivity extends Activity {
             private WebView web;
-            private boolean hl, hr, hu, hd;
+            private boolean hl, hr, hu, hd, hsu, hsd, htl, htr;
+            private float sx, sy;
 
             @Override protected void onCreate(Bundle b) {
               super.onCreate(b);
@@ -130,7 +142,7 @@ jobs:
             }
 
             @Override public void onWindowFocusChanged(boolean f) { super.onWindowFocusChanged(f); if (f) hideBars(); }
-            @Override protected void onPause() { web.onPause(); super.onPause(); }
+            @Override protected void onPause() { web.evaluateJavascript("window.__saveGame && __saveGame()", null); web.onPause(); super.onPause(); }
             @Override protected void onResume() { super.onResume(); web.onResume(); }
 
             private void key(String k, boolean down) {
@@ -148,8 +160,11 @@ jobs:
                 case KeyEvent.KEYCODE_DPAD_RIGHT: k = "ArrowRight"; break;
                 case KeyEvent.KEYCODE_BUTTON_A: case KeyEvent.KEYCODE_DPAD_CENTER: k = " "; break;
                 case KeyEvent.KEYCODE_BUTTON_B: k = "Escape"; break;
-                case KeyEvent.KEYCODE_BUTTON_X: case KeyEvent.KEYCODE_BUTTON_Y: case KeyEvent.KEYCODE_BUTTON_SELECT: k = "i"; break;
-                case KeyEvent.KEYCODE_BUTTON_L1: case KeyEvent.KEYCODE_BUTTON_L2: k = "PageUp"; break;
+                case KeyEvent.KEYCODE_BUTTON_X: k = "x"; break;
+                case KeyEvent.KEYCODE_BUTTON_Y: k = "y"; break;
+                case KeyEvent.KEYCODE_BUTTON_SELECT: k = "i"; break;
+                case KeyEvent.KEYCODE_BUTTON_L1: k = "PageUp"; break;
+                case KeyEvent.KEYCODE_BUTTON_L2: k = "End"; break;
                 case KeyEvent.KEYCODE_BUTTON_R1: case KeyEvent.KEYCODE_BUTTON_R2: k = "PageDown"; break;
                 case KeyEvent.KEYCODE_BUTTON_START: k = "F1"; break;
               }
@@ -164,13 +179,27 @@ jobs:
 
             @Override public boolean dispatchGenericMotionEvent(MotionEvent e) {
               if ((e.getSource() & InputDevice.SOURCE_JOYSTICK) != InputDevice.SOURCE_JOYSTICK) return super.dispatchGenericMotionEvent(e);
+              // Linker Stick analog ans Spiel (stufenlos), Steuerkreuz als Pfeiltasten
               float x = e.getAxisValue(MotionEvent.AXIS_X), y = e.getAxisValue(MotionEvent.AXIS_Y);
+              if (Math.abs(x - sx) > 0.02f || Math.abs(y - sy) > 0.02f || (x == 0 && sx != 0) || (y == 0 && sy != 0)) {
+                sx = x; sy = y; web.evaluateJavascript("window.__stick&&__stick(" + x + "," + y + ")", null);
+              }
               float hx = e.getAxisValue(MotionEvent.AXIS_HAT_X), hy = e.getAxisValue(MotionEvent.AXIS_HAT_Y);
-              if (Math.abs(hx) > Math.abs(x)) x = hx;
-              if (Math.abs(hy) > Math.abs(y)) y = hy;
-              boolean l = x < -0.45f, r = x > 0.45f, u = y < -0.45f, d = y > 0.45f;
+              boolean l = hx < -0.5f, r = hx > 0.5f, u = hy < -0.5f, d = hy > 0.5f;
               stick(l, hl, "ArrowLeft"); stick(r, hr, "ArrowRight"); stick(u, hu, "ArrowUp"); stick(d, hd, "ArrowDown");
               hl = l; hr = r; hu = u; hd = d;
+              float ry = e.getAxisValue(MotionEvent.AXIS_RZ), ry2 = e.getAxisValue(MotionEvent.AXIS_RY);
+              if (Math.abs(ry2) > Math.abs(ry)) ry = ry2;
+              boolean sd = ry > 0.4f, su = ry < -0.4f;
+              stick(sd, hsd, "ScrollDown"); stick(su, hsu, "ScrollUp");
+              hsd = sd; hsu = su;
+              // Analoge Schultertasten (L2/R2) als Tasten
+              float lt = Math.max(e.getAxisValue(MotionEvent.AXIS_LTRIGGER), e.getAxisValue(MotionEvent.AXIS_BRAKE));
+              float rt = Math.max(e.getAxisValue(MotionEvent.AXIS_RTRIGGER), e.getAxisValue(MotionEvent.AXIS_GAS));
+              boolean tl = lt > 0.5f, tr = rt > 0.5f;
+              if (tl && !htl) key("End", true);
+              if (tr && !htr) key("PageDown", true);
+              htl = tl; htr = tr;
               return true;
             }
           }
