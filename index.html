@@ -755,7 +755,7 @@ function pickWild(tx, ty) {
   burst(tx, ty, [CROPS[id].col, '#fff6c0', '#7bbf55'], 8, 60); hearts(tx, ty, 1); snd('harvest'); toast(`+1 ${CROPS[id].name}`);
 }
 // Wiese: nahtlose 32×32-Textur, ruhige Pastellversion (4 Grüntöne)
-const GRASS_ROWS = ["abcbababdccbbbbcbbabdbaaaccbbbba", "bbdbaaaabdcbabccdbabcaaacccbbbaa", "dbbabaaaabcbbdcbdabbddbababaddaa", "ababbbaabddbababababaaaabbbbbbba", "aabdbcccacbaaaaaaaaaabcbbadaaaaa", "aaaaccccccddaaaadcdaaadbcbbbaaaa", "abadcdccddbbbababccacadcccaaabba", "dbddbbbbdabaabdbcccbcbdcccbadabb", "adbaacbaabaaadadcccaadaddcbacdca", "bddaabaaaabcaaabaaaddabadabdacbb", "acdbaaaacddccaaaabbddaabaaababab", "ccccdaddddddccaabdaabaaaaddddadb", "bcccddbdaccbdaaddabadaccaaaddada", "badcddddaabaaaadbddbdccccdbdbdaa", "dadbabacdaabaaabcdddcdcccddbdcab", "cdaaaacccbbdbddadaaddaccddddcccc", "cbaaaddcbccdcdddabaaadbbabdddddd", "dadbddddcddcccdbddbdaaaaaaaaaaba", "adadbbdabccbcadbbcdddaaababaaaaa", "aaaaddaadbbadadbcccdaaacdbcbaaca", "aadccdcdaaaabddccddbacbbdcccbdca", "bbdccccdaaaaabbcbadadcbbdcccddbb", "bcccccccbabbbbbaaaddcadddccbddbb", "bcdcdbccaaddcccbbbadababbccaddbb", "dabbdbdaddccccccaaaaacaaaacaaadb", "dbadabadbcccccbcdbdaccccabaacbbb", "dbbbaddaccdccbbbddbccccccccacbba", "aacbadbacbdddbaaaabcddbccccbaaab", "bcccdaadcbddaaadabddaaaccaaaabdb", "acdcbacadbbbbabcbbddaaaaabbcbdcc", "dccdabaaadbdbbbacbdbbadbdabcdccd", "dcdcdaaaadddbbabacadbaddbdaaacad"], GRASS_PAL = {"a": "#7dc35a", "b": "#87ca60", "c": "#9cd873", "d": "#90d168"};
+const GRASS_ROWS = ["abcbababdccbbbbcbbabdbaaaccbbbba", "bbdbaaaabdcbabccdbabcaaacccbbbaa", "dbbabaaaabcbbdcbdabbddbababaddaa", "ababbbaabddbababababaaaabbbbbbba", "aabdbcccacbaaaaaaaaaabcbbadaaaaa", "aaaaccccccddaaaadcdaaadbcbbbaaaa", "abadcdccddbbbababccacadcccaaabba", "dbddbbbbdabaabdbcccbcbdcccbadabb", "adbaacbaabaaadadcccaadaddcbacdca", "bddaabaaaabcaaabaaaddabadabdacbb", "acdbaaaacddccaaaabbddaabaaababab", "ccccdaddddddccaabdaabaaaaddddadb", "bcccddbdaccbdaaddabadaccaaaddada", "badcddddaabaaaadbddbdccccdbdbdaa", "dadbabacdaabaaabcdddcdcccddbdcab", "cdaaaacccbbdbddadaaddaccddddcccc", "cbaaaddcbccdcdddabaaadbbabdddddd", "dadbddddcddcccdbddbdaaaaaaaaaaba", "adadbbdabccbcadbbcdddaaababaaaaa", "aaaaddaadbbadadbcccdaaacdbcbaaca", "aadccdcdaaaabddccddbacbbdcccbdca", "bbdccccdaaaaabbcbadadcbbdcccddbb", "bcccccccbabbbbbaaaddcadddccbddbb", "bcdcdbccaaddcccbbbadababbccaddbb", "dabbdbdaddccccccaaaaacaaaacaaadb", "dbadabadbcccccbcdbdaccccabaacbbb", "dbbbaddaccdccbbbddbccccccccacbba", "aacbadbacbdddbaaaabcddbccccbaaab", "bcccdaadcbddaaadabddaaaccaaaabdb", "acdcbacadbbbbabcbbddaaaaabbcbdcc", "dccdabaaadbdbbbacbdbbadbdabcdccd", "dcdcdaaaadddbbabacadbaddbdaaacad"], GRASS_PAL = {"a": "#6cac4c", "b": "#74b251", "c": "#87be62", "d": "#7cb858"}   // etwas dunkler;
 const GRASS_TEX = (() => { const c = document.createElement('canvas'); c.width = c.height = 32; const g = c.getContext('2d'); GRASS_ROWS.forEach((r, y) => [...r].forEach((ch, x) => { g.fillStyle = GRASS_PAL[ch]; g.fillRect(x, y, 1, 1); })); return c; })();
 function drawGrass(g, tx, ty) {
   const x0 = tx * 16, y0 = ty * 16;
@@ -813,10 +813,10 @@ function drawPaths(g, ya = 0, yb = H) {   // ya/yb: Pixelreihen, auch außerhalb
   // Gras wächst über den Rand
   for (let y = ya + 1; y < yb - 1; y++) for (let x = 1; x < W - 1; x++) {
     if (PA(x, y) !== 2 || hash(x, y, 8) > .16) continue;
-    if (!PA(x, y - 1)) R(g, x, y, 1, 2, '#7dc35a');
-    else if (!PA(x, y + 1)) R(g, x, y - 1, 1, 2, '#87ca60');
-    else if (!PA(x - 1, y)) R(g, x, y, 2, 1, '#7dc35a');
-    else if (!PA(x + 1, y)) R(g, x - 1, y, 2, 1, '#7dc35a');
+    if (!PA(x, y - 1)) R(g, x, y, 1, 2, '#6cac4c');
+    else if (!PA(x, y + 1)) R(g, x, y - 1, 1, 2, '#74b251');
+    else if (!PA(x - 1, y)) R(g, x, y, 2, 1, '#6cac4c');
+    else if (!PA(x + 1, y)) R(g, x - 1, y, 2, 1, '#6cac4c');
   }
 }
 // Baumart aus einem vorab optimierten 24×24-Muster (wiederholt sich), damit sich die vier Bäume gut mischen:
